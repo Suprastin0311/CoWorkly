@@ -1,4 +1,4 @@
 package com.ddnik.entity;
 
-public class workspace {
+public class Workspace {
 }
