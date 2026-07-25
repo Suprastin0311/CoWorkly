@@ -1,58 +1,50 @@
 package com.ddnik.controller;
 
 import com.ddnik.AuthorizedUser;
-import com.ddnik.Menu;
-import com.ddnik.entity.User;
 import com.ddnik.enums.UserRole;
 import com.ddnik.exceptions.ConsoleUserInputException;
 
-import java.util.InputMismatchException;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
-
 public class MainController {
 
-    public static void start() {
-        while (true) {
-            Menu.cls();
-            Menu.printMenu("hello");
-            Scanner sc = new Scanner(System.in);
+    public void start() {
+        ConsoleMenu menu = new ConsoleMenu("Добро пожаловать в CoWorkly!");
+        menu.addItem("Войти", this::login);
+        menu.addItem("Зарегистрироваться", this::registration);
 
-            int choice = sc.nextInt();
-            AuthorizedUser user = new AuthorizedUser("guest", UserRole.NoAuth, false);
+        menu.start();
+    }
 
-            if (choice == 1) {
-                do {
-                    try {
-                        user = AuthController.auth();
-                        break;
-                    } catch (Exception e) {
-                        System.out.println("Ошибка авторизации: " + e.getMessage());
-                    }
-                } while (true);
+    private void login() throws ConsoleUserInputException {
+        try {
+            AuthController authController = new AuthController();
+            AuthorizedUser user = authController.auth();
 
+            if (user != null) {
                 switch (user.getRole()) {
-                    case Admin -> {
-                        Menu.cls();
+                    case UserRole.NoAuth -> {
+                        System.out.println("Не удалось авторизоваться.");
+                        return;
+                    }
+                    case UserRole.Admin -> {
                         AdminController ac = new AdminController(user);
                         ac.start();
                     }
-
-                    case User -> {
-                        Menu.cls();
+                    case UserRole.User -> {
                         UserController uc = new UserController(user);
                         uc.start();
-                    }
-
-                    case NoAuth -> {
-                        System.out.println("Не удалось авторизоваться - проверьте корректность учётных данных.");
                     }
                 }
             }
             else {
-                System.out.println("Пользователь завершил работу с приложением.");
                 return;
             }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
+    }
+
+    private void registration() {
+        RegistrationController regController = new RegistrationController();
+        regController.start();
     }
 }
