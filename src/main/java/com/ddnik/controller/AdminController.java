@@ -8,141 +8,30 @@ import com.ddnik.entity.User;
 import com.ddnik.entity.Workspace;
 import com.ddnik.exceptions.ConsoleUserInputException;
 
-import java.sql.Date;
+import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * Управляет консольным меню администратора.
+ */
 public class AdminController {
 
-    private final AuthorizedUser user;
+    /**
+     * Данные авторизованного пользователя
+     */
+    private final AuthorizedUser admin;
 
-    public AdminController(AuthorizedUser user) {
-        this.user = user;
+    public AdminController(AuthorizedUser admin) {
+        this.admin = admin;
     }
 
-    /**
-     * Запуск панели администратора.
-     */
     public void start() {
-        Menu.cls();
-        Scanner sc = new Scanner(System.in);
+        ConsoleMenu menu = new ConsoleMenu("Вы вошли как Администратор");
+        menu.addItem("Пользователи", this::users);
+        menu.addItem("Рабочие пространства", this::workspaces);
+        menu.addItem("Брони", this::bookings);
 
-        do {
-            Menu.printMenu("admin");
-
-            int choice = sc.nextInt();
-            switch (choice) {
-                case 1: // посмотреть пользователей
-                    users();
-                    Menu.cls();
-                    break;
-                case 2: // посмотреть рабочие пространства
-                    workspaces();
-                    Menu.cls();
-                    break;
-                case 3: // посмотреть брони
-                    bookings();
-                    Menu.cls();
-                    break;
-                case 4: // Назад
-                    return;
-            }
-        } while (true);
-    }
-
-    /**
-     * Меню работы с пользователями.
-     */
-    private void users() {
-        Scanner sc = new Scanner(System.in); //TODO сделать нормально через Menu
-        Menu.cls();
-
-        do {
-            Menu.printMenu("users");
-
-            int choice = sc.nextInt();
-            switch (choice) {
-                case 1: // найти пользователя
-                    viewUsers();
-                    Menu.cls();
-                    break;
-                case 2: // посмотреть пользователей
-                    Menu.cls();
-                    //TODO вывод всех пользователей
-                    System.out.println("Тут будут все пользователи.");
-                    break;
-                case 3: // редактировать пользователя
-                    manageUser();
-                    Menu.cls();
-                    break;
-                case 4: // Назад
-                    return;
-            }
-        } while (true);
-    }
-
-    /**
-     * Вывод информации о пользователях.
-     */
-    private void viewUsers() {
-        System.out.println("Тут будет вывод всех пользователей.");
-    }
-
-    /**
-     * Управление аккаунтом пользователя.
-     */
-    private void manageUser() {
-        Menu.cls();
-        Scanner sc = new Scanner(System.in);
-        User selectedUser;
-
-        do {
-            Menu.printMenu("manageUser");
-
-            int choice = sc.nextInt();
-            switch (choice) {
-                case 1: // редактирование
-                    do {
-                        try {
-                            selectedUser = findUser();
-                            System.out.println("Тут будут выбранные пользователи.");
-
-                            // TODO редактирование пользователя
-                        } catch (Exception e) {
-                            System.out.println(e.getMessage());
-                        }
-                        break;
-                    } while (true);
-                    break;
-                case 2: // заблокировать / разблокировать
-                    do {
-                        try {
-                            selectedUser = findUser();
-                            System.out.print("Укажите номер пользователя для блокировки / разблокировка.");
-                            // TODO блокировка пользователя
-
-                        } catch (Exception e) {
-                            System.out.println(e.getMessage());
-                        }
-                        break;
-                    } while (true);
-                    break;
-                case 3: // Удаление
-                    do {
-                        try {
-                            selectedUser = findUser();
-                            System.out.print("Укажите номер пользователя для удаления.");
-                            //TODO удаление пользователя
-
-                        } catch (Exception e) {
-                            System.out.println(e.getMessage());
-                        }
-                        break;
-                    } while(true);
-                    break;
-                case 4:
-                    return;
-            }
-        } while (true);
+        menu.start();
     }
 
     /**
@@ -228,307 +117,310 @@ public class AdminController {
     }
 
     /**
-     * Меню работы с рабочими пространствами.
+     * Запуск меню работы с пользователями.
+     */
+    private void users() {
+        new UsersController().start();
+    }
+
+    /**
+     * Запуск меню работы с рабочими пространствами.
      */
     private void workspaces() {
-        Menu.cls();
-
-        do {
-            Menu.printMenu("workspaces");
-
-            try {
-                int choice = Menu.chooseMenuItem(4);
-
-                switch (choice) {
-                    case 1: // вывести все
-                        seeWorkspaces();
-                        break;
-                    case 2: // управление
-                        manageWorkspaces();
-                        break;
-                    case 3: // Назад
-                        return;
-                }
-            } catch (ConsoleUserInputException e) {
-                System.out.println(e.getMessage());
-                break;
-            }
-        } while (true);
+        new WorkspaceController().start();
     }
 
     /**
-     * Просмотреть рабочие пространства.
+     * Запуск меню работы с бронями.
      */
-    private void seeWorkspaces() {
-        Menu.cls();
-        System.out.println("Тут будет выбранное рабочее пространство.");
-        //TODO красивый вывод рабочего пространства
-    }
-
-    public void manageWorkspaces() {
-        Menu.cls();
-
-        do {
-            Menu.printMenu("manageWorkspaces");
-
-            try {
-                int choice = Menu.chooseMenuItem(4);
-                Workspace selectedWorkspace;
-
-                switch (choice) {
-                    case 1: // редактировать
-                        selectedWorkspace = findWorkspace();
-
-                        editWorkspace(selectedWorkspace);
-                        break;
-                    case 2: // активация / деактивация
-                        selectedWorkspace = findWorkspace();
-
-                        activateWorkspace(selectedWorkspace);
-                        break;
-                    case 3: // Создание
-                        createWorkspace();
-                        break;
-                    case 4: // Удаление
-                        selectedWorkspace = findWorkspace();
-
-                        deleteWorkspace(selectedWorkspace);
-                        break;
-                    case 5:
-                        return;
-                }
-            } catch (ConsoleUserInputException e) {
-                System.out.println(e.getMessage());
-                break;
-            }
-        } while (true);
-    }
-
-    private void activateWorkspace(Workspace workspace) {
-        System.out.println("Деактивация рабочего пространства");
-    }
-
-    private void editWorkspace(Workspace workspace) {
-        System.out.println("Редактирование рабочего пространства");
-    }
-
-    private void createWorkspace() {
-        System.out.println("Создание рабочего пространства");
-    }
-
-    private void deleteWorkspace(Workspace workspace) {
-        System.out.println("Удаление рабочего пространства");
-    }
-
-    /**
-     * Поиск рабочего пространства по параметрам.
-     */
-    private Workspace findWorkspace() { // возвращать Workspace
-        Menu.cls();
-        Menu.printMenu("findWorkspace");
-
-        do {
-            try {
-                int choice = Menu.chooseMenuItem(6);
-
-                switch (choice) {
-                    case 1: // тип
-                        Menu.cls();
-                        Menu.printMenu("findWorkspaceByType");
-
-                        do {
-                            try {
-                                int selectType = Menu.chooseMenuItem(3);
-
-                                if (selectType == 1) {
-                                    // TODO добавить тип в поиск
-                                }
-                                else if (selectType == 2) {
-                                    // TODO добавить тип в поиск
-                                }
-                                else if (selectType == 3) {
-                                    break;
-                                }
-
-                                // TODO найти и вывести рабочие пространства
-                                System.out.print("Выберите рабочее пространство: ");
-
-                                int selectedWorkspace = Menu.chooseMenuItem(0); // TODO указать количество рабочих пространств
-                                // TODO return Workspace
-
-                            } catch (ConsoleUserInputException e) {
-                                System.out.println(e.getMessage());
-                                break;
-                            }
-                            break;
-                        } while (true);
-                    case 2: // название
-                        Menu.cls();
-                        do {
-                            try {
-                                System.out.print("Название рабочего пространства: ");
-                                String workspaceName = Menu.readString();
-
-                                // TODO найти и вывести рабочие пространства
-
-                                System.out.print("Выберите рабочее пространство: ");
-
-                                int selectedWorkspace = Menu.chooseMenuItem(0); // TODO указать количество рабочих пространств
-                                // TODO return Workspace
-                            } catch (ConsoleUserInputException e) {
-                                System.out.println(e.getMessage());
-                                break;
-                            }
-                        } while (true);
-                        break;
-                    case 3: // вместимость
-                        Menu.cls();
-                        do {
-                            try {
-                                System.out.print("Укажите вместимость: ");
-                                int capacity = Menu.readPositiveInt();
-
-                                // TODO найти и вывести рабочие пространства
-
-                                System.out.print("Выберите рабочее пространство: ");
-
-                                int selectedWorkspace = Menu.chooseMenuItem(0); // TODO указать количество рабочих пространств
-                                // TODO return Workspace
-                            } catch (ConsoleUserInputException e) {
-                                System.out.println(e.getMessage());
-                                break;
-                            }
-                        } while (true);
-                        break;
-                    case 4: // стоимость
-                        Menu.cls();
-                        do {
-                            try {
-                                System.out.print("Укажите часовую стоимость: ");
-                                double hourRate = Menu.readDouble();
-
-                                // TODO найти и вывести рабочие пространства
-
-                                System.out.print("Выберите рабочее пространство: ");
-
-                                int selectedWorkspace = Menu.chooseMenuItem(0); // TODO указать количество рабочих пространств
-                                // TODO return Workspace
-                            } catch (ConsoleUserInputException e) {
-                                System.out.println(e.getMessage());
-                                break;
-                            }
-                        } while (true);
-                        break;
-                    case 5: // статус
-                        Menu.cls();
-                        do {
-                            try {
-                                Menu.printMenu("findWorkspaceByStatus");
-                                int selectedStatus = Menu.chooseMenuItem(3);
-
-                                if (selectedStatus == 1) {
-                                    // TODO указать статус в поиск
-                                }
-                                else if (selectedStatus == 2) {
-                                    // TODO указать статус в поиск
-                                }
-                                else if (selectedStatus == 3) {
-                                    break;
-                                }
-
-                                // TODO найти и вывести рабочие пространства
-
-                                System.out.print("Выберите рабочее пространство: ");
-
-                                int selectedWorkspace = Menu.chooseMenuItem(0); // TODO указать количество рабочих пространств
-                                // TODO return Workspace
-                            } catch (ConsoleUserInputException e) {
-                                System.out.println(e.getMessage());
-                                break;
-                            }
-                        } while (true);
-                        break;
-                    case 6: // назад
-                        // return
-                        break;
-                }
-
-            } catch (ConsoleUserInputException e) {
-                System.out.print(e.getMessage() + "\n\n>");
-            }
-        } while (true);
-    }
-
     private void bookings() {
-        Menu.cls();
-        do {
-            Menu.printMenu("bookings");
+        new BookingController().start();
+    }
 
-            try {
-                int choice = Menu.chooseMenuItem(5);
+    /**
+     * Контроллер меню работы с учётными записями пользователей.
+     */
+    class UsersController {
 
-                switch (choice) {
-                    case 1: // по пользователю
-                        do {
-                            try {
-                                User selectedUser = findUser();
+        public void start() {
+            ConsoleMenu menu = new ConsoleMenu("Управление пользователями");
+            menu.addItem("Посмотреть всех пользователей", this::viewAll);
+            menu.addItem("Заблокировать / разблокировать пользователя", this::edit);
 
-                                // TODO вывод всех броней пользователя
-                            } catch (Exception e) {
-                                System.out.println(e.getMessage());
+            menu.start();
+        }
+
+        /**
+         * Вывод информации о пользователях.
+         */
+        private void viewAll() {
+            System.out.println("Тут будет вывод всех пользователей.");
+        }
+
+        /**
+         * Редактирование пользователя: заблокировать или разблокировать.
+         */
+        private void edit() {
+            System.out.println("Тут будет меню редактирования доступа пользователей к программе.");
+        }
+    }
+
+    /**
+     * Контроллер меню работы с рабочими пространствами.
+     */
+    class WorkspaceController {
+
+        public void start() {
+            ConsoleMenu menu = new ConsoleMenu("Управление рабочими пространствами");
+            menu.addItem("Просмотр всех", this::viwAll);
+            menu.addItem("Просмотр выбранного", this::view);
+            menu.addItem("Редактирование", this::edit);
+            menu.addItem("Скрытие", this::activate);
+            menu.addItem("Создание", this::create);
+            menu.addItem("Удаление", this::delete);
+
+            menu.start();
+        }
+
+        /**
+         * Просмотреть рабочие пространства.
+         */
+        private void viwAll() {
+            System.out.println("Тут будут все рабочие пространства.");
+            //TODO красивый вывод рабочего пространства
+        }
+
+        private void view() {
+            System.out.println("Тут будет выбранное рабочее пространство.");
+        }
+
+        private void activate() {
+            Workspace workspace = findWorkspace();
+            System.out.println("Деактивация рабочего пространства");
+        }
+
+        private void edit() {
+            Workspace workspace = findWorkspace();
+            System.out.println("Редактирование рабочего пространства");
+        }
+
+        private void create() {
+            System.out.println("Создание рабочего пространства");
+        }
+
+        private void delete() {
+            Workspace workspace = findWorkspace();
+            System.out.println("Удаление рабочего пространства");
+        }
+
+        /**
+         * Поиск рабочего пространства по параметрам.
+         */
+        private Workspace findWorkspace() { // возвращать Workspace
+            Menu.cls();
+            Menu.printMenu("findWorkspace");
+
+            do {
+                try {
+                    int choice = Menu.chooseMenuItem(6);
+
+                    switch (choice) {
+                        case 1: // тип
+                            Menu.cls();
+                            Menu.printMenu("findWorkspaceByType");
+
+                            do {
+                                try {
+                                    int selectType = Menu.chooseMenuItem(3);
+
+                                    if (selectType == 1) {
+                                        // TODO добавить тип в поиск
+                                    }
+                                    else if (selectType == 2) {
+                                        // TODO добавить тип в поиск
+                                    }
+                                    else if (selectType == 3) {
+                                        break;
+                                    }
+
+                                    // TODO найти и вывести рабочие пространства
+                                    System.out.print("Выберите рабочее пространство: ");
+
+                                    int selectedWorkspace = Menu.chooseMenuItem(0); // TODO указать количество рабочих пространств
+                                    // TODO return Workspace
+
+                                } catch (ConsoleUserInputException e) {
+                                    System.out.println(e.getMessage());
+                                    break;
+                                }
                                 break;
-                            }
-                        } while (true);
-                        break;
-                    case 2: // по пространству
-                        do {
-                            try {
-                                Workspace selectedWorkspace = findWorkspace();
+                            } while (true);
+                        case 2: // название
+                            Menu.cls();
+                            do {
+                                try {
+                                    System.out.print("Название рабочего пространства: ");
+                                    String workspaceName = Menu.readString();
 
-                                // TODO вывод всех броней рабочего пространства
-                            } catch (Exception e) {
-                                System.out.println(e.getMessage());
-                                break;
-                            }
-                        } while (true);
-                        break;
-                    case 3: // по дате
-                        do {
-                            try {
-                                Date selectedDate = Menu.readDate();
+                                    // TODO найти и вывести рабочие пространства
 
-                                // TODO вывод всех броней по времени
-                            } catch (Exception e) {
-                                System.out.println(e.getMessage());
-                                break;
-                            }
-                        } while (true);
-                        break;
-                    case 4: // по статусу
-                        do {
-                            try {
-                                BookingStatus selectedBookingStatus = selectBookingStatus();
-                            } catch (ConsoleUserInputException e) {
-                                break;
-                            }
-                        } while (true);
-                        break;
-                    case 5: // назад
-                        return;
+                                    System.out.print("Выберите рабочее пространство: ");
+
+                                    int selectedWorkspace = Menu.chooseMenuItem(0); // TODO указать количество рабочих пространств
+                                    // TODO return Workspace
+                                } catch (ConsoleUserInputException e) {
+                                    System.out.println(e.getMessage());
+                                    break;
+                                }
+                            } while (true);
+                            break;
+                        case 3: // вместимость
+                            Menu.cls();
+                            do {
+                                try {
+                                    System.out.print("Укажите вместимость: ");
+                                    int capacity = Menu.readPositiveInt();
+
+                                    // TODO найти и вывести рабочие пространства
+
+                                    System.out.print("Выберите рабочее пространство: ");
+
+                                    int selectedWorkspace = Menu.chooseMenuItem(0); // TODO указать количество рабочих пространств
+                                    // TODO return Workspace
+                                } catch (ConsoleUserInputException e) {
+                                    System.out.println(e.getMessage());
+                                    break;
+                                }
+                            } while (true);
+                            break;
+                        case 4: // стоимость
+                            Menu.cls();
+                            do {
+                                try {
+                                    System.out.print("Укажите часовую стоимость: ");
+                                    double hourRate = Menu.readDouble();
+
+                                    // TODO найти и вывести рабочие пространства
+
+                                    System.out.print("Выберите рабочее пространство: ");
+
+                                    int selectedWorkspace = Menu.chooseMenuItem(0); // TODO указать количество рабочих пространств
+                                    // TODO return Workspace
+                                } catch (ConsoleUserInputException e) {
+                                    System.out.println(e.getMessage());
+                                    break;
+                                }
+                            } while (true);
+                            break;
+                        case 5: // статус
+                            Menu.cls();
+                            do {
+                                try {
+                                    Menu.printMenu("findWorkspaceByStatus");
+                                    int selectedStatus = Menu.chooseMenuItem(3);
+
+                                    if (selectedStatus == 1) {
+                                        // TODO указать статус в поиск
+                                    }
+                                    else if (selectedStatus == 2) {
+                                        // TODO указать статус в поиск
+                                    }
+                                    else if (selectedStatus == 3) {
+                                        break;
+                                    }
+
+                                    // TODO найти и вывести рабочие пространства
+
+                                    System.out.print("Выберите рабочее пространство: ");
+
+                                    int selectedWorkspace = Menu.chooseMenuItem(0); // TODO указать количество рабочих пространств
+                                    // TODO return Workspace
+                                } catch (ConsoleUserInputException e) {
+                                    System.out.println(e.getMessage());
+                                    break;
+                                }
+                            } while (true);
+                            break;
+                        case 6: // назад
+                            // return
+                            break;
+                    }
+
+                } catch (ConsoleUserInputException e) {
+                    System.out.print(e.getMessage() + "\n\n>");
                 }
-
-            } catch (ConsoleUserInputException e) {
-                System.out.println(e.getMessage());
-                break;
-            }
-        } while (true);
+            } while (true);
+        }
     }
 
-    private BookingStatus selectBookingStatus() throws ConsoleUserInputException {
-        Menu.cls();
-        do {
+    /**
+     * Контроллер меню работы с бронями.
+     */
+    class BookingController {
 
-        } while (true);
+        public void start() {
+            ConsoleMenu menu = new ConsoleMenu("Просмотр броней с фильтрацией.");
+            menu.addItem("Без фильтра", this::viwAll);
+            menu.addItem("По пользователю", this::viewByUser);
+            menu.addItem("По рабочему пространству", this::viewByWorkspace);
+            menu.addItem("По дате", this::viewByDate);
+            menu.addItem("По статусу", this::viewByStatus);
+            menu.start();
+        }
+
+        /**
+         * Посмотреть все брони.
+         */
+        private void viwAll() {
+            System.out.println("Все брони");
+        }
+
+        /**
+         * Посмотреть брони с фильтром по пользователю.
+         */
+        private void viewByUser() {
+            System.out.println("Фильтр по пользователю");
+        }
+
+        /**
+         * Посмотреть брони с фильтром по рабочему пространству.
+         */
+        private void viewByWorkspace() {
+            System.out.println("Фильтр по рабочему пространству");
+        }
+
+        /**
+         * Посмотреть брони с фильртом по дате.
+         */
+        private void viewByDate() {
+            System.out.println("Фильтр по дате");
+        }
+
+        /**
+         * Посмотреть брони с фильтром по статусу.
+         */
+        private void viewByStatus() {
+            System.out.println("Фильтр по статусу");
+        }
+
+        /**
+         * Вывод списка броней в консоль.
+         * @param bookings список броней
+         */
+        private void view(ArrayList<Booking> bookings) {
+
+        }
+
+        /**
+         * Выбрать статус брони из списка.
+         * @return выбранный статус
+         * @throws ConsoleUserInputException в случае ошибки ввода.
+         */
+        private BookingStatus selectBookingStatus() throws ConsoleUserInputException {
+            Menu.cls();
+            do {
+
+            } while (true);
+        }
     }
-
 }
