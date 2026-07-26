@@ -3,11 +3,10 @@ package com.ddnik.controller;
 import com.ddnik.AuthorizedUser;
 import com.ddnik.Menu;
 import com.ddnik.Service;
-import com.ddnik.entity.User;
+import com.ddnik.entity.Users;
 import com.ddnik.enums.UserRole;
 
 import java.sql.SQLException;
-import java.sql.Date;
 import java.util.Scanner;
 
 public class AuthController {
@@ -15,7 +14,7 @@ public class AuthController {
     public static AuthorizedUser auth() throws Exception {
         Service service = new Service();
         Scanner scanner = new Scanner(System.in);
-        User user;
+        Users user;
         Menu.cls();
 
         do {

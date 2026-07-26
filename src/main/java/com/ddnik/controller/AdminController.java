@@ -2,9 +2,9 @@ package com.ddnik.controller;
 
 import com.ddnik.AuthorizedUser;
 import com.ddnik.Menu;
-import com.ddnik.entity.Booking;
-import com.ddnik.entity.BookingStatus;
-import com.ddnik.entity.User;
+import com.ddnik.entity.Bookings;
+import com.ddnik.entity.BookingStatuses;
+import com.ddnik.entity.Users;
 import com.ddnik.entity.Workspace;
 import com.ddnik.exceptions.ConsoleUserInputException;
 
@@ -38,7 +38,7 @@ public class AdminController {
      * Поиск пользователя по данным учётной записи.
      * @return модель данных пользователя
      */
-    private User findUser() throws Exception {
+    private Users findUser() throws Exception {
         Menu.cls();
         Scanner sc = new Scanner(System.in);
 
@@ -407,7 +407,7 @@ public class AdminController {
          * Вывод списка броней в консоль.
          * @param bookings список броней
          */
-        private void view(ArrayList<Booking> bookings) {
+        private void view(ArrayList<Bookings> bookings) {
 
         }
 
@@ -416,7 +416,7 @@ public class AdminController {
          * @return выбранный статус
          * @throws ConsoleUserInputException в случае ошибки ввода.
          */
-        private BookingStatus selectBookingStatus() throws ConsoleUserInputException {
+        private BookingStatuses selectBookingStatus() throws ConsoleUserInputException {
             Menu.cls();
             do {
 
