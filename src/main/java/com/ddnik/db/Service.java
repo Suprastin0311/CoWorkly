@@ -1,11 +1,10 @@
 package com.ddnik.db;
 
+import com.ddnik.PasswordHasher;
+import com.ddnik.db.dto.UsersDto;
 import com.ddnik.db.dto.WorkspaceDto;
 import com.ddnik.db.entity.Users;
 
-import java.math.BigInteger;
-import java.sql.Date;
-import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class Service implements IService {
@@ -16,26 +15,62 @@ public class Service implements IService {
         repo = new Repository();
     }
 
-    public Users findUserByEmail(String email, String password) throws SQLException {
-        // Заглушка пока не подключена БД
-        if (email.equals("suprastin") && password.equals("123")) {
-            return new Users(1L, "dd.nikolaenko@gmail.com", "Николаенко Дмитрий Денисович", new BigInteger("1"), false, new Date(2026, 7, 18));
+    /**
+     * Получает данные пользователя по email
+     * @param email email пользователя
+     * @return данные пользователя
+     * @throws Exception в случае возникновения ошибки
+     */
+    public UsersDto getUserByEmail(String email) throws Exception {
+        if (email == null || email.isEmpty()) {
+            throw new Exception("Email равен null или пустой.");
         }
-        if (email == "just_user" && password == "123") {
-            return new Users(2L, "dd.nikolaenko@gmail.com", "Тестовый Пользователь", new BigInteger("2"), false, new Date(2026, 7, 18));
-        }
-        else throw new SQLException("Некорректные данные пользователя");
-    }
 
-    public ArrayList<WorkspaceDto> getWorkspacesById(int id) throws SQLException {
         try {
-            return repo.getWorkspacesById(id);
-        } catch (SQLException e) {
+            return repo.getUserByEmail(email);
+        } catch (Exception e) {
             throw e;
         }
     }
 
-    public boolean createUser(Users) throws Exception {
+    /**
+     * Получает данные рабочего пространства по id
+     * @param id код рабочего пространства
+     * @return рабочее пространства
+     * @throws Exception в случае возникновения ошибки базы данных
+     */
+    public ArrayList<WorkspaceDto> getWorkspacesById(int id) throws Exception {
+        try {
+            return repo.getWorkspacesById(id);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
 
+    /**
+     * Добавить нового пользователя в БД
+     * @param newUser новый пользователь
+     * @return id созданного пользователя
+     * @throws Exception в случае возникновения ошибки базы данных
+     */
+    public long createUser(Users newUser) throws Exception {
+        String hashedPassword = PasswordHasher.hashPassword(newUser.getPassword());
+
+        // Подготовленная запись с данными пользователя к сохранению в БД
+        Users preparedUsersEntity = new Users(
+                newUser.getId(),
+                newUser.getEmail(),
+                hashedPassword,
+                newUser.getFullName(),
+                newUser.getRole(),
+                newUser.isBlocked(),
+                newUser.getCreatedAt()
+        );
+
+        try {
+            return repo.insertUser(preparedUsersEntity);
+        } catch (Exception e) {
+            throw e;
+        }
     }
 }

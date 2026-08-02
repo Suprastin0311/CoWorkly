@@ -14,30 +14,24 @@ public class MainController {
         menu.start();
     }
 
-    private void login() throws ConsoleUserInputException {
+    private void login() {
         try {
-            AuthController authController = new AuthController();
-            AuthorizedUser user = authController.auth();
+            AuthorizedUser user = AuthController.auth();
 
-            if (user != null) {
-                switch (user.getRole()) {
-                    case UserRole.NoAuth -> {
-                        System.out.println("Не удалось авторизоваться.");
-                        return;
-                    }
-                    case UserRole.Admin -> {
-                        AdminController ac = new AdminController(user);
-                        ac.start();
-                    }
-                    case UserRole.User -> {
-                        UserController uc = new UserController(user);
-                        uc.start();
-                    }
+            switch (user.getRole()) {
+                case UserRole.NoAuth -> {
+                    System.out.println("Не удалось авторизоваться.");
+                }
+                case UserRole.Admin -> {
+                    AdminController ac = new AdminController(user);
+                    ac.start();
+                }
+                case UserRole.User -> {
+                    UserController uc = new UserController(user);
+                    uc.start();
                 }
             }
-            else {
-                return;
-            }
+
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

@@ -2,7 +2,9 @@ package com.ddnik.controller;
 
 import com.ddnik.AuthorizedUser;
 import com.ddnik.Menu;
+import com.ddnik.PasswordHasher;
 import com.ddnik.db.Service;
+import com.ddnik.db.dto.UsersDto;
 import com.ddnik.db.entity.Users;
 import com.ddnik.enums.UserRole;
 
@@ -14,33 +16,33 @@ public class AuthController {
     public static AuthorizedUser auth() throws Exception {
         Service service = new Service();
         Scanner scanner = new Scanner(System.in);
-        Users user;
+        UsersDto user;
         Menu.cls();
 
         do {
             try {
                 System.out.print("Email: ");
                 String email = scanner.next().trim();
+                user = service.getUserByEmail(email);
+
                 System.out.print("Password: ");
                 String password = scanner.next().trim();
-                user = service.findUserByEmail(email, password);
-                if (user != null) {
-                    if (user.getRole().equals("admin")) {
-                        //TODO получить пользователя
-                        return new AuthorizedUser("dd.nikolaenko@gmail.com", UserRole.Admin, false);
+
+                if (PasswordHasher.checkPassword(password, user.passwordHash())) {
+                    if (user.role().equals("Admin")) {
+                        return new AuthorizedUser(user.email(), user.fullName(), UserRole.Admin, user.isBlocked());
                     }
-                    else if (user.getRole().equals("user")) {
-                        //TODO получить пользователя
-                        return new AuthorizedUser("dd.nikolaenko@yandex.ru", UserRole.User, false);
+                    else if (user.role().equals("User")) {
+                        return new AuthorizedUser(user.email(), user.fullName(), UserRole.User,user.isBlocked());
                     }
                 }
                 else {
-                    throw new Exception("Пользователь не найден.");
+                    System.out.println("Неверный пароль.");
                 }
-                scanner.close();
-
             } catch (SQLException e) {
-                throw new  Exception(e.getLocalizedMessage(), e);
+                throw new Exception(e.getLocalizedMessage(), e);
+            } catch (Exception e) {
+                throw e;
             }
         } while (true);
     }

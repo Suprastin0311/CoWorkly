@@ -7,22 +7,32 @@ import com.ddnik.enums.UserRole;
  */
 public class AuthorizedUser {
 
-    private String username;
+    private String email;
+    private String fullName;
     private UserRole role;
     private boolean isBlocked;
 
-    public AuthorizedUser(String username, UserRole role, boolean isBlocked) {
-        this.username = username;
+    public AuthorizedUser(String email, String fullName, UserRole role, boolean isBlocked) {
+        this.email = email;
+        this.fullName = fullName;
         this.role = role;
         this.isBlocked = isBlocked;
     }
 
-    public String getUsername() {
-        return username;
+    public String getEmail() {
+        return email;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     public UserRole getRole() {

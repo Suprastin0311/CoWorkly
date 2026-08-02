@@ -194,7 +194,7 @@ public class AdminController {
             System.out.println("Тут будут все рабочие пространства.");
             try {
                 ArrayList<WorkspaceDto> workspaces = service.getWorkspacesById(1);
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
         }
