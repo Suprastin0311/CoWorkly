@@ -1,4 +1,4 @@
-package com.ddnik.entity;
+package com.ddnik.db.entity;
 
 import java.math.BigInteger;
 import java.sql.Date;

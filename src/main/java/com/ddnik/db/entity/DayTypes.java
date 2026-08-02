@@ -1,10 +1,10 @@
-package com.ddnik.entity;
+package com.ddnik.db.entity;
 
-public class UserRoles {
+public class DayTypes {
     private final Long id;
     private final String name;
 
-    public UserRoles(Long id, String name) {
+    public DayTypes(Long id, String name) {
         this.id = id;
         this.name = name;
     }

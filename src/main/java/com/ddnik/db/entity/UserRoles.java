@@ -1,11 +1,10 @@
-package com.ddnik.entity;
+package com.ddnik.db.entity;
 
-public class BookingStatuses {
-
+public class UserRoles {
     private final Long id;
     private final String name;
 
-    public BookingStatuses(Long id, String name) {
+    public UserRoles(Long id, String name) {
         this.id = id;
         this.name = name;
     }

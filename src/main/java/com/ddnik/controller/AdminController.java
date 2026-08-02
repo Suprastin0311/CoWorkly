@@ -2,12 +2,15 @@ package com.ddnik.controller;
 
 import com.ddnik.AuthorizedUser;
 import com.ddnik.Menu;
-import com.ddnik.entity.Bookings;
-import com.ddnik.entity.BookingStatuses;
-import com.ddnik.entity.Users;
-import com.ddnik.entity.Workspace;
+import com.ddnik.db.Service;
+import com.ddnik.db.dto.WorkspaceDto;
+import com.ddnik.db.entity.Bookings;
+import com.ddnik.db.entity.BookingStatuses;
+import com.ddnik.db.entity.Users;
+import com.ddnik.db.entity.Workspaces;
 import com.ddnik.exceptions.ConsoleUserInputException;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -20,8 +23,10 @@ public class AdminController {
      * Данные авторизованного пользователя
      */
     private final AuthorizedUser admin;
+    private final Service service;
 
     public AdminController(AuthorizedUser admin) {
+        this.service = new Service();
         this.admin = admin;
     }
 
@@ -187,7 +192,11 @@ public class AdminController {
          */
         private void viwAll() {
             System.out.println("Тут будут все рабочие пространства.");
-            //TODO красивый вывод рабочего пространства
+            try {
+                ArrayList<WorkspaceDto> workspaces = service.getWorkspacesById(1);
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
         }
 
         private void view() {
@@ -195,12 +204,12 @@ public class AdminController {
         }
 
         private void activate() {
-            Workspace workspace = findWorkspace();
+            Workspaces workspace = findWorkspace();
             System.out.println("Деактивация рабочего пространства");
         }
 
         private void edit() {
-            Workspace workspace = findWorkspace();
+            Workspaces workspace = findWorkspace();
             System.out.println("Редактирование рабочего пространства");
         }
 
@@ -209,14 +218,14 @@ public class AdminController {
         }
 
         private void delete() {
-            Workspace workspace = findWorkspace();
+            Workspaces workspace = findWorkspace();
             System.out.println("Удаление рабочего пространства");
         }
 
         /**
          * Поиск рабочего пространства по параметрам.
          */
-        private Workspace findWorkspace() { // возвращать Workspace
+        private Workspaces findWorkspace() {
             Menu.cls();
             Menu.printMenu("findWorkspace");
 

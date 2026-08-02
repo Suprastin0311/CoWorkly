@@ -1,14 +1,17 @@
-package com.ddnik;
+package com.ddnik.db;
 
-import com.ddnik.entity.Users;
+import com.ddnik.db.dto.WorkspaceDto;
+import com.ddnik.db.entity.Users;
 
 import java.math.BigInteger;
 import java.sql.Date;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
-public class Service {
+public class Service implements IService {
 
-    private Repository repo;
+    private IRepository repo;
+
     public Service() {
         repo = new Repository();
     }
@@ -24,4 +27,15 @@ public class Service {
         else throw new SQLException("Некорректные данные пользователя");
     }
 
+    public ArrayList<WorkspaceDto> getWorkspacesById(int id) throws SQLException {
+        try {
+            return repo.getWorkspacesById(id);
+        } catch (SQLException e) {
+            throw e;
+        }
+    }
+
+    public boolean createUser(Users) throws Exception {
+
+    }
 }

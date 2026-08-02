@@ -1,6 +1,6 @@
-package com.ddnik.entity;
+package com.ddnik.db.entity;
 
-public class Workspace {
+public class Workspaces {
     private final Long id;
     private final String type;
     private final String name;
@@ -8,7 +8,7 @@ public class Workspace {
     private final float hourly_rate;
     private final boolean is_active;
 
-    public Workspace(Long id, String type, String name, int capacity, float hourly_rate, boolean is_active) {
+    public Workspaces(Long id, String type, String name, int capacity, float hourly_rate, boolean is_active) {
         this.id = id;
         this.type = type;
         this.name = name;
@@ -17,7 +17,7 @@ public class Workspace {
         this.is_active = is_active;
     }
 
-    public Workspace(boolean is_active, float hourly_rate, int capacity, String name, String type) {
+    public Workspaces(boolean is_active, float hourly_rate, int capacity, String name, String type) {
         this.id = null;
         this.is_active = is_active;
         this.hourly_rate = hourly_rate;

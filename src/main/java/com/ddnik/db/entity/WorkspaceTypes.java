@@ -1,4 +1,4 @@
-package com.ddnik.entity;
+package com.ddnik.db.entity;
 
 public class WorkspaceTypes {
     private final Long id;

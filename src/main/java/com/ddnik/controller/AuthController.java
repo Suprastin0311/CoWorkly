@@ -2,8 +2,8 @@ package com.ddnik.controller;
 
 import com.ddnik.AuthorizedUser;
 import com.ddnik.Menu;
-import com.ddnik.Service;
-import com.ddnik.entity.Users;
+import com.ddnik.db.Service;
+import com.ddnik.db.entity.Users;
 import com.ddnik.enums.UserRole;
 
 import java.sql.SQLException;
