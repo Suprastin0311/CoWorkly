@@ -10,13 +10,9 @@ import java.util.ArrayList;
 public class Repository implements IRepository {
 
     public ArrayList<WorkspaceDto> getWorkspacesById(int id) throws Exception {
-        String url = "jdbc:postgresql://localhost:5432/CoWorkly_Test";
-        String username = "postgres";
-        String password = "12348765";
-
         String sql = "SELECT * FROM get_workspaces_by_id(?)";
 
-        try (Connection conn = DriverManager.getConnection(url, username, password);
+        try (Connection conn = DataSource.getConnection();
              PreparedStatement st = conn.prepareStatement(sql);) {
             st.setQueryTimeout(10);
             st.setInt(1, id);
@@ -47,13 +43,9 @@ public class Repository implements IRepository {
     }
 
     public long insertUser(Users user) throws Exception {
-        String url = "jdbc:postgresql://localhost:5432/CoWorkly_Test";
-        String username = "postgres";
-        String password = "12348765";
-
         String sql = "{call insert_user(?, ?, ?, ?, ?, ?)}";
 
-        try (Connection conn = DriverManager.getConnection(url, username, password);
+        try (Connection conn = DataSource.getConnection();
             CallableStatement cs = conn.prepareCall(sql);) {
             cs.setQueryTimeout(10);
             // Указываем параметры
@@ -80,13 +72,9 @@ public class Repository implements IRepository {
     }
 
     public UsersDto getUserByEmail(String email) throws Exception {
-        String url = "jdbc:postgresql://localhost:5432/CoWorkly_Test";
-        String username = "postgres";
-        String password = "12348765";
-
         String sql = "SELECT * FROM get_user_by_email(?)";
 
-        try (Connection conn = DriverManager.getConnection(url, username, password);
+        try (Connection conn = DataSource.getConnection();
             PreparedStatement st = conn.prepareStatement(sql);) {
             st.setQueryTimeout(10);
             st.setString(1, email);
