@@ -57,6 +57,7 @@ public class RegistrationController {
                 }
             } catch (ConsoleUserInputException e) {
                 System.out.println(e.getMessage());
+                logger.error("Ошибка консольного ввода.", e);
             }
         } while (!nextStep);
 
@@ -78,6 +79,7 @@ public class RegistrationController {
                 }
             } catch (ConsoleUserInputException e) {
                 System.out.println(e.getMessage());
+                logger.error("Ошибка консольного ввода.", e);
             }
         } while (!nextStep);
 
@@ -100,7 +102,7 @@ public class RegistrationController {
             logger.info("Создан новый пользователь: email - {}, fullName - {}", email, fullName);
             return true;
         } catch (SQLException e) {
-            logger.info("Ошибка создания пользователя", e);
+            logger.error("Ошибка создания пользователя", e);
             return false;
         }
     }

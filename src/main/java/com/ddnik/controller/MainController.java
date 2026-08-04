@@ -5,6 +5,8 @@ import com.ddnik.enums.UserRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.SQLException;
+
 public class MainController {
 
     private static final Logger logger = LoggerFactory.getLogger(MainController.class);
@@ -36,8 +38,9 @@ public class MainController {
                 }
             }
 
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+        } catch (SQLException e) {
+            System.out.println("Возникла ошибка c базой данных.");
+            logger.error("Ошибка базы данных", e);
         }
     }
 
