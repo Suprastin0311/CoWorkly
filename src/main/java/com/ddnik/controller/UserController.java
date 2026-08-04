@@ -3,6 +3,8 @@ package com.ddnik.controller;
 import com.ddnik.AuthorizedUser;
 import com.ddnik.Main;
 import com.ddnik.Menu;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 
@@ -11,6 +13,7 @@ import java.util.Date;
  */
 public class UserController {
 
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private AuthorizedUser user;
 
     public UserController(AuthorizedUser user) {
@@ -24,6 +27,7 @@ public class UserController {
         menu.addItem("Просмотреть свои брони", this::viewBookings);
         menu.addItem("Выгрузить список броней в файл", this::report);
 
+        logger.info("пользователь перешёл в меню.");
         menu.start();
     }
 

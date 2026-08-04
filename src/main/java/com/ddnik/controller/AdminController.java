@@ -9,6 +9,8 @@ import com.ddnik.db.entity.BookingStatuses;
 import com.ddnik.db.entity.Users;
 import com.ddnik.db.entity.Workspaces;
 import com.ddnik.exceptions.ConsoleUserInputException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -19,6 +21,7 @@ import java.util.Scanner;
  */
 public class AdminController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
     /**
      * Данные авторизованного пользователя
      */
@@ -36,6 +39,7 @@ public class AdminController {
         menu.addItem("Рабочие пространства", this::workspaces);
         menu.addItem("Брони", this::bookings);
 
+        logger.info("Администратор перешёл в меню.");
         menu.start();
     }
 
@@ -152,6 +156,7 @@ public class AdminController {
             menu.addItem("Посмотреть всех пользователей", this::viewAll);
             menu.addItem("Заблокировать / разблокировать пользователя", this::edit);
 
+            logger.info("Администратор перешёл в меню управления пользователями.");
             menu.start();
         }
 
@@ -184,6 +189,7 @@ public class AdminController {
             menu.addItem("Создание", this::create);
             menu.addItem("Удаление", this::delete);
 
+            logger.info("Администратор перешёл в меню управления рабочими пространствами.");
             menu.start();
         }
 
@@ -193,7 +199,7 @@ public class AdminController {
         private void viwAll() {
             System.out.println("Тут будут все рабочие пространства.");
             try {
-                ArrayList<WorkspaceDto> workspaces = service.getWorkspacesById(1);
+                //TODO вывод рабочих пространств
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
@@ -374,6 +380,8 @@ public class AdminController {
             menu.addItem("По рабочему пространству", this::viewByWorkspace);
             menu.addItem("По дате", this::viewByDate);
             menu.addItem("По статусу", this::viewByStatus);
+
+            logger.info("Администратор перешёл в меню управления бронированием.");
             menu.start();
         }
 

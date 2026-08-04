@@ -2,15 +2,19 @@ package com.ddnik.controller;
 
 import com.ddnik.AuthorizedUser;
 import com.ddnik.enums.UserRole;
-import com.ddnik.exceptions.ConsoleUserInputException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MainController {
+
+    private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 
     public void start() {
         ConsoleMenu menu = new ConsoleMenu("Добро пожаловать в CoWorkly!");
         menu.addItem("Войти", this::login);
         menu.addItem("Зарегистрироваться", this::registration);
 
+        logger.info("Пользователь перешёл в главное меню.");
         menu.start();
     }
 
