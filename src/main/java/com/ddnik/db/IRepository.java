@@ -4,14 +4,16 @@ import com.ddnik.db.dto.UsersDto;
 import com.ddnik.db.dto.WorkspaceDto;
 import com.ddnik.db.entity.Users;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Optional;
 
 public interface IRepository {
 
-    ArrayList<WorkspaceDto> getWorkspacesById(int id) throws Exception;
+    Optional<WorkspaceDto> getWorkspacesById(int id) throws SQLException;
 
-    long insertUser(Users user) throws Exception;
+    Optional<Long> insertUser(Users user) throws SQLException;
 
-    UsersDto getUserByEmail(String email) throws Exception;
+    Optional<UsersDto> getUserByEmail(String email) throws SQLException;
 
 }

@@ -3,52 +3,55 @@ package com.ddnik.db;
 import com.ddnik.db.dto.UsersDto;
 import com.ddnik.db.dto.WorkspaceDto;
 import com.ddnik.db.entity.Users;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
-import java.util.ArrayList;
+import java.util.Optional;
 
 public class Repository implements IRepository {
 
-    public ArrayList<WorkspaceDto> getWorkspacesById(int id) throws Exception {
+    private static final Logger logger = LoggerFactory.getLogger(Repository.class);
+
+    public Optional<WorkspaceDto> getWorkspacesById(int id) throws SQLException {
         String sql = "SELECT * FROM get_workspaces_by_id(?)";
 
         try (Connection conn = DataSource.getConnection();
              PreparedStatement st = conn.prepareStatement(sql);) {
-            st.setQueryTimeout(10);
             st.setInt(1, id);
 
-            if (st.execute()) {
-                System.out.println("Stored procedure executed successfully");
-                ResultSet rs = st.getResultSet();
-
-                ArrayList<WorkspaceDto> result = new ArrayList<>();
-                while (rs.next()) {
-                    result.add(new WorkspaceDto(
+            try (ResultSet rs = st.executeQuery()) {
+                if (rs.next()) {
+                    Optional<WorkspaceDto> result = Optional.of(new WorkspaceDto(
                             rs.getString("type"),
                             rs.getString("name"),
                             rs.getInt("capacity"),
                             rs.getBigDecimal("hourly_rate"),
                             rs.getString("status")));
+                    logger.debug("Из БД извлечена 1 запись из таблицы workspaces по id {}", id);
+                    return result;
                 }
-                return result;
-            }
-            else {
-                throw new Exception("Запрос возвратил пустую таблицу.");
+                else {
+                    logger.debug("Из БД извлечено 0 записей");
+                    return Optional.empty();
+                }
+            } catch (Exception e) {
+                throw e;
             }
         } catch (SQLTimeoutException e) {
-            throw new SQLException("Время выполнения запроса превысило 10 секунд и запрос был прерван.", e);
+            throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
         } catch (SQLException e) {
             throw e;
         }
     }
 
-    public long insertUser(Users user) throws Exception {
+    public Optional<Long> insertUser(Users user) throws SQLException {
         String sql = "{call insert_user(?, ?, ?, ?, ?, ?)}";
 
         try (Connection conn = DataSource.getConnection();
             CallableStatement cs = conn.prepareCall(sql);) {
-            cs.setQueryTimeout(10);
-            // Указываем параметры
+
+            // Вводим параметры
             cs.setString(1, user.getEmail());
             cs.setString(2, user.getPassword());
             cs.setString(3, user.getFullName());
@@ -56,34 +59,33 @@ public class Repository implements IRepository {
             cs.setBoolean(5, user.isBlocked());
             cs.setTimestamp(6, new Timestamp(user.getCreatedAt().getTime()));
 
-            if(cs.execute()) {
-                System.out.println("Stored procedure executed successfully");
-                ResultSet rs = cs.getResultSet();
-                return rs.getLong("new_user_id");
+            if(cs.execute()) { // выполняем функцию
+                ResultSet rs = cs.getResultSet(); // получаем результат
+                Optional<Long> newRecordID = Optional.of(rs.getLong(1));
+                logger.debug("Создана новая запись в таблице users, id - {}", newRecordID);
+                return newRecordID; // возвращаем id новой записи
             }
             else {
-                throw new Exception("Функция не вернула id нового пользователя.");
+                logger.debug("Из БД извлечено 0 записей");
+                return Optional.empty(); // если execute() не выполнился
             }
         } catch (SQLTimeoutException e) {
-            throw new SQLException("Время выполнения запроса превысило 10 секунд и запрос был прерван.", e);
+            throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
         } catch (SQLException e) {
             throw e;
         }
     }
 
-    public UsersDto getUserByEmail(String email) throws Exception {
+    public Optional<UsersDto> getUserByEmail(String email) throws SQLException {
         String sql = "SELECT * FROM get_user_by_email(?)";
 
         try (Connection conn = DataSource.getConnection();
             PreparedStatement st = conn.prepareStatement(sql);) {
-            st.setQueryTimeout(10);
+            
             st.setString(1, email);
 
-            if (st.execute()) {
-                System.out.println("Stored procedure executed successfully");
-                ResultSet rs = st.getResultSet();
-
-                if(rs.next()) {
+            try (ResultSet rs = st.executeQuery()) {
+                if (rs.next()) { // выбираем первую запись
                     UsersDto user = new UsersDto(
                             rs.getLong("id"),
                             rs.getString("email"),
@@ -93,18 +95,16 @@ public class Repository implements IRepository {
                             rs.getBoolean("is_blocked"),
                             new Date(rs.getTimestamp("created_at").getTime())
                     );
-
-                    return user;
+                    logger.debug("Из БД извлечена 1 запись из таблицы users по email {}", user.email());
+                    return Optional.of(user);
                 }
                 else {
-                    throw new Exception("Пользователь не найден.");
+                    logger.debug("Из БД извлечено 0 записей");
+                    return Optional.empty(); // если запрос не вернул результат
                 }
+            } catch (SQLTimeoutException e) {
+                throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
             }
-            else {
-                throw new Exception("Запрос возвратил пустую таблицу.");
-            }
-        } catch (SQLTimeoutException e) {
-            throw new SQLException("Время выполнения запроса превысило 10 секунд и запрос был прерван.", e);
         } catch (SQLException e) {
             throw e;
         }
