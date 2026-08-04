@@ -1,0 +1,30 @@
+<configuration>
+    <appender name="FILE-debug" class="ch.qos.logback.core.FileAppender">
+        <file>CoWorkly_Debug.log</file>
+        <append>true</append>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE-compile" class="ch.qos.logback.core.FileAppender">
+        <file>CoWorkly.log</file>
+        <append>true</append>
+        <encoder>
+            <pattern>%d{HH:mm:SS.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="com.ddnik" level="DEBUG" />
+
+    <!-- Оставить только важное от HikariCP -->
+    <logger name="com.zaxxer.hikari" level="INFO" />
+
+    <!-- <logger name="com.ddnik.tests" level="WARN" -->
+    <root level="INFO">
+        <appender-ref ref="FILE-debug" />
+
+<!--        Для релиза заменить на-->
+<!--        <appender-ref ref="FILE-compile"/>-->
+    </root>
+</configuration>
