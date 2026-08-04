@@ -20,61 +20,6 @@ public class Service implements IService {
         repo = new Repository();
     }
 
-    /**
-     * Получает данные пользователя по email
-     *
-     * @param email email пользователя
-     * @return данные пользователя
-     * @throws Exception в случае возникновения ошибки
-     */
-    public Optional<UsersDto> getUserByEmail(String email) throws SQLException {
-        if (email == null || email.isEmpty()) {
-            throw new IllegalArgumentException("Email равен null или пустой.");
-        }
-
-        try {
-            Optional<UsersDto> user = repo.getUserByEmail(email);
-            if (user.isPresent()) {
-                logger.debug("Получены данные пользователя по email: {}", email);
-                return user;
-            }
-            else {
-                logger.debug("Пользователь по email {} не найден", email);
-                return Optional.empty();
-            }
-        } catch (SQLException e) {
-            throw e;
-        }
-    }
-
-    /**
-     * Получает данные рабочего пространства по id
-     * @param id код рабочего пространства
-     * @return рабочее пространства
-     * @throws Exception в случае возникновения ошибки базы данных
-     */
-    public Optional<WorkspaceDto> getWorkspacesById(int id) throws SQLException {
-        try {
-            Optional<WorkspaceDto> workspace = repo.getWorkspacesById(id);
-            if (workspace.isPresent()) {
-                logger.debug("Получено рабочее пространство по id {}", id);
-                return workspace;
-            }
-            else {
-                logger.debug("Не найдено рабочее пространство с id {}", id);
-                return Optional.empty();
-            }
-        } catch (SQLException e) {
-            throw e;
-        }
-    }
-
-    /**
-     * Добавить нового пользователя в БД
-     * @param newUser новый пользователь
-     * @return id созданного пользователя
-     * @throws SQLException в случае возникновения ошибки базы данных
-     */
     public Optional<Long> createUser(Users newUser) throws SQLException {
         String hashedPassword = PasswordHasher.hashPassword(newUser.getPassword());
 
@@ -102,5 +47,49 @@ public class Service implements IService {
         } catch (SQLException e) {
             throw e;
         }
+    }
+
+    public Optional<UsersDto> getUserByEmail(String email) throws SQLException {
+        if (email == null || email.isEmpty()) {
+            throw new IllegalArgumentException("Email равен null или пустой.");
+        }
+
+        try {
+            Optional<UsersDto> user = repo.getUserByEmail(email);
+            if (user.isPresent()) {
+                logger.debug("Получены данные пользователя по email: {}", email);
+                return user;
+            }
+            else {
+                logger.debug("Пользователь по email {} не найден", email);
+                return Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw e;
+        }
+    }
+
+    public Optional<WorkspaceDto> getWorkspacesById(int id) throws SQLException {
+        try {
+            Optional<WorkspaceDto> workspace = repo.getWorkspacesById(id);
+            if (workspace.isPresent()) {
+                logger.debug("Получено рабочее пространство по id {}", id);
+                return workspace;
+            }
+            else {
+                logger.debug("Не найдено рабочее пространство с id {}", id);
+                return Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw e;
+        }
+    }
+
+    public ArrayList<WorkspaceDto> getWorkspaceByCapacity(int capacity) throws SQLException {
+        try {
+            ArrayList<WorkspaceDto> workspaces = repo.getWorkspacesByCapacity(capacity);
+            logger.debug("Получено {} рабочих пространств с вместимостью {}", workspaces.size(), capacity);
+            return workspaces;
+        } catch ()
     }
 }
