@@ -1,16 +1,16 @@
 package com.ddnik.controller;
 
-import com.ddnik.AuthorizedUser;
 import com.ddnik.Menu;
 import com.ddnik.db.Service;
 import com.ddnik.db.dto.UsersDto;
 import com.ddnik.db.entity.Users;
-import com.ddnik.enums.UserRole;
 import com.ddnik.exceptions.ConsoleUserInputException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Date;
+import java.sql.SQLException;
+import java.sql.SQLTimeoutException;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -48,8 +48,8 @@ public class RegistrationController {
                         else {
                             nextStep = true;
                         }
-                    } catch (Exception e) {
-                        nextStep = true;
+                    } catch (SQLException e) {
+                        System.out.println("Возникла ошибка с базой данных.");
                     }
                 }
                 else {
@@ -76,7 +76,6 @@ public class RegistrationController {
                 } else {
                     nextStep = true;
                 }
-
             } catch (ConsoleUserInputException e) {
                 System.out.println(e.getMessage());
             }
@@ -100,10 +99,9 @@ public class RegistrationController {
             service.createUser(newUser);
             logger.info("Создан новый пользователь: email - {}, fullName - {}", email, fullName);
             return true;
-        } catch (Exception e) {
+        } catch (SQLException e) {
             logger.info("Ошибка создания пользователя", e);
             return false;
         }
     }
-
 }

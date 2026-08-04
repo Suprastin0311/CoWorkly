@@ -27,7 +27,7 @@ public class Service implements IService {
      * @return данные пользователя
      * @throws Exception в случае возникновения ошибки
      */
-    public Optional<UsersDto> getUserByEmail(String email) throws Exception {
+    public Optional<UsersDto> getUserByEmail(String email) throws SQLException {
         if (email == null || email.isEmpty()) {
             throw new IllegalArgumentException("Email равен null или пустой.");
         }
@@ -53,7 +53,7 @@ public class Service implements IService {
      * @return рабочее пространства
      * @throws Exception в случае возникновения ошибки базы данных
      */
-    public Optional<WorkspaceDto> getWorkspacesById(int id) throws Exception {
+    public Optional<WorkspaceDto> getWorkspacesById(int id) throws SQLException {
         try {
             Optional<WorkspaceDto> workspace = repo.getWorkspacesById(id);
             if (workspace.isPresent()) {
@@ -64,7 +64,7 @@ public class Service implements IService {
                 logger.debug("Не найдено рабочее пространство с id {}", id);
                 return Optional.empty();
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw e;
         }
     }
@@ -73,9 +73,9 @@ public class Service implements IService {
      * Добавить нового пользователя в БД
      * @param newUser новый пользователь
      * @return id созданного пользователя
-     * @throws Exception в случае возникновения ошибки базы данных
+     * @throws SQLException в случае возникновения ошибки базы данных
      */
-    public Optional<Long> createUser(Users newUser) throws Exception {
+    public Optional<Long> createUser(Users newUser) throws SQLException {
         String hashedPassword = PasswordHasher.hashPassword(newUser.getPassword());
 
         // Подготовленная запись с данными пользователя к сохранению в БД

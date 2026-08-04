@@ -10,10 +10,10 @@ import java.util.Optional;
 
 public interface IService {
 
-    Optional<WorkspaceDto> getWorkspacesById(int id) throws Exception;
+    Optional<WorkspaceDto> getWorkspacesById(int id) throws SQLException;
 
-    Optional<Long> createUser(Users newUser) throws Exception;
+    Optional<Long> createUser(Users newUser) throws SQLException;
 
-    Optional<UsersDto> getUserByEmail(String email) throws Exception;
+    Optional<UsersDto> getUserByEmail(String email) throws SQLException;
 
 }

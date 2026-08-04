@@ -17,7 +17,7 @@ public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
-    public static AuthorizedUser auth() throws RuntimeException, SQLException {
+    public static AuthorizedUser auth() throws SQLException {
         Service service = new Service();
         Scanner scanner = new Scanner(System.in);
         Menu.cls();
@@ -50,9 +50,7 @@ public class AuthController {
                 }
 
             } catch (SQLException e) {
-                throw new SQLException(e.getLocalizedMessage(), e);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw e;
             }
         } while (true);
     }
