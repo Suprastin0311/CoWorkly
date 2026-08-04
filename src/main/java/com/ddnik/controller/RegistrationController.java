@@ -7,12 +7,16 @@ import com.ddnik.db.dto.UsersDto;
 import com.ddnik.db.entity.Users;
 import com.ddnik.enums.UserRole;
 import com.ddnik.exceptions.ConsoleUserInputException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Date;
 import java.time.Instant;
+import java.util.Optional;
 
 public class RegistrationController {
 
+    private static final Logger logger = LoggerFactory.getLogger(RegistrationController.class);
     private Service service;
 
     RegistrationController() {
@@ -36,11 +40,12 @@ public class RegistrationController {
 
                 if (isEmailValid) {
                     try {
-                        UsersDto user = service.getUserByEmail(email);
-                        if (user.email().equals(email)) {
+                        Optional<UsersDto> user = service.getUserByEmail(email);
+                        if (user.isPresent()) {
                             System.out.println("Пользователь с таким email уже существует.");
                             return false;
-                        } else {
+                        }
+                        else {
                             nextStep = true;
                         }
                     } catch (Exception e) {
@@ -50,7 +55,6 @@ public class RegistrationController {
                 else {
                     System.out.println("Ошибка: email не соответствует шаблону example@mail.domen");
                 }
-
             } catch (ConsoleUserInputException e) {
                 System.out.println(e.getMessage());
             }
@@ -94,9 +98,10 @@ public class RegistrationController {
         try {
             Users newUser = new Users(email, password, fullName, 2, false, new Date(Instant.now().toEpochMilli()));
             service.createUser(newUser);
+            logger.info("Создан новый пользователь: email - {}, fullName - {}", email, fullName);
             return true;
         } catch (Exception e) {
-            System.out.println(e.getLocalizedMessage());
+            logger.info("Ошибка создания пользователя", e);
             return false;
         }
     }
