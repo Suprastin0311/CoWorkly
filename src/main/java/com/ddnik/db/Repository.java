@@ -20,25 +20,26 @@ public class Repository implements IRepository {
     //region Users
     public Optional<Long> insertUser(Users user) throws SQLException {
         try (Connection conn = DataSource.getConnection();
-            CallableStatement cs = conn.prepareCall("{call insert_user(?, ?, ?, ?, ?, ?)}")) {
+            PreparedStatement ps = conn.prepareStatement("{SELECT insert_user(?, ?, ?, ?, ?, ?)}")) {
 
             // Вводим параметры
-            cs.setString(1, user.getEmail());
-            cs.setString(2, user.getPassword());
-            cs.setString(3, user.getFullName());
-            cs.setLong(4, user.getRole());
-            cs.setBoolean(5, user.isBlocked());
-            cs.setTimestamp(6, new Timestamp(user.getCreatedAt().getTime()));
+            ps.setString(1, user.getEmail());
+            ps.setString(2, user.getPassword());
+            ps.setString(3, user.getFullName());
+            ps.setLong(4, user.getRole());
+            ps.setBoolean(5, user.isBlocked());
+            ps.setTimestamp(6, new Timestamp(user.getCreatedAt().getTime()));
 
-            if(cs.execute()) { // выполняем функцию
-                ResultSet rs = cs.getResultSet(); // получаем результат
-                Optional<Long> newRecordID = Optional.of(rs.getLong(1));
-                logger.debug("Создана новая запись в таблице users, id - {}", newRecordID);
-                return newRecordID; // возвращаем id новой записи
-            }
-            else {
-                logger.debug("Из БД извлечено 0 записей");
-                return Optional.empty(); // если execute() не выполнился
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Optional<Long> newRecordID = Optional.of(rs.getLong(1));
+                    logger.debug("Создана новая запись в таблице users, id - {}", newRecordID);
+                    return newRecordID; // возвращаем id новой записи
+                }
+                else {
+                    logger.debug("Из БД извлечено 0 записей");
+                    return Optional.empty(); // если execute() не выполнился
+                }
             }
         } catch (SQLTimeoutException e) {
             throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
@@ -195,6 +196,28 @@ public class Repository implements IRepository {
 
             return executeQueryAndBuildBookingDtoList(ps);
         }
+    }
+
+    public boolean setBookingCancelled(long id) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT set_booking_cancelled(?)")) {
+            ps.setLong(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    if (rs.getBoolean(1)) {
+                        logger.debug("Статус записи с id {} в таблице bookings изменён", id);
+                        return true;
+                    }
+                    else {
+                        logger.debug("Статус записи с id {} в таблице bookings не был изменён", id);
+                        return false;
+                    }
+                }
+            }
+        }
+        logger.debug("Статус записи с id {} в таблице bookings не был изменён", id);
+        return false;
     }
 
     /**

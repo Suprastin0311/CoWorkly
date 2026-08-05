@@ -34,4 +34,6 @@ public interface IRepository {
     ArrayList<BookingDto> getBookingsByStatus(BookingStatuses status) throws SQLException;
 
     ArrayList<BookingDto> getUserBookingsByTime(long user_id, Date start, Date end) throws SQLException;
+A
+    boolean setBookingCancelled(long id) throws SQLException;
 }
