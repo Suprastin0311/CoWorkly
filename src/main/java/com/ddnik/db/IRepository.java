@@ -4,7 +4,6 @@ import com.ddnik.db.dto.BookingDto;
 import com.ddnik.db.dto.UsersDto;
 import com.ddnik.db.dto.WorkspaceDto;
 import com.ddnik.db.entity.BookingStatuses;
-import com.ddnik.db.entity.Bookings;
 import com.ddnik.db.entity.Users;
 
 import java.math.BigDecimal;
@@ -34,6 +33,6 @@ public interface IRepository {
     ArrayList<BookingDto> getBookingsByStatus(BookingStatuses status) throws SQLException;
 
     ArrayList<BookingDto> getUserBookingsByTime(long user_id, Date start, Date end) throws SQLException;
-A
+
     boolean setBookingCancelled(long id) throws SQLException;
 }
