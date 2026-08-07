@@ -1,26 +1,28 @@
 package com.ddnik.db.entity;
 
+import java.math.BigDecimal;
+
 public class Workspaces {
     private final Long id;
-    private final String type;
+    private final WorkspaceTypes type;
     private final String name;
     private final int capacity;
-    private final float hourly_rate;
-    private final boolean is_active;
+    private final BigDecimal hourlyRate;
+    private final boolean isActive;
 
-    public Workspaces(Long id, String type, String name, int capacity, float hourly_rate, boolean is_active) {
+    public Workspaces(Long id, WorkspaceTypes type, String name, int capacity, BigDecimal hourlyRate, boolean isActive) {
         this.id = id;
         this.type = type;
         this.name = name;
         this.capacity = capacity;
-        this.hourly_rate = hourly_rate;
-        this.is_active = is_active;
+        this.hourlyRate = hourlyRate;
+        this.isActive = isActive;
     }
 
-    public Workspaces(boolean is_active, float hourly_rate, int capacity, String name, String type) {
+    public Workspaces(boolean isActive, BigDecimal hourlyRate, int capacity, String name, WorkspaceTypes type) {
         this.id = null;
-        this.is_active = is_active;
-        this.hourly_rate = hourly_rate;
+        this.isActive = isActive;
+        this.hourlyRate = hourlyRate;
         this.capacity = capacity;
         this.name = name;
         this.type = type;
@@ -30,7 +32,7 @@ public class Workspaces {
         return id;
     }
 
-    public String getType() {
+    public WorkspaceTypes getType() {
         return type;
     }
 
@@ -42,11 +44,11 @@ public class Workspaces {
         return capacity;
     }
 
-    public float getHourly_rate() {
-        return hourly_rate;
+    public BigDecimal getHourlyRate() {
+        return hourlyRate;
     }
 
-    public boolean isIs_active() {
-        return is_active;
+    public boolean isActive() {
+        return isActive;
     }
 }

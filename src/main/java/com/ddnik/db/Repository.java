@@ -2,9 +2,12 @@ package com.ddnik.db;
 
 import com.ddnik.db.dto.BookingDto;
 import com.ddnik.db.dto.UsersDto;
+import com.ddnik.db.dto.WorkspaceAvailableDto;
 import com.ddnik.db.dto.WorkspaceDto;
 import com.ddnik.db.entity.BookingStatuses;
+import com.ddnik.db.entity.Bookings;
 import com.ddnik.db.entity.Users;
+import com.ddnik.db.entity.Workspaces;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,12 +35,11 @@ public class Repository implements IRepository {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Optional<Long> newRecordID = Optional.of(rs.getLong(1));
-                    logger.debug("Создана новая запись в таблице users, id - {}", newRecordID);
-                    return newRecordID; // возвращаем id новой записи
+                    logger.debug("Создана новая запись в таблице users, id - {}", rs.getLong(1));
+                    return Optional.of(rs.getLong(1)); // возвращаем id новой записи
                 }
                 else {
-                    logger.debug("Из БД извлечено 0 записей");
+                    logger.debug("Не удалось добавить запись в таблицу users.");
                     return Optional.empty(); // если execute() не выполнился
                 }
             }
@@ -78,6 +80,69 @@ public class Repository implements IRepository {
     //endregion
 
     //region Workspaces
+
+    public Optional<Long> insertWorkspace(Workspaces workspace) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+            PreparedStatement ps = conn.prepareStatement("{SELECT insert_workspace(?, ?, ?, ?, ?)}")) {
+            ps.setLong(1, workspace.getType().getId());
+            ps.setString(2, workspace.getName());
+            ps.setInt(3, workspace.getCapacity());
+            ps.setBigDecimal(4, workspace.getHourlyRate());
+            ps.setBoolean(5, workspace.isActive());
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    logger.debug("Создана новая запись в таблице workspaces, id - {}", rs.getLong(1));
+                    return Optional.of(rs.getLong(1));
+                }
+                else {
+                    logger.debug("Не удалось добавить запись в таблицу workspaces.");
+                    return Optional.empty();
+                }
+            }
+        }
+    }
+
+    public Optional<Boolean> toggleWorkspaceActiveStatus(long id) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM toggle_workspace_active_status(?)")) {
+            ps.setLong(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    logger.debug("У записи в таблице workspaces c id - {} было инвертировано логическое значение атрибута is_active.", rs.getLong(1));
+                    return Optional.of(rs.getBoolean(1));
+                }
+                else {
+                    logger.debug("Не удалось инвертировать логическое значение атрибута is_active у записи в таблице workspaces c id - {}.", rs.getLong(1));
+                    return Optional.empty();
+                }
+            }
+        }
+    }
+
+    public Optional<Boolean> updateWorkspace(Workspaces workspace) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM update_workspace(?, ?, ?, ?, ?, ?)")) {
+            ps.setLong(1, workspace.getId());
+            ps.setLong(2, workspace.getType().getId());
+            ps.setString(3, workspace.getName());
+            ps.setInt(4, workspace.getCapacity());
+            ps.setBigDecimal(5, workspace.getHourlyRate());
+            ps.setBoolean(6, workspace.isActive());
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    logger.debug("Была обновлена запись в таблице workspaces c id - {}", rs.getLong(1));
+                    return Optional.of(rs.getBoolean(1));
+                }
+                else {
+                    logger.debug("Не удалось обновить запись в таблице workspaces c id - {}", rs.getLong(1));
+                    return Optional.empty();
+                }
+            }
+        }
+    }
 
     public Optional<WorkspaceDto> getWorkspacesById(int id) throws SQLException {
         try (Connection conn = DataSource.getConnection();
@@ -138,6 +203,39 @@ public class Repository implements IRepository {
             ps.setBoolean(1, is_active);
 
             return executeQueryAndBuildWorkspaceDtoList(ps);
+        } catch (SQLTimeoutException e) {
+            throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
+        }
+    }
+
+    public ArrayList<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Date startTime, Date endTime, long workspaceTypeId, int participantsCount) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces_available_for_booking(?, ?, ?, ?)")) {
+            ps.setDate(1, startTime);
+            ps.setDate(2, endTime);
+            ps.setLong(3, workspaceTypeId);
+            ps.setInt(4, participantsCount);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                ArrayList<WorkspaceAvailableDto> result = new ArrayList<>();
+
+                while (rs.next()) {
+                    result.add(new WorkspaceAvailableDto(
+                            rs.getLong("id"),
+                            rs.getString("workspace_type"),
+                            rs.getString("workspace_name"),
+                            rs.getInt("min_participants_count"),
+                            rs.getInt("max_participants_count"),
+                            rs.getBigDecimal("hourly_rate"),
+                            rs.getBigDecimal("price")
+                    ));
+                }
+
+                logger.debug("Из БД извлечено {} записей.", result.size());
+                return result;
+            } catch (SQLTimeoutException e) {
+                throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
+            }
         }
     }
 
@@ -159,19 +257,20 @@ public class Repository implements IRepository {
                         rs.getBigDecimal("hourly_rate"),
                         rs.getString("status")));
             }
-            logger.debug("Из БД извлечено {} записей", result.size());
+            logger.debug("Из БД извлечено {} записей.", result.size());
             return result;
         } catch (SQLTimeoutException e) {
             throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
         }
     }
+
     //endregion
 
     //region Bookings
 
     public ArrayList<BookingDto> getBookingsByUserId(int id) throws SQLException {
         try (Connection conn = DataSource.getConnection();
-            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings_by_user_id(?)")) {
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?)")) {
             ps.setInt(1, id);
 
             return executeQueryAndBuildBookingDtoList(ps);
@@ -180,8 +279,8 @@ public class Repository implements IRepository {
 
     public ArrayList<BookingDto> getBookingsByStatus(BookingStatuses status) throws SQLException {
         try (Connection conn = DataSource.getConnection();
-            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings_by_status(?)")) {
-            ps.setLong(1, status.getId());
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?)")) {
+            ps.setLong(2, status.getId());
 
             return executeQueryAndBuildBookingDtoList(ps);
         }
@@ -198,26 +297,68 @@ public class Repository implements IRepository {
         }
     }
 
-    public boolean setBookingCancelled(long id) throws SQLException {
+    public Optional<Long> insertBooking(Bookings booking) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM insert_booking(?, ?, ?, ?, ?, ?, ?)")) {
+            ps.setLong(1, booking.getUserId());
+            ps.setLong(2, booking.getWorkspaceId());
+            ps.setDate(3, booking.getStartTime());
+            ps.setDate(4, booking.getEndTime());
+            ps.setInt(5, booking.getParticipantsCount());
+
+            try(ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    logger.debug("В таблицу bookings добавлена запись с id = {}.", rs.getLong(1));
+                    return Optional.of(rs.getLong(1));
+                }
+                else {
+                    logger.debug("В таблицу bookings не удалось добавить запись.", rs.getLong(1));
+                    return Optional.empty();
+                }
+            }
+        } catch (SQLTimeoutException e) {
+            throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
+        }
+    }
+
+    public Optional<Boolean> setBookingCancelled(long id) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT set_booking_cancelled(?)")) {
             ps.setLong(1, id);
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    if (rs.getBoolean(1)) {
-                        logger.debug("Статус записи с id {} в таблице bookings изменён", id);
-                        return true;
-                    }
-                    else {
-                        logger.debug("Статус записи с id {} в таблице bookings не был изменён", id);
-                        return false;
-                    }
+                    logger.debug("Статус записи с id = {} в таблице bookings изменён на \"CANCELLED/LATE_CANCELLED\".", id);
+                    return Optional.of(rs.getBoolean(1));
+                }
+                else {
+                    logger.debug("Не удалось установить статус \"CANCELLED/LATE_CANCELLED\" записи с id = {} в таблице bookings.", id);
+                    return Optional.empty();
                 }
             }
+        } catch (SQLTimeoutException e) {
+            throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
         }
-        logger.debug("Статус записи с id {} в таблице bookings не был изменён", id);
-        return false;
+    }
+
+    public Optional<Boolean> confirmBooking(long id) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT confirm_booking(?)")) {
+            ps.setLong(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    logger.debug("Статус записи с id = {} в таблице bookings изменён на \"CONFIRMED\".", id);
+                    return Optional.of(rs.getBoolean(1));
+                }
+                else {
+                    logger.debug("Не удалось установить статус \"CONFIRMED\" записи с id = {} в таблице bookings.", id);
+                    return Optional.of(rs.getBoolean(1));
+                }
+            }
+        } catch (SQLTimeoutException e) {
+            throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
+        }
     }
 
     /**
@@ -242,11 +383,10 @@ public class Repository implements IRepository {
                         rs.getDate("created_at")
                 ));
             }
-            logger.debug("Из БД извлечено {} записей", result.size());
+            logger.debug("Из БД извлечено {} записей.", result.size());
             return result;
         }
     }
-
 
     //endregion
 }

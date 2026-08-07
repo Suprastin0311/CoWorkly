@@ -1,10 +1,13 @@
 package com.ddnik.db;
 
+import com.ddnik.db.dto.WorkspaceAvailableDto;
 import com.ddnik.db.dto.BookingDto;
 import com.ddnik.db.dto.UsersDto;
 import com.ddnik.db.dto.WorkspaceDto;
 import com.ddnik.db.entity.BookingStatuses;
+import com.ddnik.db.entity.Bookings;
 import com.ddnik.db.entity.Users;
+import com.ddnik.db.entity.Workspaces;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -15,6 +18,18 @@ import java.util.Optional;
 public interface IRepository {
 
     Optional<Long> insertUser(Users user) throws SQLException;
+
+    Optional<Long> insertBooking(Bookings booking) throws SQLException;
+
+    Optional<Long> insertWorkspace(Workspaces workspace) throws SQLException;
+
+    Optional<Boolean> setBookingCancelled(long id) throws SQLException;
+
+    Optional<Boolean> confirmBooking(long id) throws SQLException;
+
+    Optional<Boolean> toggleWorkspaceActiveStatus(long id) throws SQLException;
+
+    Optional<Boolean> updateWorkspace(Workspaces workspace) throws SQLException;
 
     Optional<UsersDto> getUserByEmail(String email) throws SQLException;
 
@@ -28,11 +43,11 @@ public interface IRepository {
 
     ArrayList<WorkspaceDto> getWorkspacesByStatus(boolean is_active) throws SQLException;
 
+    ArrayList<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Date startTime, Date endTime, long workspaceTypeId, int participantsCount) throws SQLException;
+
     ArrayList<BookingDto> getBookingsByUserId(int id) throws SQLException;
 
     ArrayList<BookingDto> getBookingsByStatus(BookingStatuses status) throws SQLException;
 
     ArrayList<BookingDto> getUserBookingsByTime(long user_id, Date start, Date end) throws SQLException;
-
-    boolean setBookingCancelled(long id) throws SQLException;
 }

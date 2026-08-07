@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.sql.Date;
 
 public record BookingDto(
-        String type,
+        String workspaceType,
         String workspaceName,
         Date startTime,
         Date endTime,
