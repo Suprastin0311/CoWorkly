@@ -90,6 +90,8 @@ public class Service implements IService {
             ArrayList<WorkspaceDto> workspaces = repo.getWorkspacesByCapacity(capacity);
             logger.debug("Получено {} рабочих пространств с вместимостью {}", workspaces.size(), capacity);
             return workspaces;
-        } catch ()
+        } catch (SQLException e) {
+            throw e;
+        }
     }
 }
