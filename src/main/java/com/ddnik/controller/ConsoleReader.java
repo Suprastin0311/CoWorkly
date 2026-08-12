@@ -1,10 +1,13 @@
-package com.ddnik;
+package com.ddnik.controller;
 
+import com.ddnik.db.entity.BookingStatuses;
+import com.ddnik.db.entity.WorkspaceTypes;
 import com.ddnik.exceptions.ConsoleUserInputException;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
@@ -14,7 +17,7 @@ import java.util.regex.Pattern;
 /**
  * Содержит константы и методы работы с консолью.
  */
-public class Menu {
+public class ConsoleReader {
 
     /**
      * Константа с маской для ввода email
@@ -163,7 +166,6 @@ public class Menu {
         }
     }
 
-
     /**
      * Читает дату из консоли
      * @return дата
@@ -187,5 +189,7 @@ public class Menu {
             return Date.valueOf(dateStr);
         }
     }
+
+
 
 }

@@ -1,6 +1,5 @@
 package com.ddnik.controller;
 
-import com.ddnik.Menu;
 import com.ddnik.db.Service;
 import com.ddnik.db.dto.UsersDto;
 import com.ddnik.db.entity.Users;
@@ -10,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Date;
 import java.sql.SQLException;
-import java.sql.SQLTimeoutException;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -24,7 +22,7 @@ public class RegistrationController {
     }
 
     public boolean start() {
-        Menu.cls();
+        ConsoleReader.cls();
         System.out.println("Регистрация (введите букву [q] для выхода.)\n");
 
         // Ввод email
@@ -34,9 +32,9 @@ public class RegistrationController {
         do {
             try {
                 System.out.print("Введите email: ");
-                email = Menu.readString();
+                email = ConsoleReader.readString();
                 if (email.equals("q")) return false;
-                isEmailValid = Menu.validateEmail(email);
+                isEmailValid = ConsoleReader.validateEmail(email);
 
                 if (isEmailValid) {
                     try {
@@ -67,10 +65,10 @@ public class RegistrationController {
         do {
             try {
                 System.out.print("Введите пароль: ");
-                password = Menu.readString();
+                password = ConsoleReader.readString();
                 if (password.equals("q")) return false;  // выход по q
                 System.out.print("Повторите пароль: ");
-                String repeatPassword = Menu.readString();
+                String repeatPassword = ConsoleReader.readString();
                 if (repeatPassword.equals("q")) return false; // выход по q
                 if (!password.equals(repeatPassword)) {
                     System.out.println("Пароль не совпадают.");
@@ -89,7 +87,7 @@ public class RegistrationController {
         do {
             try {
                 System.out.print("Введите Фамилию Имя Отчество полностью: ");
-                fullName = Menu.readString();
+                fullName = ConsoleReader.readString();
                 nextStep = true;
             } catch (ConsoleUserInputException e) {
                 System.out.println(e.getMessage());

@@ -1,7 +1,6 @@
 package com.ddnik.controller;
 
 import com.ddnik.AuthorizedUser;
-import com.ddnik.Menu;
 import com.ddnik.PasswordHasher;
 import com.ddnik.SecurityContextHolder;
 import com.ddnik.db.Service;
@@ -21,7 +20,7 @@ public class AuthController {
     public static AuthorizedUser auth() throws SQLException {
         Service service = new Service();
         Scanner scanner = new Scanner(System.in);
-        Menu.cls();
+        ConsoleReader.cls();
 
         do {
             try {
