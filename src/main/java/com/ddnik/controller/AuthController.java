@@ -3,6 +3,7 @@ package com.ddnik.controller;
 import com.ddnik.AuthorizedUser;
 import com.ddnik.Menu;
 import com.ddnik.PasswordHasher;
+import com.ddnik.SecurityContextHolder;
 import com.ddnik.db.Service;
 import com.ddnik.db.dto.UsersDto;
 import com.ddnik.enums.UserRole;
@@ -39,12 +40,16 @@ public class AuthController {
                     }
                     else {
                         if (user.get().role().equals("Admin")) {
+                            AuthorizedUser authorizedUser = new AuthorizedUser(user.get().email(), user.get().fullName(), UserRole.Admin, user.get().isBlocked());
+                            SecurityContextHolder.setLoggedUser(authorizedUser);
                             logger.info("Пользователь вошёл под ролью Admin.");
-                            return new AuthorizedUser(user.get().email(), user.get().fullName(), UserRole.Admin, user.get().isBlocked());
+                            return authorizedUser;
                         }
                         else if (user.get().role().equals("User")) {
+                            AuthorizedUser authorizedUser = new AuthorizedUser(user.get().email(), user.get().fullName(), UserRole.Admin, user.get().isBlocked());
+                            SecurityContextHolder.setLoggedUser(authorizedUser);
                             logger.info("Пользователь вошёл под ролью User.");
-                            return new AuthorizedUser(user.get().email(), user.get().fullName(), UserRole.User,user.get().isBlocked());
+                            return authorizedUser;
                         }
                     }
                 }
