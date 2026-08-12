@@ -1,6 +1,7 @@
 package com.ddnik.controller;
 
-import com.ddnik.Menu;
+import com.ddnik.db.entity.BookingStatuses;
+import com.ddnik.db.entity.WorkspaceTypes;
 import com.ddnik.exceptions.ConsoleUserInputException;
 
 import java.util.*;
@@ -127,5 +128,39 @@ public class ConsoleMenu {
         } catch (IllegalStateException e) {
             throw new ConsoleUserInputException("Ошибка: Scanner закрыт.", e);
         }
+    }
+
+    /**
+     * Составляет текст консольного меню для выбора типа рабочего пространства.
+     * @param types список типов рабочего пространства.
+     * @return текст консольного меню.
+     */
+    public static String showWorkspaceTypesDirectoryMenu(ArrayList<WorkspaceTypes> types) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Выберите тип рабочего пространства: \n");
+        int rowNumber = 1;
+        for (WorkspaceTypes type : types) {
+            sb.append(rowNumber).append(") ").append(type.getName()).append("\n");
+            rowNumber++;
+        }
+        sb.append("0 - Назад");
+        return sb.toString();
+    }
+
+    /**
+     * Составляет текст консольного меню для выбора статуса брони.
+     * @param statuses список статусов брони.
+     * @return текст консольного меню.
+     */
+    public static String showBookingStatusesDirectoryMenu(ArrayList<BookingStatuses> statuses) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Выберите статус брони: \n");
+        int rowNumber = 1;
+        for (BookingStatuses status : statuses) {
+            sb.append(rowNumber).append(") ").append(status.getName()).append("\n");
+            rowNumber++;
+        }
+        sb.append("0 - Назад");
+        return sb.toString();
     }
 }

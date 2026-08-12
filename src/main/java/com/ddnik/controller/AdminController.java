@@ -1,13 +1,9 @@
 package com.ddnik.controller;
 
 import com.ddnik.AuthorizedUser;
-import com.ddnik.Menu;
 import com.ddnik.db.Service;
 import com.ddnik.db.dto.WorkspaceDto;
-import com.ddnik.db.entity.Bookings;
-import com.ddnik.db.entity.BookingStatuses;
-import com.ddnik.db.entity.Users;
-import com.ddnik.db.entity.Workspaces;
+import com.ddnik.db.entity.*;
 import com.ddnik.exceptions.ConsoleUserInputException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,22 +44,22 @@ public class AdminController {
      * @return модель данных пользователя
      */
     private Users findUser() throws Exception {
-        Menu.cls();
+        ConsoleReader.cls();
         Scanner sc = new Scanner(System.in);
 
         do {
-            Menu.printMenu("findUser");
+            ConsoleReader.printMenu("findUser");
 
             int choice = sc.nextInt();
             switch (choice) { // user = switch() -> yield
                 case 1: // Email
-                    Menu.cls();
+                    ConsoleReader.cls();
                     boolean isEmailValid;
                     String email;
                     do {
                         System.out.print("Введите email (пример: exmaple@some.domen): ");
                         email = sc.next().trim();
-                        isEmailValid = Menu.validateEmail(email);
+                        isEmailValid = ConsoleReader.validateEmail(email);
                         if (isEmailValid) {
                             break;
                             // return User
@@ -72,15 +68,15 @@ public class AdminController {
                     } while (!isEmailValid);
                     break;
                 case 2: // ФИО
-                    Menu.cls();
+                    ConsoleReader.cls();
                     System.out.print("Введите ФИО: ");
                     String name = sc.next().trim();
 
                     // return User;
                     break;
                 case 3: // Роль
-                    Menu.cls();
-                    Menu.printMenu("findUserByRole");
+                    ConsoleReader.cls();
+                    ConsoleReader.printMenu("findUserByRole");
 
                     int roleChoice = sc.nextInt();
                     switch (roleChoice) {
@@ -114,7 +110,7 @@ public class AdminController {
 //                                } while (true);
                             break;
                         default: // Вернуться назад
-                            Menu.cls();
+                            ConsoleReader.cls();
                             break;
                     }
 
@@ -185,7 +181,7 @@ public class AdminController {
             menu.addItem("Просмотр всех", this::viwAll);
             menu.addItem("Просмотр выбранного", this::view);
             menu.addItem("Редактирование", this::edit);
-            menu.addItem("Скрытие", this::activate);
+            menu.addItem("Скрытие", this::changeVisibility);
             menu.addItem("Создание", this::create);
             menu.addItem("Удаление", this::delete);
 
@@ -206,10 +202,11 @@ public class AdminController {
         }
 
         private void view() {
+            Workspaces workspaces = findWorkspace();
             System.out.println("Тут будет выбранное рабочее пространство.");
         }
 
-        private void activate() {
+        private void changeVisibility() {
             Workspaces workspace = findWorkspace();
             System.out.println("Деактивация рабочего пространства");
         }
@@ -232,56 +229,61 @@ public class AdminController {
          * Поиск рабочего пространства по параметрам.
          */
         private Workspaces findWorkspace() {
-            Menu.cls();
-            Menu.printMenu("findWorkspace");
+            ConsoleReader.cls();
+            ConsoleReader.printMenu("findWorkspace");
 
             do {
                 try {
-                    int choice = Menu.chooseMenuItem(6);
+                    int choice = ConsoleReader.chooseMenuItem(6);
 
                     switch (choice) {
                         case 1: // тип
-                            Menu.cls();
-                            Menu.printMenu("findWorkspaceByType");
-
-                            do {
-                                try {
-                                    int selectType = Menu.chooseMenuItem(3);
-
-                                    if (selectType == 1) {
-                                        // TODO добавить тип в поиск
-                                    }
-                                    else if (selectType == 2) {
-                                        // TODO добавить тип в поиск
-                                    }
-                                    else if (selectType == 3) {
-                                        break;
-                                    }
-
-                                    // TODO найти и вывести рабочие пространства
-                                    System.out.print("Выберите рабочее пространство: ");
-
-                                    int selectedWorkspace = Menu.chooseMenuItem(0); // TODO указать количество рабочих пространств
-                                    // TODO return Workspace
-
-                                } catch (ConsoleUserInputException e) {
-                                    System.out.println(e.getMessage());
+                            try {
+                                ConsoleReader.cls();
+                                ArrayList<WorkspaceTypes> workspaceTypes = service.getWorkspaceTypes();
+                                if (!workspaceTypes.isEmpty()) {
+                                    ConsoleMenu.showWorkspaceTypesDirectoryMenu(workspaceTypes);
+                                }
+                                else {
+                                    System.out.println("Список рабочих пространств пуст.");
                                     break;
                                 }
-                                break;
-                            } while (true);
+
+                                do {
+                                    try {
+                                        int selectType = ConsoleReader.chooseMenuItem(workspaceTypes.size());
+
+                                        if (selectType == 0) {
+                                            break;
+                                        }
+
+                                        // TODO найти и вывести рабочие пространства по типу
+                                        System.out.print("Выберите рабочее пространство: ");
+
+                                        int selectedWorkspace = ConsoleReader.chooseMenuItem(0); // TODO указать количество рабочих пространств
+                                        // TODO return Workspace
+
+                                    } catch (ConsoleUserInputException e) {
+                                        System.out.println(e.getMessage());
+                                        break;
+                                    }
+                                } while (true);
+                            } catch (SQLException e) {
+                                System.out.println("Не удалось получить список типов рабочих пространств - произошла ошибка на уровне базы данных.");
+                            }
+                            break;
                         case 2: // название
-                            Menu.cls();
+                            ConsoleReader.cls();
                             do {
                                 try {
                                     System.out.print("Название рабочего пространства: ");
-                                    String workspaceName = Menu.readString();
+                                    String workspaceName = ConsoleReader.readString();
 
                                     // TODO найти и вывести рабочие пространства
 
                                     System.out.print("Выберите рабочее пространство: ");
 
-                                    int selectedWorkspace = Menu.chooseMenuItem(0); // TODO указать количество рабочих пространств
+                                    int selectedWorkspace = ConsoleReader.chooseMenuItem(0); // TODO указать количество рабочих пространств
                                     // TODO return Workspace
                                 } catch (ConsoleUserInputException e) {
                                     System.out.println(e.getMessage());
@@ -290,17 +292,17 @@ public class AdminController {
                             } while (true);
                             break;
                         case 3: // вместимость
-                            Menu.cls();
+                            ConsoleReader.cls();
                             do {
                                 try {
                                     System.out.print("Укажите вместимость: ");
-                                    int capacity = Menu.readPositiveInt();
+                                    int capacity = ConsoleReader.readPositiveInt();
 
                                     // TODO найти и вывести рабочие пространства
 
                                     System.out.print("Выберите рабочее пространство: ");
 
-                                    int selectedWorkspace = Menu.chooseMenuItem(0); // TODO указать количество рабочих пространств
+                                    int selectedWorkspace = ConsoleReader.chooseMenuItem(0); // TODO указать количество рабочих пространств
                                     // TODO return Workspace
                                 } catch (ConsoleUserInputException e) {
                                     System.out.println(e.getMessage());
@@ -309,17 +311,17 @@ public class AdminController {
                             } while (true);
                             break;
                         case 4: // стоимость
-                            Menu.cls();
+                            ConsoleReader.cls();
                             do {
                                 try {
                                     System.out.print("Укажите часовую стоимость: ");
-                                    double hourRate = Menu.readDouble();
+                                    double hourRate = ConsoleReader.readDouble();
 
                                     // TODO найти и вывести рабочие пространства
 
                                     System.out.print("Выберите рабочее пространство: ");
 
-                                    int selectedWorkspace = Menu.chooseMenuItem(0); // TODO указать количество рабочих пространств
+                                    int selectedWorkspace = ConsoleReader.chooseMenuItem(0); // TODO указать количество рабочих пространств
                                     // TODO return Workspace
                                 } catch (ConsoleUserInputException e) {
                                     System.out.println(e.getMessage());
@@ -328,11 +330,11 @@ public class AdminController {
                             } while (true);
                             break;
                         case 5: // статус
-                            Menu.cls();
+                            ConsoleReader.cls();
                             do {
                                 try {
-                                    Menu.printMenu("findWorkspaceByStatus");
-                                    int selectedStatus = Menu.chooseMenuItem(3);
+                                    ConsoleReader.printMenu("findWorkspaceByStatus");
+                                    int selectedStatus = ConsoleReader.chooseMenuItem(3);
 
                                     if (selectedStatus == 1) {
                                         // TODO указать статус в поиск
@@ -348,7 +350,7 @@ public class AdminController {
 
                                     System.out.print("Выберите рабочее пространство: ");
 
-                                    int selectedWorkspace = Menu.chooseMenuItem(0); // TODO указать количество рабочих пространств
+                                    int selectedWorkspace = ConsoleReader.chooseMenuItem(0); // TODO указать количество рабочих пространств
                                     // TODO return Workspace
                                 } catch (ConsoleUserInputException e) {
                                     System.out.println(e.getMessage());
@@ -434,7 +436,7 @@ public class AdminController {
          * @throws ConsoleUserInputException в случае ошибки ввода.
          */
         private BookingStatuses selectBookingStatus() throws ConsoleUserInputException {
-            Menu.cls();
+            ConsoleReader.cls();
             do {
 
             } while (true);
