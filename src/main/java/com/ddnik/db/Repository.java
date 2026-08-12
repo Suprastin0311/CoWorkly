@@ -4,10 +4,7 @@ import com.ddnik.db.dto.BookingDto;
 import com.ddnik.db.dto.UsersDto;
 import com.ddnik.db.dto.WorkspaceAvailableDto;
 import com.ddnik.db.dto.WorkspaceDto;
-import com.ddnik.db.entity.BookingStatuses;
-import com.ddnik.db.entity.Bookings;
-import com.ddnik.db.entity.Users;
-import com.ddnik.db.entity.Workspaces;
+import com.ddnik.db.entity.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -144,10 +141,10 @@ public class Repository implements IRepository {
         }
     }
 
-    public Optional<WorkspaceDto> getWorkspacesById(int id) throws SQLException {
+    public Optional<WorkspaceDto> getWorkspaceById(long id) throws SQLException {
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces_by_id(?)");) {
-            ps.setInt(1, id);
+            ps.setLong(1, id);
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -179,10 +176,11 @@ public class Repository implements IRepository {
         }
     }
 
-    public ArrayList<WorkspaceDto> getWorkspacesByHourlyRate(BigDecimal rate) throws SQLException {
+    public ArrayList<WorkspaceDto> getWorkspacesByHourlyRate(BigDecimal minRate, BigDecimal maxRate) throws SQLException {
         try (Connection conn = DataSource.getConnection();
-            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces_by_hourly_rate(?)")) {
-            ps.setBigDecimal(1, rate);
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces_by_hourly_rate(?, ?)")) {
+            ps.setBigDecimal(1, minRate);
+            ps.setBigDecimal(2, maxRate);
 
             return executeQueryAndBuildWorkspaceDtoList(ps);
         }
@@ -268,10 +266,10 @@ public class Repository implements IRepository {
 
     //region Bookings
 
-    public ArrayList<BookingDto> getBookingsByUserId(int id) throws SQLException {
+    public ArrayList<BookingDto> getBookingsByUserId(long id) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?)")) {
-            ps.setInt(1, id);
+            ps.setLong(1, id);
 
             return executeQueryAndBuildBookingDtoList(ps);
         }
@@ -385,6 +383,48 @@ public class Repository implements IRepository {
             }
             logger.debug("Из БД извлечено {} записей.", result.size());
             return result;
+        }
+    }
+
+    //endregion
+
+    //region Справочники
+
+    @Override
+    public ArrayList<WorkspaceTypes> getWorkspaceTypes() throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM workspace_type")) {
+
+            try (ResultSet rs = ps.executeQuery()) {
+                ArrayList<WorkspaceTypes> result = new ArrayList<>();
+                while (rs.next()) {
+                    result.add(new WorkspaceTypes(
+                            rs.getLong(1),
+                            rs.getString(2)
+                    ));
+                }
+                logger.debug("Из БД извлечено {} записей.", result.size());
+                return result;
+            }
+        }
+    }
+
+    @Override
+    public ArrayList<BookingStatuses> getBookingStatuses() throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM booking_statuses")) {
+
+            try (ResultSet rs = ps.executeQuery()) {
+                ArrayList<BookingStatuses> result = new ArrayList<>();
+                while (rs.next()) {
+                    result.add(new BookingStatuses(
+                            rs.getLong(1),
+                            rs.getString(2)
+                    ));
+                }
+                logger.debug("Из БД извлечено {} записей.", result.size());
+                return result;
+            }
         }
     }
 
