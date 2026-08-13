@@ -99,7 +99,6 @@ public class Service implements IService {
         }
     }
 
-    @Override
     public Optional<Long> insertBooking(Bookings booking) throws SQLException, SecurityException {
         try {
             Optional<Long> bookingId = repo.insertBooking(booking);
@@ -116,7 +115,6 @@ public class Service implements IService {
         }
     }
 
-    @Override
     public Optional<Long> insertWorkspace(Workspaces workspace) throws SQLException, SecurityException {
         try {
             Optional<Long> workspaceId = repo.insertWorkspace(workspace);
@@ -133,7 +131,6 @@ public class Service implements IService {
         }
     }
 
-    @Override
     public Optional<Boolean> setBookingCancelled(long id) throws SQLException, SecurityException {
         try {
             Optional<Boolean> result = repo.setBookingCancelled(id);
@@ -149,8 +146,7 @@ public class Service implements IService {
             throw e;
         }
     }
-
-    @Override
+    
     public Optional<Boolean> confirmBooking(long id) throws SQLException, SecurityException {
         try {
             Optional<Boolean> result = repo.confirmBooking(id);
@@ -166,8 +162,7 @@ public class Service implements IService {
             throw e;
         }
     }
-
-    @Override
+    
     public Optional<Boolean> toggleWorkspaceActiveStatus(long id) throws SQLException, SecurityException {
         try {
             Optional<Boolean> result = repo.toggleWorkspaceActiveStatus(id);
@@ -183,8 +178,7 @@ public class Service implements IService {
             throw e;
         }
     }
-
-    @Override
+    
     public Optional<Boolean> updateWorkspace(Workspaces workspace) throws SQLException, SecurityException {
         try {
             Optional<Boolean> result = repo.updateWorkspace(workspace);
@@ -200,8 +194,7 @@ public class Service implements IService {
             throw e;
         }
     }
-
-    @Override
+    
     public ArrayList<WorkspaceDto> getWorkspacesByCapacity(int capacity) throws SQLException, SecurityException {
         try {
             ArrayList<WorkspaceDto> workspaces = repo.getWorkspacesByCapacity(capacity);
@@ -211,8 +204,7 @@ public class Service implements IService {
             throw e;
         }
     }
-
-    @Override
+    
     public ArrayList<WorkspaceDto> getWorkspacesByHourlyRate(BigDecimal minRate, BigDecimal maxRate) throws SQLException, SecurityException {
         try {
             ArrayList<WorkspaceDto> workspaces = repo.getWorkspacesByHourlyRate(minRate, maxRate);
@@ -222,8 +214,7 @@ public class Service implements IService {
             throw e;
         }
     }
-
-    @Override
+    
     public ArrayList<WorkspaceDto> getWorkspacesByName(String name) throws SQLException, SecurityException {
         try {
             ArrayList<WorkspaceDto> workspaces = repo.getWorkspacesByName(name);
@@ -233,8 +224,7 @@ public class Service implements IService {
             throw e;
         }
     }
-
-    @Override
+    
     public ArrayList<WorkspaceDto> getWorkspacesByStatus(boolean is_active) throws SQLException, SecurityException {
         try {
             ArrayList<WorkspaceDto> workspaces = repo.getWorkspacesByStatus(is_active);
@@ -244,8 +234,17 @@ public class Service implements IService {
             throw e;
         }
     }
-
-    @Override
+    
+    public ArrayList<WorkspaceDto> getWorkspacesByType(WorkspaceTypes type) throws SQLException, SecurityException {
+        try {
+            ArrayList<WorkspaceDto> workspaces = repo.getWorkspacesByType(type.getId());
+            logger.debug("Получено {} рабочих пространств с типом {}", workspaces.size(), type.getName());
+            return workspaces;
+        } catch (SQLException | SecurityException e) {
+            throw e;
+        }
+    }
+    
     public ArrayList<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Date startTime, Date endTime, long workspaceTypeId, int participantsCount) throws SQLException, SecurityException {
         try {
             ArrayList<WorkspaceAvailableDto> workspaces = repo.getWorkspacesAvailableForBooking(startTime, endTime, workspaceTypeId, participantsCount);
@@ -255,8 +254,7 @@ public class Service implements IService {
             throw e;
         }
     }
-
-    @Override
+    
     public ArrayList<BookingDto> getBookingsByUserId(Users user) throws SQLException, SecurityException {
         try {
             ArrayList<BookingDto> bookings = repo.getBookingsByUserId(user.getId());
@@ -266,8 +264,7 @@ public class Service implements IService {
             throw e;
         }
     }
-
-    @Override
+    
     public ArrayList<BookingDto> getBookingsByStatus(BookingStatuses status) throws SQLException, SecurityException {
         try {
             ArrayList<BookingDto> bookings = repo.getBookingsByStatus(status);
@@ -277,8 +274,7 @@ public class Service implements IService {
             throw e;
         }
     }
-
-    @Override
+    
     public ArrayList<BookingDto> getUserBookingsByTime(long user_id, Date startTime, Date endTime) throws SQLException, SecurityException {
         try {
             ArrayList<BookingDto> bookings = repo.getUserBookingsByTime(user_id, startTime, endTime);
@@ -288,8 +284,7 @@ public class Service implements IService {
             throw e;
         }
     }
-
-    @Override
+    
     public ArrayList<WorkspaceTypes> getWorkspaceTypes() throws SQLException, SecurityException {
         try {
             ArrayList<WorkspaceTypes> workspaceTypes = repo.getWorkspaceTypes();
@@ -299,8 +294,7 @@ public class Service implements IService {
             throw e;
         }
     }
-
-    @Override
+    
     public ArrayList<BookingStatuses> getBookingStatuses() throws SQLException, SecurityException {
         try {
             ArrayList<BookingStatuses> bookingStatuses = repo.getBookingStatuses();

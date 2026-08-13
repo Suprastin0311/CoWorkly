@@ -115,7 +115,8 @@ public interface IService {
 
     /**
      * Получает рабочие пространства по вместимости.
-     * @param rate часовая стоимость.
+     * @param minRate минимальное значение часовой стоимости.
+     * @param maxRate максимальное значение часовой стоимости.
      * @return список рабочих пространств.
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
@@ -141,6 +142,15 @@ public interface IService {
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
     ArrayList<WorkspaceDto> getWorkspacesByStatus(boolean is_active) throws SQLException, SecurityException;
+
+    /**
+     * Получает рабочие пространства типу.
+     * @param type тип рабочего пространства.
+     * @return список рабочих пространств.
+     * @throws SQLException в случае возникновения ошибки на уровне базы данных.
+     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     */
+    ArrayList<WorkspaceDto> getWorkspacesByType(WorkspaceTypes type) throws SQLException, SecurityException;
 
     /**
      * Получает рабочие пространства, доступные к бронированию согласно указанным параметрам.

@@ -206,6 +206,17 @@ public class Repository implements IRepository {
         }
     }
 
+    public ArrayList<WorkspaceDto> getWorkspacesByType(long typeId) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces_by_type(?)")) {
+            ps.setLong(1, typeId);
+
+            return executeQueryAndBuildWorkspaceDtoList(ps);
+        } catch (SQLTimeoutException e) {
+            throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
+        }
+    }
+
     public ArrayList<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Date startTime, Date endTime, long workspaceTypeId, int participantsCount) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces_available_for_booking(?, ?, ?, ?)")) {
@@ -239,7 +250,7 @@ public class Repository implements IRepository {
 
     /**
      * Выполняет запрос к базе данных и составляет результирующий список рабочих пространств.
-     * Предназначен для выполнения хранимых функций, возвращающих рабочие пространства в формате {@link WorkspaceDto}.
+     * Предназначен для выполнения хранимых функций, возвращающих таблицу рабочих пространств со структурой {@link WorkspaceDto}.
      * @param ps подготовленный запрос к хранимой процедуре.
      * @return список рабочих пространств, удовлетворяющих условию.
      * @throws SQLException в случае возникновения ошибки на уровне баз данных.

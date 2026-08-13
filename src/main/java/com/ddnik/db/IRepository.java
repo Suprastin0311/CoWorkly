@@ -40,6 +40,8 @@ public interface IRepository {
 
     ArrayList<WorkspaceDto> getWorkspacesByStatus(boolean is_active) throws SQLException;
 
+    ArrayList<WorkspaceDto> getWorkspacesByType(long typeId) throws SQLException;
+
     ArrayList<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Date startTime, Date endTime, long workspaceTypeId, int participantsCount) throws SQLException;
 
     ArrayList<BookingDto> getBookingsByUserId(long id) throws SQLException;
