@@ -45,7 +45,7 @@ public class AuthController {
                             return authorizedUser;
                         }
                         else if (user.get().role().equals("User")) {
-                            AuthorizedUser authorizedUser = new AuthorizedUser(user.get().email(), user.get().fullName(), UserRole.Admin, user.get().isBlocked());
+                            AuthorizedUser authorizedUser = new AuthorizedUser(user.get().email(), user.get().fullName(), UserRole.User, user.get().isBlocked());
                             SecurityContextHolder.setLoggedUser(authorizedUser);
                             logger.info("Пользователь вошёл под ролью User.");
                             return authorizedUser;
