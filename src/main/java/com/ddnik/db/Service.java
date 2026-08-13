@@ -25,17 +25,17 @@ public class Service implements IService {
     }
 
     public Optional<Long> createUser(Users newUser) throws SQLException {
-        String hashedPassword = PasswordHasher.hashPassword(newUser.getPassword());
+        String hashedPassword = PasswordHasher.hashPassword(newUser.password());
 
         // Подготовленная запись с данными пользователя к сохранению в БД
         Users preparedUsersEntity = new Users(
-                newUser.getId(),
-                newUser.getEmail(),
+                newUser.id(),
+                newUser.email(),
                 hashedPassword,
-                newUser.getFullName(),
-                newUser.getRole(),
+                newUser.fullName(),
+                newUser.role(),
                 newUser.isBlocked(),
-                newUser.getCreatedAt()
+                newUser.createdAt()
         );
 
         try {
@@ -183,11 +183,11 @@ public class Service implements IService {
         try {
             Optional<Boolean> result = repo.updateWorkspace(workspace);
             if (result.isPresent()) {
-                logger.debug("Обновлено рабочее пространство по id {}", workspace.getId());
+                logger.debug("Обновлено рабочее пространство по id {}", workspace.id());
                 return result;
             }
             else {
-                logger.debug("Не удалось обновить рабочее пространство по id {}", workspace.getId());
+                logger.debug("Не удалось обновить рабочее пространство по id {}", workspace.id());
                 return Optional.empty();
             }
         } catch (SQLException | SecurityException e) {
@@ -237,8 +237,8 @@ public class Service implements IService {
     
     public ArrayList<WorkspaceDto> getWorkspacesByType(WorkspaceTypes type) throws SQLException, SecurityException {
         try {
-            ArrayList<WorkspaceDto> workspaces = repo.getWorkspacesByType(type.getId());
-            logger.debug("Получено {} рабочих пространств с типом {}", workspaces.size(), type.getName());
+            ArrayList<WorkspaceDto> workspaces = repo.getWorkspacesByType(type.id());
+            logger.debug("Получено {} рабочих пространств с типом {}", workspaces.size(), type.name());
             return workspaces;
         } catch (SQLException | SecurityException e) {
             throw e;
@@ -257,8 +257,8 @@ public class Service implements IService {
     
     public ArrayList<BookingDto> getBookingsByUserId(Users user) throws SQLException, SecurityException {
         try {
-            ArrayList<BookingDto> bookings = repo.getBookingsByUserId(user.getId());
-            logger.debug("Получено {} броней пользователя с id {}", bookings.size(), user.getId());
+            ArrayList<BookingDto> bookings = repo.getBookingsByUserId(user.id());
+            logger.debug("Получено {} броней пользователя с id {}", bookings.size(), user.id());
             return bookings;
         } catch (SQLException | SecurityException e) {
             throw e;
@@ -268,7 +268,7 @@ public class Service implements IService {
     public ArrayList<BookingDto> getBookingsByStatus(BookingStatuses status) throws SQLException, SecurityException {
         try {
             ArrayList<BookingDto> bookings = repo.getBookingsByStatus(status);
-            logger.debug("Получено {} броней со статусом {}", bookings.size(), status.getName());
+            logger.debug("Получено {} броней со статусом {}", bookings.size(), status.name());
             return bookings;
         } catch (SQLException | SecurityException e) {
             throw e;

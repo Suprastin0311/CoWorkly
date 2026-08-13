@@ -20,15 +20,15 @@ public class Repository implements IRepository {
     //region Users
     public Optional<Long> insertUser(Users user) throws SQLException {
         try (Connection conn = DataSource.getConnection();
-            PreparedStatement ps = conn.prepareStatement("{SELECT insert_user(?, ?, ?, ?, ?, ?)}")) {
+            PreparedStatement ps = conn.prepareStatement("SELECT insert_user(?, ?, ?, ?, ?, ?)")) {
 
             // Вводим параметры
-            ps.setString(1, user.getEmail());
-            ps.setString(2, user.getPassword());
-            ps.setString(3, user.getFullName());
-            ps.setLong(4, user.getRole());
+            ps.setString(1, user.email());
+            ps.setString(2, user.password());
+            ps.setString(3, user.fullName());
+            ps.setLong(4, user.role());
             ps.setBoolean(5, user.isBlocked());
-            ps.setTimestamp(6, new Timestamp(user.getCreatedAt().getTime()));
+            ps.setTimestamp(6, new Timestamp(user.createdAt().getTime()));
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -80,11 +80,11 @@ public class Repository implements IRepository {
 
     public Optional<Long> insertWorkspace(Workspaces workspace) throws SQLException {
         try (Connection conn = DataSource.getConnection();
-            PreparedStatement ps = conn.prepareStatement("{SELECT insert_workspace(?, ?, ?, ?, ?)}")) {
-            ps.setLong(1, workspace.getType().getId());
-            ps.setString(2, workspace.getName());
-            ps.setInt(3, workspace.getCapacity());
-            ps.setBigDecimal(4, workspace.getHourlyRate());
+            PreparedStatement ps = conn.prepareStatement("SELECT insert_workspace(?, ?, ?, ?, ?)")) {
+            ps.setLong(1, workspace.type());
+            ps.setString(2, workspace.name());
+            ps.setInt(3, workspace.capacity());
+            ps.setBigDecimal(4, workspace.hourlyRate());
             ps.setBoolean(5, workspace.isActive());
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -121,11 +121,11 @@ public class Repository implements IRepository {
     public Optional<Boolean> updateWorkspace(Workspaces workspace) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM update_workspace(?, ?, ?, ?, ?, ?)")) {
-            ps.setLong(1, workspace.getId());
-            ps.setLong(2, workspace.getType().getId());
-            ps.setString(3, workspace.getName());
-            ps.setInt(4, workspace.getCapacity());
-            ps.setBigDecimal(5, workspace.getHourlyRate());
+            ps.setLong(1, workspace.id());
+            ps.setLong(2, workspace.type());
+            ps.setString(3, workspace.name());
+            ps.setInt(4, workspace.capacity());
+            ps.setBigDecimal(5, workspace.hourlyRate());
             ps.setBoolean(6, workspace.isActive());
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -289,7 +289,7 @@ public class Repository implements IRepository {
     public ArrayList<BookingDto> getBookingsByStatus(BookingStatuses status) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?)")) {
-            ps.setLong(2, status.getId());
+            ps.setLong(2, status.id());
 
             return executeQueryAndBuildBookingDtoList(ps);
         }
@@ -309,11 +309,11 @@ public class Repository implements IRepository {
     public Optional<Long> insertBooking(Bookings booking) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM insert_booking(?, ?, ?, ?, ?, ?, ?)")) {
-            ps.setLong(1, booking.getUserId());
-            ps.setLong(2, booking.getWorkspaceId());
-            ps.setDate(3, booking.getStartTime());
-            ps.setDate(4, booking.getEndTime());
-            ps.setInt(5, booking.getParticipantsCount());
+            ps.setLong(1, booking.userId());
+            ps.setLong(2, booking.workspaceId());
+            ps.setDate(3, booking.startTime());
+            ps.setDate(4, booking.endTime());
+            ps.setInt(5, booking.participantsCount());
 
             try(ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -411,7 +411,10 @@ public class Repository implements IRepository {
                 while (rs.next()) {
                     result.add(new WorkspaceTypes(
                             rs.getLong(1),
-                            rs.getString(2)
+                            rs.getString(2),
+                            rs.getInt(3),
+                            rs.getInt(4),
+                            rs.getString(5)
                     ));
                 }
                 logger.debug("Из БД извлечено {} записей.", result.size());

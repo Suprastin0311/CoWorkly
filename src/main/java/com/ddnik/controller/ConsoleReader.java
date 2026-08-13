@@ -200,7 +200,7 @@ public class ConsoleReader {
         sb.append("Выберите тип рабочего пространства: \n");
         int rowNumber = 1;
         for (WorkspaceTypes type : types) {
-            sb.append(rowNumber).append(") ").append(type.getName()).append("\n");
+            sb.append(rowNumber).append(") ").append(type.name()).append("\n");
             rowNumber++;
         }
         sb.append("0 - Назад");
@@ -217,7 +217,7 @@ public class ConsoleReader {
         sb.append("Выберите статус брони: \n");
         int rowNumber = 1;
         for (BookingStatuses status : statuses) {
-            sb.append(rowNumber).append(") ").append(status.getName()).append("\n");
+            sb.append(rowNumber).append(") ").append(status.name()).append("\n");
             rowNumber++;
         }
         sb.append("0 - Назад");
