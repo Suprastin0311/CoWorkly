@@ -8,6 +8,7 @@ import com.ddnik.exceptions.ConsoleUserInputException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -242,7 +243,7 @@ public class AdminController {
                                 ConsoleReader.cls();
                                 ArrayList<WorkspaceTypes> workspaceTypes = service.getWorkspaceTypes();
                                 if (!workspaceTypes.isEmpty()) {
-                                    ConsoleMenu.showWorkspaceTypesDirectoryMenu(workspaceTypes);
+                                    ConsoleReader.showWorkspaceTypesDirectoryMenu(workspaceTypes);
                                 }
                                 else {
                                     System.out.println("Список рабочих пространств пуст.");
@@ -251,14 +252,16 @@ public class AdminController {
 
                                 do {
                                     try {
-                                        int selectType = ConsoleReader.chooseMenuItem(workspaceTypes.size());
+                                        int type = ConsoleReader.chooseMenuItem(workspaceTypes.size()) - 1;
 
-                                        if (selectType == 0) {
+                                        if (type == 0) {
                                             break;
                                         }
 
-                                        // TODO найти и вывести рабочие пространства по типу
+                                        ArrayList<WorkspaceDto> workspaces = service.getWorkspacesByType(workspaceTypes.get(type));
                                         System.out.print("Выберите рабочее пространство: ");
+
+
 
                                         int selectedWorkspace = ConsoleReader.chooseMenuItem(0); // TODO указать количество рабочих пространств
                                         // TODO return Workspace
