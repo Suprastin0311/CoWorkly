@@ -1,20 +1,17 @@
 package com.ddnik.db.entity;
 
-public class BookingStatuses {
+import java.util.Objects;
 
-    private final Long id;
-    private final String name;
+public record BookingStatuses (
+        Long id,
+        String name
+) {
 
-    public BookingStatuses(Long id, String name) {
-        this.id = id;
-        this.name = name;
+    public BookingStatuses {
+        Objects.requireNonNull(name);
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
+    public BookingStatuses(String name) {
+        this(null, name);
     }
 }

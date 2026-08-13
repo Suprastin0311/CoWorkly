@@ -1,19 +1,17 @@
 package com.ddnik.db.entity;
 
-public class DayTypes {
-    private final Long id;
-    private final String name;
+import java.util.Objects;
 
-    public DayTypes(Long id, String name) {
-        this.id = id;
-        this.name = name;
+public record DayTypes (
+        Long id,
+        String name
+) {
+
+    public DayTypes {
+        Objects.requireNonNull(name);
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
+    public DayTypes(String name) {
+        this(null, name);
     }
 }

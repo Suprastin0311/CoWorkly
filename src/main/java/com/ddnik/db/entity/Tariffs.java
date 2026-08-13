@@ -1,33 +1,22 @@
 package com.ddnik.db.entity;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
-public class Tariffs {
-    private final Long id;
-    private final long workspaceType;
-    private final long dayType;
-    private final BigDecimal multiplier;
-
-    public Tariffs(Long id, long workspaceType, long dayType, BigDecimal multiplier) {
-        this.id = id;
-        this.workspaceType = workspaceType;
-        this.dayType = dayType;
-        this.multiplier = multiplier;
+public record Tariffs (
+        Long id,
+        long workspaceType,
+        long dayType,
+        BigDecimal multiplier
+) {
+    public Tariffs {
+        Objects.requireNonNull(workspaceType);
+        Objects.requireNonNull(dayType);
+        Objects.requireNonNull(multiplier);
     }
 
-    public Long getId() {
-        return id;
+    public Tariffs(long workspaceType, long dayType, BigDecimal multiplier) {
+        this(null, workspaceType, dayType, multiplier);
     }
 
-    public long getWorkspaceType() {
-        return workspaceType;
-    }
-
-    public long getDayType() {
-        return dayType;
-    }
-
-    public BigDecimal getMultiplier() {
-        return multiplier;
-    }
 }

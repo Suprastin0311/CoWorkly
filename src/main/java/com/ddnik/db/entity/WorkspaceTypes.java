@@ -1,19 +1,22 @@
 package com.ddnik.db.entity;
 
-public class WorkspaceTypes {
-    private final Long id;
-    private final String name;
+import java.util.Objects;
 
-    public WorkspaceTypes(Long id, String name) {
-        this.id = id;
-        this.name = name;
+public record WorkspaceTypes (
+        Long id,
+        String name,
+        Integer maxParticipantsCount,
+        int minParticipantsCount,
+        String nameRus
+) {
+    public WorkspaceTypes {
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(minParticipantsCount);
+        Objects.requireNonNull(nameRus);
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
+    public WorkspaceTypes (String name, Integer maxParticipantsCount, int minParticipantsCount, String nameRus) {
+        this(null, name, maxParticipantsCount, minParticipantsCount, nameRus);
     }
 }
+
