@@ -1,10 +1,9 @@
 package com.ddnik.db.dto;
 
 import java.sql.Date;
-import java.util.Objects;
 
-public class UsersDto {
-    private final Long id;
+public class UsersDto implements IDto {
+    private final long id;
     private final String email;
     private final String passwordHash;
     private final String fullName;
@@ -12,15 +11,53 @@ public class UsersDto {
     private final boolean isBlocked;
     private final Date createdAt;
 
-    public UsersDto {
-        Objects.requireNonNull(email);
-        Objects.requireNonNull(passwordHash);
-        Objects.requireNonNull(fullName);
-        Objects.requireNonNull(role);
-        Objects.requireNonNull(createdAt);
+    @Override
+    public String toMenuRow() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(email).append(" | ")
+                .append(passwordHash).append(" | ")
+                .append(fullName).append(" | ")
+                .append(role).append(" | ")
+                .append(isBlocked).append(" | ")
+                .append(createdAt);
+        return sb.toString();
     }
 
-    public UsersDto(String email, String passwordHash, String fullName, String role, boolean isBlocked, Date createdAt) {
-        this(null, email, passwordHash, fullName, role, isBlocked, createdAt);
+    public UsersDto(long id, String email, String passwordHash, String fullName, String role, boolean isBlocked, Date createdAt) {
+        this.id = id;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.fullName = fullName;
+        this.role = role;
+        this.isBlocked = isBlocked;
+        this.createdAt = createdAt;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public boolean isBlocked() {
+        return isBlocked;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
     }
 }

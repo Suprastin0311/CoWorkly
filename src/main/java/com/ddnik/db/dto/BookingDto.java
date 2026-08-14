@@ -3,7 +3,7 @@ package com.ddnik.db.dto;
 import java.math.BigDecimal;
 import java.sql.Date;
 
-public class BookingDto implements IDTO {
+public class BookingDto implements IDto {
     private final String workspaceType;
     private final String workspaceName;
     private final Date startTime;
@@ -36,5 +36,37 @@ public class BookingDto implements IDTO {
         this.status = status;
         this.price = price;
         this.createdAt = createdAt;
+    }
+
+    public String getWorkspaceType() {
+        return workspaceType;
+    }
+
+    public String getWorkspaceName() {
+        return workspaceName;
+    }
+
+    public Date getStartTime() {
+        return startTime;
+    }
+
+    public Date getEndTime() {
+        return endTime;
+    }
+
+    public int getParticipantsCount() {
+        return participantsCount;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
     }
 }
