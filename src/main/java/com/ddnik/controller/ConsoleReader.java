@@ -94,7 +94,7 @@ public class ConsoleReader {
             Scanner sc = new Scanner(System.in);
             int choice = sc.nextInt();
 
-            if (choice < 1) {
+            if (choice < 0) {
                 throw new ConsoleUserInputException("Ошибка: вводимое число не может быть отрицательным.");
             }
             else if (choice > itemsCount) {

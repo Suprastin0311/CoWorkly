@@ -62,7 +62,7 @@ public class Repository implements IRepository {
                             rs.getBoolean("is_blocked"),
                             new Date(rs.getTimestamp("created_at").getTime())
                     );
-                    logger.debug("Из БД извлечена 1 запись из таблицы users по email {}", user.email());
+                    logger.debug("Из БД извлечена 1 запись из таблицы users по email {}", user.getEmail());
                     return Optional.of(user);
                 }
                 else {
@@ -404,7 +404,7 @@ public class Repository implements IRepository {
     @Override
     public ArrayList<WorkspaceTypes> getWorkspaceTypes() throws SQLException {
         try (Connection conn = DataSource.getConnection();
-            PreparedStatement ps = conn.prepareStatement("SELECT * FROM workspace_type")) {
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM workspace_types")) {
 
             try (ResultSet rs = ps.executeQuery()) {
                 ArrayList<WorkspaceTypes> result = new ArrayList<>();

@@ -89,16 +89,6 @@ public class Service implements IService {
         }
     }
 
-    public ArrayList<WorkspaceDto> getWorkspaceByCapacity(int capacity) throws SQLException, SecurityException {
-        try {
-            ArrayList<WorkspaceDto> workspaces = repo.getWorkspacesByCapacity(capacity);
-            logger.debug("Получено {} рабочих пространств с вместимостью {}", workspaces.size(), capacity);
-            return workspaces;
-        } catch (SQLException | SecurityException e) {
-            throw e;
-        }
-    }
-
     public Optional<Long> insertBooking(Bookings booking) throws SQLException, SecurityException {
         try {
             Optional<Long> bookingId = repo.insertBooking(booking);
