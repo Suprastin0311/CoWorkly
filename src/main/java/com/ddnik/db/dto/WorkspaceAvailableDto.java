@@ -1,7 +1,8 @@
 package com.ddnik.db.dto;
 
+import com.ddnik.db.IDto;
+
 import java.math.BigDecimal;
-import java.util.Objects;
 
 public class WorkspaceAvailableDto implements IDto {
     private final long id;

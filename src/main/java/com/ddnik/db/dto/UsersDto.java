@@ -1,5 +1,7 @@
 package com.ddnik.db.dto;
 
+import com.ddnik.db.IDto;
+
 import java.sql.Date;
 
 public class UsersDto implements IDto {

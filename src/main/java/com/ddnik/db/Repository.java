@@ -1,9 +1,6 @@
 package com.ddnik.db;
 
-import com.ddnik.db.dto.BookingDto;
-import com.ddnik.db.dto.UsersDto;
-import com.ddnik.db.dto.WorkspaceAvailableDto;
-import com.ddnik.db.dto.WorkspaceDto;
+import com.ddnik.db.dto.*;
 import com.ddnik.db.entity.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -402,14 +399,14 @@ public class Repository implements IRepository {
     //region Справочники
 
     @Override
-    public ArrayList<WorkspaceTypes> getWorkspaceTypes() throws SQLException {
+    public ArrayList<WorkspaceTypesDto> getWorkspaceTypes() throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM workspace_types")) {
 
             try (ResultSet rs = ps.executeQuery()) {
-                ArrayList<WorkspaceTypes> result = new ArrayList<>();
+                ArrayList<WorkspaceTypesDto> result = new ArrayList<>();
                 while (rs.next()) {
-                    result.add(new WorkspaceTypes(
+                    result.add(new WorkspaceTypesDto(
                             rs.getLong(1),
                             rs.getString(2),
                             rs.getInt(3),

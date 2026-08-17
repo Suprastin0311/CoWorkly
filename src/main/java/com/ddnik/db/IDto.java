@@ -1,7 +1,6 @@
-package com.ddnik.db.dto;
+package com.ddnik.db;
 
 public interface IDto {
 
     String toMenuRow();
-
 }

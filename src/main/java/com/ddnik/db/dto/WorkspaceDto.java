@@ -1,6 +1,8 @@
 package com.ddnik.db.dto;
 
-import java.io.Serializable;
+import com.ddnik.db.IDto;
+import com.ddnik.db.entity.Workspaces;
+
 import java.math.BigDecimal;
 
 public class WorkspaceDto implements IDto {
@@ -47,5 +49,13 @@ public class WorkspaceDto implements IDto {
 
     public String getStatus() {
         return status;
+    }
+
+    public Workspaces toWorkspaceEntity() {
+        Workspaces entity = new Workspaces(
+                null,
+                type,
+
+        );
     }
 }

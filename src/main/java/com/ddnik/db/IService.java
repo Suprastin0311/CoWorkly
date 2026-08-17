@@ -1,9 +1,6 @@
 package com.ddnik.db;
 
-import com.ddnik.db.dto.BookingDto;
-import com.ddnik.db.dto.UsersDto;
-import com.ddnik.db.dto.WorkspaceAvailableDto;
-import com.ddnik.db.dto.WorkspaceDto;
+import com.ddnik.db.dto.*;
 import com.ddnik.db.entity.*;
 
 import java.math.BigDecimal;
@@ -199,7 +196,7 @@ public interface IService {
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
-    ArrayList<WorkspaceTypes> getWorkspaceTypes() throws SQLException, SecurityException;
+    ArrayList<WorkspaceTypesDto> getWorkspaceTypes() throws SQLException, SecurityException;
 
     /**
      * Получает справочник статусов броней.

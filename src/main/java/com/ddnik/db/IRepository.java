@@ -1,9 +1,6 @@
 package com.ddnik.db;
 
-import com.ddnik.db.dto.WorkspaceAvailableDto;
-import com.ddnik.db.dto.BookingDto;
-import com.ddnik.db.dto.UsersDto;
-import com.ddnik.db.dto.WorkspaceDto;
+import com.ddnik.db.dto.*;
 import com.ddnik.db.entity.*;
 
 import java.math.BigDecimal;
@@ -50,7 +47,7 @@ public interface IRepository {
 
     ArrayList<BookingDto> getUserBookingsByTime(long user_id, Date startTime, Date endTime) throws SQLException;
 
-    ArrayList<WorkspaceTypes> getWorkspaceTypes() throws SQLException;
+    ArrayList<WorkspaceTypesDto> getWorkspaceTypes() throws SQLException;
 
     ArrayList<BookingStatuses> getBookingStatuses() throws SQLException;
 }

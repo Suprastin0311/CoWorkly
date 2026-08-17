@@ -1,10 +1,7 @@
 package com.ddnik.db;
 
 import com.ddnik.PasswordHasher;
-import com.ddnik.db.dto.BookingDto;
-import com.ddnik.db.dto.UsersDto;
-import com.ddnik.db.dto.WorkspaceAvailableDto;
-import com.ddnik.db.dto.WorkspaceDto;
+import com.ddnik.db.dto.*;
 import com.ddnik.db.entity.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,7 +110,7 @@ public class Service implements IService {
                 return workspaceId;
             }
             else {
-                logger.debug("Не удалось создать новое рабочее пространство с id {}");
+                logger.debug("Не удалось создать новое рабочее пространство с id {}", workspaceId);
                 return Optional.empty();
             }
         } catch (SQLException | SecurityException e) {
@@ -275,13 +272,13 @@ public class Service implements IService {
         }
     }
     
-    public ArrayList<WorkspaceTypes> getWorkspaceTypes() throws SQLException, SecurityException {
+    public ArrayList<WorkspaceTypesDto> getWorkspaceTypes() throws SQLException, SecurityException {
         try {
-            ArrayList<WorkspaceTypes> workspaceTypes = repo.getWorkspaceTypes();
+            ArrayList<WorkspaceTypesDto> workspaceTypes = repo.getWorkspaceTypes();
             logger.debug("Получено {} типов рабочих пространств.", workspaceTypes.size());
             return workspaceTypes;
-        } catch (SQLException | SecurityException e) {
-            throw e;
+        } catch (SQLException e) {
+            throw new SQLException("Произошла ошибка на уровне базы данных.", e);
         }
     }
     
