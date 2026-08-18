@@ -3,6 +3,7 @@ package com.ddnik.controller;
 import com.ddnik.AuthorizedUser;
 import com.ddnik.db.Service;
 import com.ddnik.db.dto.WorkspaceDto;
+import com.ddnik.db.dto.WorkspaceTypesDto;
 import com.ddnik.db.entity.*;
 import com.ddnik.exceptions.ConsoleUserInputException;
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.Scanner;
 
 /**
@@ -203,11 +205,6 @@ public class AdminController {
             }
         }
 
-        private void view() {
-            WorkspaceDto workspaces = findWorkspace();
-            System.out.println("Тут будет выбранное рабочее пространство.");
-        }
-
         private void changeVisibility() {
             WorkspaceDto workspace = findWorkspace();
             System.out.println("Деактивация рабочего пространства");
@@ -228,34 +225,79 @@ public class AdminController {
         }
 
         /**
+         * Посмотреть рабочие пространства с фильтром по атрибуту.
+         */
+        private void view() {
+            ConsoleMenu menu = new ConsoleMenu("Выберите параметр поиска рабочего пространства: ");
+            menu.addItem("Тип", this::viewByType);
+            menu.addItem("Название", this::viewByName);
+            menu.addItem("Вместимость", this::viewByCapacity);
+            menu.addItem("Часовая стоимость", this::viewByHourlyRate);
+            menu.addItem("Статус", this::viewByStatus);
+
+            logger.info("Администратор перешёл в меню просмотра рабочих пространств.");
+            menu.start();
+        }
+
+        private void viewByType() {
+            try {
+                ItemsListMenu menu = new ItemsListMenu(
+                        service.getWorkspaceTypes(),
+                        "Выберите тип рабочего пространства",
+                        "№ | Название | Минимум человек | Максимум человек");
+                ConsoleReader.cls();
+                Optional<WorkspaceTypesDto> selectedType = menu.start();
+
+                if (selectedType.isPresent())
+                    ArrayList<WorkspaceDto> workspaces = service.getWorkspacesByType(selectedType.get().toWorkspaceType());
+
+            } catch (SQLException e) {
+                System.out.println(e.getLocalizedMessage());
+                logger.error(e.getLocalizedMessage(), e);
+            }
+
+        }
+
+        private void viewByName() {
+
+        }
+
+        private void viewByCapacity() {
+
+        }
+
+        private void viewByHourlyRate() {
+
+        }
+
+        private void viewByStatus() {
+
+        }
+
+
+
+        /**
          * Фильтрация рабочего пространства по атрибутам.
          * @return отфильтрованный список рабочих пространств.
          */
         private ArrayList<WorkspaceDto> getFilteredWorkspaceList() {
             ArrayList<WorkspaceDto> workspaces;
-            ConsoleReader.cls();
+
+
 
             do {
                 try {
                     ConsoleReader.printMenu("findWorkspace");
-                    int choice = ConsoleReader.chooseMenuItem(6);
+                    int choice = ConsoleReader.chooseMenuItem(1, 6);
 
                     switch (choice) {
                         case 1: // тип
-                            ArrayList<WorkspaceTypes> workspaceTypes = new ArrayList<>();
-
                             try {
-                                ConsoleReader.cls();
-                                workspaceTypes = service.getWorkspaceTypes();
-                                if (!workspaceTypes.isEmpty()) {
-                                    System.out.println("№ | Название | Минимум человек | Максимум человек");
-                                    int i = 1;
-                                    for (WorkspaceTypes type : workspaceTypes) {
-                                        System.out.println(i + " | " + type.toMenuRow());
-                                        i++;
-                                    }
-                                } else {
-                                    System.out.println("Список типов рабочих пространств пуст.");
+
+                                if (selectedType.isPresent()) {
+
+                                }
+                                else {
                                     break;
                                 }
                             } catch (SQLException e) {
@@ -365,7 +407,7 @@ public class AdminController {
                                     System.out.println("\n1 - Активно");
                                     System.out.println("2 - Заблокировано");;
                                     System.out.print("> ");
-                                    int selectedStatus = ConsoleReader.chooseMenuItem(3);
+                                    int selectedStatus = ConsoleReader.chooseMenuItem(1, 2);
                                     boolean isActive = true;
                                     switch(selectedStatus) {
                                         case 2: {

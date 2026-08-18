@@ -83,13 +83,15 @@ public class ConsoleReader {
         System.out.print("\033[H\033[2J");
         System.out.flush();
     }
+
     /**
      * Обрабатывает выбор пункта меню пользователем и возвращает номер выбранного пункта.
-     * @param itemsCount количество пунктов в меню.
+     * @param minItem минимальный номер пункта меню.
+     * @param maxItem максимальный номер пункта меню.
      * @return номер выбранного пункта.
      * @throws ConsoleUserInputException если произошла ошибка при вводе.
      */
-    public static int chooseMenuItem(int itemsCount) throws ConsoleUserInputException {
+    public static int chooseMenuItem(int minItem, int maxItem) throws ConsoleUserInputException {
         try {
             Scanner sc = new Scanner(System.in);
             int choice = sc.nextInt();
@@ -97,7 +99,7 @@ public class ConsoleReader {
             if (choice < 0) {
                 throw new ConsoleUserInputException("Ошибка: вводимое число не может быть отрицательным.");
             }
-            else if (choice > itemsCount) {
+            else if (choice < minItem || choice > maxItem) {
                 throw new ConsoleUserInputException("Ошибка: данного пункта не существует в меню.");
             }
             else {
