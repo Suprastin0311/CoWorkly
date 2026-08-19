@@ -7,16 +7,18 @@ import java.util.Objects;
 public record WorkspaceTypesDto (
         Long id,
         String name,
-        Integer maxParticipantsCount,
         int minParticipantsCount,
+        Integer maxParticipantsCount,
         String nameRus
 ) implements IDto {
 
     @Override
-    public String toMenuRow() {
-        StringBuilder row = new StringBuilder();
-        row.append(nameRus).append(" | ").append(minParticipantsCount).append(" | ").append(maxParticipantsCount == 0 ? "<не ограничено>" : maxParticipantsCount );
-        return row.toString();
+    public String toMenuTableRow() {
+        return String.format("{} | {} | {}", nameRus, minParticipantsCount, maxParticipantsCount);
+    }
+
+    public static String getMenuTableHeader() {
+        return "№ | Название | Минимальная вместимость | Максимальная вместимость";
     }
 
     public WorkspaceTypesDto {

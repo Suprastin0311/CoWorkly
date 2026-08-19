@@ -3,63 +3,33 @@ package com.ddnik.db.dto;
 import com.ddnik.db.IDto;
 
 import java.sql.Date;
+import java.util.Objects;
 
-public class UsersDto implements IDto {
-    private final long id;
-    private final String email;
-    private final String passwordHash;
-    private final String fullName;
-    private final String role;
-    private final boolean isBlocked;
-    private final Date createdAt;
+public record UsersDto (
+        long id,
+        String email,
+        String passwordHash,
+        String fullName,
+        String role,
+        boolean isBlocked,
+        Date createdAt
+
+) implements IDto {
+
+    public UsersDto {
+        Objects.requireNonNull(email);
+        Objects.requireNonNull(passwordHash);
+        Objects.requireNonNull(fullName);
+        Objects.requireNonNull(role);
+        Objects.requireNonNull(createdAt);
+    }
 
     @Override
-    public String toMenuRow() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(email).append(" | ")
-                .append(passwordHash).append(" | ")
-                .append(fullName).append(" | ")
-                .append(role).append(" | ")
-                .append(isBlocked).append(" | ")
-                .append(createdAt);
-        return sb.toString();
+    public String toMenuTableRow() {
+        return String.format("{} | {} | {} | {} | {}", email, fullName, role, isBlocked ? "Заблокирован" : "Активен", createdAt);
     }
 
-    public UsersDto(long id, String email, String passwordHash, String fullName, String role, boolean isBlocked, Date createdAt) {
-        this.id = id;
-        this.email = email;
-        this.passwordHash = passwordHash;
-        this.fullName = fullName;
-        this.role = role;
-        this.isBlocked = isBlocked;
-        this.createdAt = createdAt;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public boolean isBlocked() {
-        return isBlocked;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
+    public static String getMenuTableHeader() {
+        return " № | Email | ФИО | Роль | Статус | Дата регистрации";
     }
 }

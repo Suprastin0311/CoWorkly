@@ -3,63 +3,32 @@ package com.ddnik.db.dto;
 import com.ddnik.db.IDto;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
-public class WorkspaceAvailableDto implements IDto {
-    private final long id;
-    private final String type;
-    private final String name;
-    private final Integer minParticipantsCount;
-    private final Integer maxParticipantsCount;
-    private final BigDecimal hourly_rate;
-    private final BigDecimal price;
+public record WorkspaceAvailableDto (
+        long id,
+        String typeName,
+        String name,
+        int minParticipantsCount,
+        Integer maxParticipantsCount,
+        BigDecimal hourlyRate,
+        BigDecimal price
+) implements IDto {
+
+    public WorkspaceAvailableDto {
+        Objects.requireNonNull(typeName);
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(maxParticipantsCount);
+        Objects.requireNonNull(hourlyRate);
+        Objects.requireNonNull(price);
+    }
 
     @Override
-    public String toMenuRow() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(type).append(" | ")
-                .append(name).append(" | ")
-                .append(minParticipantsCount).append(" | ")
-                .append(maxParticipantsCount).append(" | ")
-                .append(hourly_rate).append(" | ")
-                .append(price);
-        return sb.toString();
+    public String toMenuTableRow() {
+        return String.format("{} | {} | {} | {} | {} | {}", typeName, name, minParticipantsCount, maxParticipantsCount == 0 ? "<не указано>" : maxParticipantsCount, hourlyRate, price);
     }
 
-    public WorkspaceAvailableDto(long id, String type, String name, Integer minParticipantsCount, Integer maxParticipantsCount, BigDecimal hourly_rate, BigDecimal price) {
-        this.id = id;
-        this.type = type;
-        this.name = name;
-        this.minParticipantsCount = minParticipantsCount;
-        this.maxParticipantsCount = maxParticipantsCount;
-        this.hourly_rate = hourly_rate;
-        this.price = price;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Integer getMinParticipantsCount() {
-        return minParticipantsCount;
-    }
-
-    public Integer getMaxParticipantsCount() {
-        return maxParticipantsCount;
-    }
-
-    public BigDecimal getHourly_rate() {
-        return hourly_rate;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
+    public static String getMenuTableHeader() {
+        return "№ | Тип | Название | Минимум человек | Максимум человек | Часовая стоимость | Сумма";
     }
 }

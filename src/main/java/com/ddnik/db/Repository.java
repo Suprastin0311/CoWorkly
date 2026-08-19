@@ -59,7 +59,7 @@ public class Repository implements IRepository {
                             rs.getBoolean("is_blocked"),
                             new Date(rs.getTimestamp("created_at").getTime())
                     );
-                    logger.debug("Из БД извлечена 1 запись из таблицы users по email {}", user.getEmail());
+                    logger.debug("Из БД извлечена 1 запись из таблицы users по email {}", user.email());
                     return Optional.of(user);
                 }
                 else {
@@ -143,22 +143,11 @@ public class Repository implements IRepository {
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces_by_id(?)");) {
             ps.setLong(1, id);
 
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    Optional<WorkspaceDto> result = Optional.of(new WorkspaceDto(
-                            rs.getString("type"),
-                            rs.getString("name"),
-                            rs.getInt("capacity"),
-                            rs.getBigDecimal("hourly_rate"),
-                            rs.getString("status")));
-                    logger.debug("Из БД извлечена 1 запись из таблицы workspaces по id {}", id);
-                    return result;
-                }
-                else {
-                    logger.debug("Из БД извлечено 0 записей");
-                    return Optional.empty();
-                }
-            }
+            ArrayList<WorkspaceDto> workspaces = executeQueryAndBuildWorkspaceDtoList(ps);
+            if (!workspaces.isEmpty())
+                return Optional.of(workspaces.get(0));
+            else
+                return Optional.empty();
         } catch (SQLTimeoutException e) {
             throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
         }
@@ -257,7 +246,14 @@ public class Repository implements IRepository {
             ArrayList<WorkspaceDto> result = new ArrayList<>();
             while (rs.next()) {
                 result.add(new WorkspaceDto(
-                        rs.getString("type"),
+                        rs.getLong("id"),
+                        new WorkspaceTypesDto(
+                                rs.getLong("type_id"),
+                               "",
+                                rs.getInt("min_participants_count"),
+                                rs.getInt("max_participants_count"),
+                                rs.getString("name_rus")
+                        ),
                         rs.getString("name"),
                         rs.getInt("capacity"),
                         rs.getBigDecimal("hourly_rate"),
@@ -379,6 +375,12 @@ public class Repository implements IRepository {
             ArrayList<BookingDto> result = new ArrayList<>();
             while (rs.next()) {
                 result.add(new BookingDto(
+                        rs.getLong("booking_id"),
+                        rs.getLong("workspace_id"),
+                        rs.getLong("wtype_id"),
+                        rs.getLong("user_id"),
+                        rs.getString("user_email"),
+                        rs.getString("user_full_name"),
                         rs.getString("type"),
                         rs.getString("workspace_name"),
                         rs.getDate("start_time"),
