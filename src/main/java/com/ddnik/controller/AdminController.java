@@ -212,6 +212,38 @@ public class AdminController {
             System.out.println("Удаление рабочего пространства");
         }
 
+        private Optional<WorkspaceDto> selectWorkspace() {
+            ConsoleMenuSelect<WorkspaceDto> menu = new ConsoleMenuSelect<>("Выберите параметр поиска рабочего пространства: ");
+            menu.addItem("Тип", this::selectByType);
+            menu.addItem("Название", this::selectByName);
+            menu.addItem("Вместимость", this::selectByCapacity);
+            menu.addItem("Часовая стоимость", this::selectByHourlyRate);
+            menu.addItem("Статус", this::selectByStatus);
+
+            logger.info("Администратор перешёл в меню выбора рабочих пространств.");
+            return menu.start();
+        }
+
+        private Optional<WorkspaceDto> selectByType() {
+
+        }
+
+        private Optional<WorkspaceDto> selectByName() {
+
+        }
+
+        private Optional<WorkspaceDto> selectByCapacity() {
+
+        }
+
+        private Optional<WorkspaceDto> selectByHourlyRate() {
+
+        }
+
+        private Optional<WorkspaceDto> selectByStatus() {
+
+        }
+
         /**
          * Выбрать тип рабочего пространства из списка.
          * @return тип рабочего пространства.
