@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Универсальное консольное меню для выбора элемента из списка объектов.
+ * Универсальное консольное меню для выбора элемента из списка Dto.
  */
 public class ItemsListMenu<T extends IDto> {
 
