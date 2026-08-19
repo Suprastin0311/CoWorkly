@@ -34,18 +34,18 @@ public class AuthController {
                     System.out.print("Password: ");
                     String password = scanner.next().trim();
 
-                    if (!PasswordHasher.checkPassword(password, user.get().getPasswordHash())) {
+                    if (!PasswordHasher.checkPassword(password, user.get().passwordHash())) {
                         System.out.println("Неверный пароль.");
                     }
                     else {
-                        if (user.get().getRole().equals("Admin")) {
-                            AuthorizedUser authorizedUser = new AuthorizedUser(user.get().getEmail(), user.get().getFullName(), UserRole.Admin, user.get().isBlocked());
+                        if (user.get().role().equals("Admin")) {
+                            AuthorizedUser authorizedUser = new AuthorizedUser(user.get().email(), user.get().fullName(), UserRole.Admin, user.get().isBlocked());
                             SecurityContextHolder.setLoggedUser(authorizedUser);
                             logger.info("Пользователь вошёл под ролью Admin.");
                             return authorizedUser;
                         }
-                        else if (user.get().getRole().equals("User")) {
-                            AuthorizedUser authorizedUser = new AuthorizedUser(user.get().getEmail(), user.get().getFullName(), UserRole.User, user.get().isBlocked());
+                        else if (user.get().role().equals("User")) {
+                            AuthorizedUser authorizedUser = new AuthorizedUser(user.get().email(), user.get().fullName(), UserRole.User, user.get().isBlocked());
                             SecurityContextHolder.setLoggedUser(authorizedUser);
                             logger.info("Пользователь вошёл под ролью User.");
                             return authorizedUser;

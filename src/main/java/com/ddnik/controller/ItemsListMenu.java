@@ -23,12 +23,9 @@ public class ItemsListMenu<T extends IDto> {
     public ItemsListMenu(List<T> items,
                          String message,
                          String tableHeader) {
-        Objects.requireNonNull(items);
-        Objects.requireNonNull(message);
-        Objects.requireNonNull(tableHeader);
-        this.items = items;
-        this.message = message;
-        this.tableHeader = tableHeader;
+        this.items = Objects.requireNonNull(items);
+        this.message = Objects.requireNonNull(message);
+        this.tableHeader = Objects.requireNonNull(tableHeader);
     }
 
     /**
@@ -60,8 +57,10 @@ public class ItemsListMenu<T extends IDto> {
     public void display() {
         System.out.println(message);
         System.out.println(tableHeader);
+        int i = 1;
         for (IDto item : items) {
-            System.out.println(item.toMenuRow());
+            System.out.println(i + " | " + item.toMenuTableRow());
+            i++;
         }
         System.out.print("> ");
     }
