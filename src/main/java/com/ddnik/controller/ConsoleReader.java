@@ -1,13 +1,12 @@
 package com.ddnik.controller;
 
-import com.ddnik.db.entity.BookingStatuses;
-import com.ddnik.db.entity.WorkspaceTypes;
 import com.ddnik.exceptions.ConsoleUserInputException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
-import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
@@ -27,6 +26,7 @@ public class ConsoleReader {
 
     private static final Pattern VALID_DATE_REGEX =
             Pattern.compile("^[0-9]+\\.[0-9]+\\.[0-9]$", Pattern.CASE_INSENSITIVE);
+    private static final Logger logger = LoggerFactory.getLogger(ConsoleReader.class);
 
     /**
      * Меню авторизации
@@ -76,12 +76,29 @@ public class ConsoleReader {
         Matcher matcher = VALID_DATE_REGEX.matcher(dateStr);
         return matcher.matches();
     }
+
     /**
      * Кроссплатформенный способ очистки консоли.
      */
     public static void cls() {
         System.out.print("\033[H\033[2J");
         System.out.flush();
+    }
+
+    /**
+     * Ожидает ввода любого символа для продолжения.
+     */
+    public static void waitInput() throws ConsoleUserInputException  {
+        try {
+            Scanner sc = new Scanner(System.in);
+            sc.nextLine();
+        } catch (NoSuchElementException e) {
+            logger.error("Ошибка ввода.", e);
+            throw new ConsoleUserInputException("Ошибка: нет данных для чтения.", e);
+        } catch (IllegalStateException e) {
+            logger.error("Ошибка ввода.", e);
+            throw new ConsoleUserInputException("Ошибка: консоль не отвечает.", e);
+        }
     }
 
     /**
@@ -110,7 +127,7 @@ public class ConsoleReader {
         } catch (NoSuchElementException e) {
             throw new ConsoleUserInputException("Ошибка: нет данных для чтения.", e);
         } catch (IllegalStateException e) {
-            throw new ConsoleUserInputException("Ошибка: Scanner закрыт.", e);
+            throw new ConsoleUserInputException("Ошибка: консоль не отвечает.", e);
         }
     }
 
@@ -125,7 +142,7 @@ public class ConsoleReader {
         } catch (NoSuchElementException e) {
             throw new ConsoleUserInputException("Ошибка: нет данных для чтения.", e);
         } catch (IllegalStateException e) {
-            throw new ConsoleUserInputException("Ошибка: Scanner закрыт.", e);
+            throw new ConsoleUserInputException("Ошибка: консоль не отвечает.", e);
         }
     }
 
@@ -147,7 +164,7 @@ public class ConsoleReader {
         } catch (NoSuchElementException e) {
             throw new ConsoleUserInputException("Ошибка: нет данных для чтения.", e);
         } catch (IllegalStateException e) {
-            throw new ConsoleUserInputException("Ошибка: Scanner закрыт.", e);
+            throw new ConsoleUserInputException("Ошибка: консоль не отвечает.", e);
         }
     }
 
@@ -164,9 +181,11 @@ public class ConsoleReader {
         } catch (NoSuchElementException e) {
             throw new ConsoleUserInputException("Ошибка: нет данных для чтения.", e);
         } catch (IllegalStateException e) {
-            throw new ConsoleUserInputException("Ошибка: Scanner закрыт.", e);
+            throw new ConsoleUserInputException("Ошибка: консоль не отвечает.", e);
         }
     }
+
+
 
     /**
      * Читает дату из консоли
@@ -192,37 +211,5 @@ public class ConsoleReader {
         }
     }
 
-    /**
-     * Составляет текст консольного меню для выбора типа рабочего пространства.
-     * @param types список типов рабочего пространства.
-     * @return текст консольного меню.
-     */
-    public static String showWorkspaceTypesDirectoryMenu(ArrayList<WorkspaceTypes> types) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Выберите тип рабочего пространства: \n");
-        int rowNumber = 1;
-        for (WorkspaceTypes type : types) {
-            sb.append(rowNumber).append(") ").append(type.name()).append("\n");
-            rowNumber++;
-        }
-        sb.append("0 - Назад");
-        return sb.toString();
-    }
 
-    /**
-     * Составляет текст консольного меню для выбора статуса брони.
-     * @param statuses список статусов брони.
-     * @return текст консольного меню.
-     */
-    public static String showBookingStatusesDirectoryMenu(ArrayList<BookingStatuses> statuses) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Выберите статус брони: \n");
-        int rowNumber = 1;
-        for (BookingStatuses status : statuses) {
-            sb.append(rowNumber).append(") ").append(status.name()).append("\n");
-            rowNumber++;
-        }
-        sb.append("0 - Назад");
-        return sb.toString();
-    }
 }

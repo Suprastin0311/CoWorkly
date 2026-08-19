@@ -199,19 +199,18 @@ public class AdminController {
             try {
 
 
-
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
         }
 
         private void changeVisibility() {
-            WorkspaceDto workspace = findWorkspace();
+            // WorkspaceDto workspace = findWorkspace();
             System.out.println("Деактивация рабочего пространства");
         }
 
         private void edit() {
-            WorkspaceDto workspace = findWorkspace();
+            // WorkspaceDto workspace = findWorkspace();
             System.out.println("Редактирование рабочего пространства");
         }
 
@@ -220,7 +219,7 @@ public class AdminController {
         }
 
         private void delete() {
-            WorkspaceDto workspace = findWorkspace();
+            // WorkspaceDto workspace = findWorkspace();
             System.out.println("Удаление рабочего пространства");
         }
 
@@ -241,21 +240,25 @@ public class AdminController {
 
         private void viewByType() {
             try {
-                ItemsListMenu menu = new ItemsListMenu(
+                ConsoleReader.cls();
+                Optional<WorkspaceTypesDto> selectedType = new ItemsListMenu<>(
                         service.getWorkspaceTypes(),
                         "Выберите тип рабочего пространства",
-                        "№ | Название | Минимум человек | Максимум человек");
-                ConsoleReader.cls();
-                Optional<WorkspaceTypesDto> selectedType = menu.start();
+                        WorkspaceTypesDto.getMenuTableHeader()).start();
 
-                if (selectedType.isPresent())
-                    ArrayList<WorkspaceDto> workspaces = service.getWorkspacesByType(selectedType.get().toWorkspaceType());
-
-            } catch (SQLException e) {
+                if (selectedType.isPresent()) {
+                    ConsoleReader.cls();
+                    new ItemsListMenu<WorkspaceDto>(
+                            service.getWorkspacesByType(selectedType.get().id()),
+                            "Выбранные рабочие пространства",
+                            WorkspaceDto.getMenuTableHeader()
+                    ).display();
+                    ConsoleReader.waitInput();
+                }
+            } catch (SQLException | ConsoleUserInputException e) {
                 System.out.println(e.getLocalizedMessage());
                 logger.error(e.getLocalizedMessage(), e);
             }
-
         }
 
         private void viewByName() {
@@ -272,200 +275,6 @@ public class AdminController {
 
         private void viewByStatus() {
 
-        }
-
-
-
-        /**
-         * Фильтрация рабочего пространства по атрибутам.
-         * @return отфильтрованный список рабочих пространств.
-         */
-        private ArrayList<WorkspaceDto> getFilteredWorkspaceList() {
-            ArrayList<WorkspaceDto> workspaces;
-
-
-
-            do {
-                try {
-                    ConsoleReader.printMenu("findWorkspace");
-                    int choice = ConsoleReader.chooseMenuItem(1, 6);
-
-                    switch (choice) {
-                        case 1: // тип
-                            try {
-
-                                if (selectedType.isPresent()) {
-
-                                }
-                                else {
-                                    break;
-                                }
-                            } catch (SQLException e) {
-                                System.out.println("Не удалось получить список типов рабочих пространств.");
-                                logger.error("Не удалось получить список типов рабочих пространств.", e);
-                            }
-
-                            try {
-                                do {
-                                    try {
-                                        System.out.print("Укажите номер выбранного типа: ");
-                                        int type = ConsoleReader.chooseMenuItem(workspaceTypes.size());
-
-                                        if (type == 0) {
-                                            break;
-                                        }
-
-                                        type--;
-                                        workspaces = service.getWorkspacesByType(workspaceTypes.get(type));
-
-                                        if (!workspaces.isEmpty()) {
-                                            System.out.println("№ | Тип | Название | Вместимость | Цена за час | Статус");
-                                            int i = 1;
-                                            for (WorkspaceDto workspace : workspaces) {
-                                                System.out.println(i + " | " + workspace.toMenuRow());
-                                                i++;
-                                            }
-                                        }
-                                        else {
-                                            System.out.println("Список рабочих пространств пуст.");
-                                            break;
-                                        }
-
-                                        return workspaces;
-                                    } catch (ConsoleUserInputException e) {
-                                        System.out.println(e.getMessage());
-                                        logger.error("Ошибка консольного ввода.", e);
-                                        break;
-                                    }
-                                } while (true);
-                            } catch (SQLException e) {
-                                System.out.println("Не удалось получить список рабочих пространств.");
-                                logger.error("Не удалось получить список рабочих пространств.", e);
-                            }
-                            break;
-                        case 2: // название
-                            ConsoleReader.cls();
-                            do {
-                                try {
-                                    System.out.print("Название рабочего пространства: ");
-                                    String workspaceName = ConsoleReader.readString();
-
-                                    return service.getWorkspacesByName(workspaceName);
-                                } catch (SQLException e) {
-                                    System.out.println("Не удалось получить список рабочих пространств.");
-                                    logger.error("Не удалось получить список рабочих пространств.", e);
-                                } catch (ConsoleUserInputException e) {
-                                    System.out.println(e.getMessage());
-                                    logger.error("Ошибка консольного ввода.", e);
-                                    break;
-                                }
-                            } while (true);
-                            break;
-                        case 3: // вместимость
-                            ConsoleReader.cls();
-                            do {
-                                try {
-                                    System.out.print("Укажите вместимость: ");
-                                    int capacity = ConsoleReader.readPositiveInt();
-
-                                    return service.getWorkspacesByCapacity(capacity);
-                                } catch (SQLException e) {
-                                    System.out.println("Не удалось получить список рабочих пространств.");
-                                    logger.error("Не удалось получить список рабочих пространств.", e);
-                                } catch (ConsoleUserInputException e) {
-                                    System.out.println(e.getMessage());
-                                    logger.error("Ошибка консольного ввода.", e);
-                                    break;
-                                }
-                            } while (true);
-                            break;
-                        case 4: // стоимость
-                            ConsoleReader.cls();
-                            do {
-                                try {
-                                    System.out.print("Укажите минимальную часовую стоимость: ");
-                                    BigDecimal minHourlyRate = new BigDecimal(ConsoleReader.readDouble());
-                                    System.out.print("Укажите максимальную часовую стоимость: ");
-                                    BigDecimal maxHourlyRate = new BigDecimal(ConsoleReader.readDouble());
-
-                                    return service.getWorkspacesByHourlyRate(minHourlyRate, maxHourlyRate);
-                                } catch (SQLException e) {
-                                    System.out.println("Не удалось получить список рабочих пространств.");
-                                    logger.error("Не удалось получить список рабочих пространств.", e);
-                                } catch (ConsoleUserInputException e) {
-                                    System.out.println(e.getMessage());
-                                    logger.error("Ошибка консольного ввода.", e);
-                                    break;
-                                }
-                            } while (true);
-                            break;
-                        case 5: // статус
-                            ConsoleReader.cls();
-                            do {
-                                try {
-                                    System.out.print("Выберите статус");
-                                    System.out.println("\n1 - Активно");
-                                    System.out.println("2 - Заблокировано");;
-                                    System.out.print("> ");
-                                    int selectedStatus = ConsoleReader.chooseMenuItem(1, 2);
-                                    boolean isActive = true;
-                                    switch(selectedStatus) {
-                                        case 2: {
-                                            isActive = false;
-                                            break;
-                                        }
-                                    }
-
-                                    return service.getWorkspacesByStatus(isActive);
-                                } catch (SQLException e) {
-                                    System.out.println("Не удалось получить список рабочих пространств.");
-                                    logger.error("Не удалось получить список рабочих пространств.", e);
-                                } catch (ConsoleUserInputException e) {
-                                    System.out.println(e.getMessage());
-                                    logger.error("Ошибка консольного ввода.", e);
-                                    break;
-                                }
-                            } while (true);
-                            break;
-                        case 6: // назад
-                            return new ArrayList<WorkspaceDto>();
-                    }
-
-                } catch (ConsoleUserInputException e) {
-                    System.out.println(e.getMessage());
-                    logger.error("Ошибка консольного ввода.", e);
-                }
-            } while (true);
-        }
-
-        /**
-         * Поиск рабочего пространства по параметрам.
-         */
-        private WorkspaceDto findWorkspace() {
-            ArrayList<WorkspaceDto> workspaces = getFilteredWorkspaceList();
-
-            if (workspaces.isEmpty()) {
-                System.out.println("Не нашлось рабочих пространств, удовлетворяющих фильтрам.");
-                logger.debug("Не нашлось рабочих пространств, удовлетворяющих фильтрам.");
-                return null;
-            }
-            else {
-                try {
-                    System.out.println("Выберите рабочее пространство.");
-                    int i = 1;
-                    for (WorkspaceDto workspace : workspaces) {
-                        System.out.println(i + " | " + workspace.toMenuRow());
-                    }
-                    System.out.print("> ");
-
-                    int selectedWorkspaceNumber = ConsoleReader.chooseMenuItem(workspaces.size());
-
-                    return workspaces.get(selectedWorkspaceNumber-1);
-                } catch (ConsoleUserInputException e) {
-                    System.out.println(e.getMessage());
-                    logger.error("Ошибка консольного ввода.", e);
-                }
-            }
         }
     }
 
