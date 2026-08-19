@@ -38,7 +38,7 @@ public record BookingDto (
 
     @Override
     public String toMenuTableRow() {
-        return String.format("{} | {} | {} | {} | {} | {} | {} | {} | {}", workspaceTypeName, workspaceName, startTime, endTime, userEmail, participantsCount, status, price, createdAt);
+        return String.format("%s | %s | %tF%<tR | %tF%<tR | %s | %d | %s | %,3.2f | %tF%<tR", workspaceTypeName, workspaceName, startTime, endTime, userEmail, participantsCount, status, price, createdAt);
     }
 
     public static String getMenuTableHeader() {

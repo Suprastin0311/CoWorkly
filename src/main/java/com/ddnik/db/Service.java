@@ -222,10 +222,10 @@ public class Service implements IService {
         }
     }
     
-    public ArrayList<WorkspaceDto> getWorkspacesByType(WorkspaceTypes type) throws SQLException, SecurityException {
+    public ArrayList<WorkspaceDto> getWorkspacesByType(long id) throws SQLException, SecurityException {
         try {
-            ArrayList<WorkspaceDto> workspaces = repo.getWorkspacesByType(type.id());
-            logger.debug("Получено {} рабочих пространств с типом {}", workspaces.size(), type.name());
+            ArrayList<WorkspaceDto> workspaces = repo.getWorkspacesByType(id);
+            logger.debug("Получено {} рабочих пространств с типом {}", workspaces.size(), id);
             return workspaces;
         } catch (SQLException | SecurityException e) {
             throw e;

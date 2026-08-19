@@ -252,7 +252,7 @@ public class Repository implements IRepository {
                                "",
                                 rs.getInt("min_participants_count"),
                                 rs.getInt("max_participants_count"),
-                                rs.getString("name_rus")
+                                rs.getString("type")
                         ),
                         rs.getString("name"),
                         rs.getInt("capacity"),

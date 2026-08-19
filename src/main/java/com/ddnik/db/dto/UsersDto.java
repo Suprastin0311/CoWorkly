@@ -26,7 +26,7 @@ public record UsersDto (
 
     @Override
     public String toMenuTableRow() {
-        return String.format("{} | {} | {} | {} | {}", email, fullName, role, isBlocked ? "Заблокирован" : "Активен", createdAt);
+        return String.format("%s | %s | %s | %s | %tF %<tR", email, fullName, role, isBlocked ? "Заблокирован" : "Активен", createdAt);
     }
 
     public static String getMenuTableHeader() {

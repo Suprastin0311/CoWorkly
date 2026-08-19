@@ -23,7 +23,7 @@ public record WorkspaceDto (
 
     @Override
     public String toMenuTableRow() {
-        return String.format("{} | {} | {} | {}", type.nameRus(), name, capacity, hourlyRate, status);
+        return String.format("%s | %s | %d | %,3.2f | %s", type.nameRus(), name, capacity, hourlyRate, status);
     }
 
     public static String getMenuTableHeader() {

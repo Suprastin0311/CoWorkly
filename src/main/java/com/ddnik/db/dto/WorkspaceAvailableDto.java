@@ -25,7 +25,7 @@ public record WorkspaceAvailableDto (
 
     @Override
     public String toMenuTableRow() {
-        return String.format("{} | {} | {} | {} | {} | {}", typeName, name, minParticipantsCount, maxParticipantsCount == 0 ? "<не указано>" : maxParticipantsCount, hourlyRate, price);
+        return String.format("%s | %s | %d | %s | %,3.2f | %,3.2f", typeName, name, minParticipantsCount, maxParticipantsCount == 0 ? "<не указано>" : maxParticipantsCount, hourlyRate, price);
     }
 
     public static String getMenuTableHeader() {

@@ -142,12 +142,12 @@ public interface IService {
 
     /**
      * Получает рабочие пространства типу.
-     * @param type тип рабочего пространства.
+     * @param id код типа рабочего пространства.
      * @return список рабочих пространств.
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
-    ArrayList<WorkspaceDto> getWorkspacesByType(WorkspaceTypes type) throws SQLException, SecurityException;
+    ArrayList<WorkspaceDto> getWorkspacesByType(long id) throws SQLException, SecurityException;
 
     /**
      * Получает рабочие пространства, доступные к бронированию согласно указанным параметрам.

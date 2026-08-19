@@ -14,7 +14,7 @@ public record WorkspaceTypesDto (
 
     @Override
     public String toMenuTableRow() {
-        return String.format("{} | {} | {}", nameRus, minParticipantsCount, maxParticipantsCount);
+        return String.format("%s | %d | %d", nameRus, minParticipantsCount, maxParticipantsCount);
     }
 
     public static String getMenuTableHeader() {
