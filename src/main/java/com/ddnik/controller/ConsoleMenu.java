@@ -4,10 +4,11 @@ import com.ddnik.exceptions.ConsoleUserInputException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.SQLException;
 import java.util.*;
 
 /**
- * Универсальное консольное меню для перехода к дочерним меню.
+ * Универсальное консольное меню.
  */
 public class ConsoleMenu {
 
@@ -24,8 +25,8 @@ public class ConsoleMenu {
 
     /**
      * Добавляет пункт в консольное меню.
-     * @param title отображаемый текст пункта в меню
-     * @param action логика
+     * @param title отображаемый текст пункта в меню.
+     * @param action логика пункта меню.
      */
     public void addItem(String title, MenuAction action) {
         items.add(new MenuItem(title, action));
@@ -39,19 +40,23 @@ public class ConsoleMenu {
         while (isRunning) {
             try {
                 display();
+                System.out.println("0 - Назад");
                 int choice = ConsoleReader.chooseMenuItem(0, items.size());
 
-                if (choice == 0) {
-                    isRunning = false; // Назад
-                }
-                else {
-                    executeAction(items.get(choice-1)); // Выполнить действие выбранного пункта
-                }
+                if (choice == 0) isRunning = false; // Назад
+                else executeAction(items.get(choice-1)); // Выполнить действие выбранного пункта
             } catch (ConsoleUserInputException e) {
                 System.out.println(e.getLocalizedMessage());
                 logger.error("Ошибка консольного ввода.", e);
             }
         }
+    }
+
+    /**
+     * Остановка меню.
+     */
+    public void close() {
+        isRunning = false;
     }
 
     /**
@@ -62,21 +67,31 @@ public class ConsoleMenu {
         for (int i = 0; i < items.size(); i++) {
             System.out.println((i + 1) + " - " + items.get(i).getTitle());
         }
-        System.out.println("0 - Назад");
-        System.out.print("> ");
     }
 
     /**
-     * Выполнение пункта меню
-     * @param item пункт меню
+     * Выполнение пункта меню.
+     * @param item логика пункта меню.
      */
     private void executeAction(MenuItem item) {
         try {
             item.getAction().execute();
+        } catch (ConsoleUserInputException e) {
+            System.out.println(e.getLocalizedMessage());
+            logger.error("Ошибка консольного ввода.", e);
+            ConsoleReader.waitInput();
+        } catch (SQLException e) {
+            System.out.println("Ошибка с базой данных.");
+            logger.error(e.getLocalizedMessage(), e);
+            ConsoleReader.waitInput();
+        } catch (SecurityException e) {
+            System.out.println(e.getLocalizedMessage());
+            logger.error("Ошибка доступа.", e);
+            ConsoleReader.waitInput();
         } catch (Exception e) {
-            System.out.println("Непредвиденная ошибка: " + e.getLocalizedMessage());
-            System.out.println("Нажмите любую клавишу чтобы продолжить...");
-            scanner.nextLine();
+            System.out.println("Непредвиденная ошибка.");
+            logger.error(e.getLocalizedMessage(), e);
+            ConsoleReader.waitInput();
         }
     }
 }

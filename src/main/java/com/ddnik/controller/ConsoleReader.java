@@ -88,16 +88,17 @@ public class ConsoleReader {
     /**
      * Ожидает ввода любого символа для продолжения.
      */
-    public static void waitInput() throws ConsoleUserInputException  {
+    public static void waitInput()  {
         try {
+            System.out.print("Нажмите любую клавишу чтобы продолжить...");
             Scanner sc = new Scanner(System.in);
             sc.nextLine();
         } catch (NoSuchElementException e) {
+            System.out.println("Ошибка: нет данных для чтения.");
             logger.error("Ошибка ввода.", e);
-            throw new ConsoleUserInputException("Ошибка: нет данных для чтения.", e);
         } catch (IllegalStateException e) {
+            System.out.println("Ошибка: консоль не отвечает.");
             logger.error("Ошибка ввода.", e);
-            throw new ConsoleUserInputException("Ошибка: консоль не отвечает.", e);
         }
     }
 
@@ -111,6 +112,7 @@ public class ConsoleReader {
     public static int chooseMenuItem(int minItem, int maxItem) throws ConsoleUserInputException {
         try {
             Scanner sc = new Scanner(System.in);
+            System.out.print("> ");
             int choice = sc.nextInt();
 
             if (choice < 0) {

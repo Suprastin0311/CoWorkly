@@ -12,9 +12,9 @@ import org.slf4j.LoggerFactory;
 import javax.swing.text.html.Option;
 import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.Scanner;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 /**
  * Управляет консольным меню администратора.
@@ -194,12 +194,12 @@ public class AdminController {
         }
 
         private void changeVisibility() {
-            // WorkspaceDto workspace = findWorkspace();
+            Optional<WorkspaceDto> workspace = select();
             System.out.println("Деактивация рабочего пространства");
         }
 
         private void edit() {
-            // WorkspaceDto workspace = findWorkspace();
+            Optional<WorkspaceDto> workspace = select();
             System.out.println("Редактирование рабочего пространства");
         }
 
@@ -208,59 +208,142 @@ public class AdminController {
         }
 
         private void delete() {
-            // WorkspaceDto workspace = findWorkspace();
-            System.out.println("Удаление рабочего пространства");
+            Optional<WorkspaceDto> workspace = select();
+            System.out.println("Удаление рабочего пространства" + workspace);
         }
 
-        private Optional<WorkspaceDto> selectWorkspace() {
-            ConsoleMenuSelect<WorkspaceDto> menu = new ConsoleMenuSelect<>("Выберите параметр поиска рабочего пространства: ");
-            menu.addItem("Тип", this::selectByType);
-            menu.addItem("Название", this::selectByName);
-            menu.addItem("Вместимость", this::selectByCapacity);
-            menu.addItem("Часовая стоимость", this::selectByHourlyRate);
-            menu.addItem("Статус", this::selectByStatus);
+        private Optional<WorkspaceDto> select() {
+            AtomicReference<WorkspaceDto> result = new AtomicReference<>();
+
+            ConsoleMenu menu = new ConsoleMenu("Выберите параметр поиска рабочего пространства: ");
+            menu.addItem("Тип", () -> {
+                WorkspaceDto w = getWorkspace(selectByType());
+                if (w != null) {
+                    result.set(w);
+                    menu.close();
+                }
+            });
+            menu.addItem("Название", () -> {
+                WorkspaceDto w = getWorkspace(selectByName());
+                if (w != null) {
+                    result.set(w);
+                    menu.close();
+                }
+            });
+            menu.addItem("Вместимость", () -> {
+                WorkspaceDto w = getWorkspace(selectByCapacity());
+                if (w != null) {
+                    result.set(w);
+                    menu.close();
+                }
+            });
+            menu.addItem("Часовая стоимость", () -> {
+                WorkspaceDto w = getWorkspace(selectByHourlyRate());
+                if (w != null) {
+                    result.set(w);
+                    menu.close();
+                }
+            });
+            menu.addItem("Статус", () -> {
+                WorkspaceDto w = getWorkspace(selectByStatus());
+                if (w != null) {
+                    result.set(w);
+                    menu.close();
+                }
+            });
 
             logger.info("Администратор перешёл в меню выбора рабочих пространств.");
-            return menu.start();
+            menu.start();
+
+            return Optional.ofNullable(result.get());
         }
 
-        private Optional<WorkspaceDto> selectByType() {
-
+        private WorkspaceDto getWorkspace(List<WorkspaceDto> workspaces) {
+            Optional<WorkspaceDto> workspace = new ItemsListMenu<>(workspaces, "Выберите рабочее пространство", WorkspaceDto.getMenuTableHeader()).start();
+            if (workspace.isPresent()) {
+                logger.debug("Получено рабочее пространство: {}", workspace.get());
+                return workspace.get();
+            } else {
+                logger.debug("Не удалось получить рабочее пространство.");
+                return null;
+            }
         }
 
-        private Optional<WorkspaceDto> selectByName() {
+        private List<WorkspaceDto> selectByType() throws SQLException, SecurityException {
+            ConsoleReader.cls();
+            Optional<WorkspaceTypesDto> type = selectWorkspaceType();
 
+            if (type.isPresent()) {
+                ConsoleReader.cls();
+                return service.getWorkspacesByType(type.get().id());
+            } else {
+                return new ArrayList<>();
+            }
         }
 
-        private Optional<WorkspaceDto> selectByCapacity() {
+        private List<WorkspaceDto> selectByName() throws SQLException, SecurityException, ConsoleUserInputException {
+            ConsoleReader.cls();
+            System.out.print("Введите название рабочего пространства: ");
+            String name = ConsoleReader.readString();
 
+            if (name.isEmpty()) {
+                System.out.println("Была введена пустая строка.");
+                return new ArrayList<>();
+            } else {
+                return service.getWorkspacesByName(name);
+            }
         }
 
-        private Optional<WorkspaceDto> selectByHourlyRate() {
+        private List<WorkspaceDto> selectByCapacity() throws SQLException, SecurityException, ConsoleUserInputException {
+            ConsoleReader.cls();
+            System.out.print("Введите вместимость рабочего пространства: ");
+            int capacity = ConsoleReader.readPositiveInt();
 
+            return service.getWorkspacesByCapacity(capacity);
         }
 
-        private Optional<WorkspaceDto> selectByStatus() {
+        private List<WorkspaceDto> selectByHourlyRate() throws SQLException, SecurityException, ConsoleUserInputException {
+            ConsoleReader.cls();
+            System.out.print("Введите минимальную часовую стоимость рабочего пространства: ");
+            BigDecimal minRate = BigDecimal.valueOf(ConsoleReader.readDouble());
+            System.out.print("Введите максимальную часовую стоимость рабочего пространства: ");
+            BigDecimal maxRate = BigDecimal.valueOf(ConsoleReader.readDouble());
 
+            return service.getWorkspacesByHourlyRate(minRate, maxRate);
+        }
+
+        private List<WorkspaceDto> selectByStatus() throws SQLException, SecurityException, ConsoleUserInputException {
+            ConsoleReader.cls();
+            System.out.println("Выберите статус рабочего пространства: ");
+            System.out.println("1 - Активно");
+            System.out.println("2 - Заблокировано");
+            System.out.println("0 - Назад");
+            int selectedItem = ConsoleReader.chooseMenuItem(0, 2);
+            boolean status = true;
+            switch (selectedItem) {
+                case 0 -> {
+                    return new ArrayList<>();
+                }
+                case 2 -> {
+                    status = false;
+                }
+            }
+
+            return service.getWorkspacesByStatus(status);
         }
 
         /**
          * Выбрать тип рабочего пространства из списка.
+         *
          * @return тип рабочего пространства.
          */
-        private Optional<WorkspaceTypesDto> selectWorkspaceType() {
-            Optional<WorkspaceTypesDto> type = Optional.empty();
-
-            try {
-                ConsoleReader.cls();
-                 type = new ItemsListMenu<>(
-                        service.getWorkspaceTypes(),
-                        "Выберите тип рабочего пространства",
-                        WorkspaceTypesDto.getMenuTableHeader()).start();
-            } catch (SQLException e) {
-                System.out.println(e.getLocalizedMessage());
-                logger.error(e.getLocalizedMessage(), e);
-            }
+        private Optional<WorkspaceTypesDto> selectWorkspaceType() throws SQLException {
+            Optional<WorkspaceTypesDto> type;
+            ConsoleReader.cls();
+            type = new ItemsListMenu<>(
+                    service.getWorkspaceTypes(),
+                    "Выберите тип рабочего пространства",
+                    WorkspaceTypesDto.getMenuTableHeader()).start();
 
             return type;
         }
@@ -268,183 +351,43 @@ public class AdminController {
         /**
          * Просмотреть рабочие пространства.
          */
-        private void viwAll() {
-            try {
-                new ItemsListMenu<>(
-                        service.getWorkspacesByName(""),
-                        "Все рабочие пространства",
-                        WorkspaceDto.getMenuTableHeader()
-                ).display();
-                ConsoleReader.waitInput();
-
-            } catch (ConsoleUserInputException e) {
-                System.out.println(e.getLocalizedMessage());
-                logger.error(e.getLocalizedMessage(), e);
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-            }
+        private void viwAll() throws SQLException, SecurityException, ConsoleUserInputException {
+            new ItemsListMenu<>(
+                    service.getWorkspacesByName(""),
+                    "Все рабочие пространства",
+                    WorkspaceDto.getMenuTableHeader()
+            ).display();
+            ConsoleReader.waitInput();
         }
 
         /**
          * Посмотреть рабочие пространства с фильтром по атрибуту.
          */
-        private void view () {
+        private void view() {
             ConsoleMenu menu = new ConsoleMenu("Выберите параметр поиска рабочего пространства: ");
-            menu.addItem("Тип", this::viewByType);
-            menu.addItem("Название", this::viewByName);
-            menu.addItem("Вместимость", this::viewByCapacity);
-            menu.addItem("Часовая стоимость", this::viewByHourlyRate);
-            menu.addItem("Статус", this::viewByStatus);
+            menu.addItem("Тип", () -> {
+                new ItemsListMenu<>(selectByType(), "Найденные рабочие пространства", WorkspaceDto.getMenuTableHeader()).display();
+                ConsoleReader.waitInput();
+            });
+            menu.addItem("Название", () -> {
+                new ItemsListMenu<>(selectByName(), "Найденные рабочие пространства", WorkspaceDto.getMenuTableHeader()).display();
+                ConsoleReader.waitInput();
+            });
+            menu.addItem("Вместимость", () -> {
+                new ItemsListMenu<>(selectByCapacity(), "Найденные рабочие пространства", WorkspaceDto.getMenuTableHeader()).display();
+                ConsoleReader.waitInput();
+            });
+            menu.addItem("Часовая стоимость", () -> {
+                new ItemsListMenu<>(selectByHourlyRate(), "Найденные рабочие пространства", WorkspaceDto.getMenuTableHeader()).display();
+                ConsoleReader.waitInput();
+            });
+            menu.addItem("Статус", () -> {
+                new ItemsListMenu<>(selectByStatus(), "Найденные рабочие пространства", WorkspaceDto.getMenuTableHeader()).display();
+                ConsoleReader.waitInput();
+            });
 
             logger.info("Администратор перешёл в меню просмотра рабочих пространств.");
             menu.start();
-        }
-
-        /**
-         * Посмотреть рабочие пространства с фильтром по типу.
-         */
-        private void viewByType() {
-            try {
-                ConsoleReader.cls();
-                Optional<WorkspaceTypesDto> type = selectWorkspaceType();
-
-                if (type.isPresent()) {
-                    ConsoleReader.cls();
-                    ArrayList<WorkspaceDto> workspaces = service.getWorkspacesByType(type.get().id());
-                    if (workspaces.isEmpty()) System.out.println("Рабочие пространства не найдены.");
-                    else new ItemsListMenu<>(workspaces, "Найденные рабочие пространства", WorkspaceDto.getMenuTableHeader()).display();
-                    ConsoleReader.waitInput();
-                }
-            } catch (ConsoleUserInputException e) {
-                System.out.println(e.getLocalizedMessage());
-                logger.error(e.getLocalizedMessage(), e);
-            } catch (SQLException e) {
-                System.out.println("Произошла ошибка на уровне базы данных");
-                logger.error(e.getLocalizedMessage(), e);
-            } catch (SecurityException e) {
-                System.out.println("Недостаточно прав для выполнения данной операции.");
-                logger.error(e.getLocalizedMessage(), e);
-            }
-        }
-
-        /**
-         * Посмотреть рабочие пространства с фильтром по названию.
-         */
-        private void viewByName() {
-            try {
-                ConsoleReader.cls();
-                System.out.print("Введите название рабочего пространства: ");
-                String name = ConsoleReader.readString();
-
-                if (!name.isEmpty()) {
-                    ArrayList<WorkspaceDto> workspaces = service.getWorkspacesByName(name);
-                    if (workspaces.isEmpty()) System.out.println("Рабочие пространства не найдены.");
-                    else new ItemsListMenu<>(workspaces, "Найденные рабочие пространства", WorkspaceDto.getMenuTableHeader()).display();
-                    ConsoleReader.waitInput();
-                }
-                else {
-                    System.out.println("Была введена пустая строка.");
-                }
-            } catch (ConsoleUserInputException e) {
-                System.out.println(e.getLocalizedMessage());
-                logger.error(e.getLocalizedMessage(), e);
-            } catch (SQLException e) {
-                System.out.println("Произошла ошибка на уровне базы данных");
-                logger.error(e.getLocalizedMessage(), e);
-            } catch (SecurityException e) {
-                System.out.println("Недостаточно прав для выполнения данной операции.");
-                logger.error(e.getLocalizedMessage(), e);
-            }
-        }
-
-        /**
-         * Посмотреть рабочие пространства с фильтром по вместимости.
-         */
-        private void viewByCapacity() {
-            try {
-                ConsoleReader.cls();
-                System.out.print("Введите вместимость рабочего пространства: ");
-                int capacity = ConsoleReader.readPositiveInt();
-
-                ArrayList<WorkspaceDto> workspaces = service.getWorkspacesByCapacity(capacity);
-                if (workspaces.isEmpty()) System.out.println("Рабочие пространства не найдены.");
-                else new ItemsListMenu<>(workspaces, "Найденные рабочие пространства", WorkspaceDto.getMenuTableHeader()).display();
-                ConsoleReader.waitInput();
-            } catch (ConsoleUserInputException e) {
-                System.out.println(e.getLocalizedMessage());
-                logger.error(e.getLocalizedMessage(), e);
-            } catch (SQLException e) {
-                System.out.println("Произошла ошибка на уровне базы данных");
-                logger.error(e.getLocalizedMessage(), e);
-            } catch (SecurityException e) {
-                System.out.println("Недостаточно прав для выполнения данной операции.");
-                logger.error(e.getLocalizedMessage(), e);
-            }
-        }
-
-        /**
-         * Посмотреть рабочие пространства с фильтром по диапазону цен за час.
-         */
-        private void viewByHourlyRate() {
-            try {
-                ConsoleReader.cls();
-                System.out.print("Введите минимальную часовую стоимость рабочего пространства: ");
-                BigDecimal minRate = BigDecimal.valueOf(ConsoleReader.readDouble());
-                System.out.print("Введите максимальную часовую стоимость рабочего пространства: ");
-                BigDecimal maxRate = BigDecimal.valueOf(ConsoleReader.readDouble());
-
-                ArrayList<WorkspaceDto> workspaces = service.getWorkspacesByHourlyRate(minRate, maxRate);
-                if (workspaces.isEmpty()) System.out.println("Рабочие пространства не найдены.");
-                else new ItemsListMenu<>(workspaces, "Найденные рабочие пространства", WorkspaceDto.getMenuTableHeader()).display();
-                ConsoleReader.waitInput();
-            } catch (ConsoleUserInputException e) {
-                System.out.println(e.getLocalizedMessage());
-                logger.error(e.getLocalizedMessage(), e);
-            } catch (SQLException e) {
-                System.out.println("Произошла ошибка на уровне базы данных");
-                logger.error(e.getLocalizedMessage(), e);
-            } catch (SecurityException e) {
-                System.out.println("Недостаточно прав для выполнения данной операции.");
-                logger.error(e.getLocalizedMessage(), e);
-            }
-        }
-
-        /**
-         * Посмотреть рабочие пространства с фильтром по статусу.
-         */
-        private void viewByStatus() {
-            try {
-                ConsoleReader.cls();
-                System.out.println("Выберите статус рабочего пространства: ");
-                System.out.println("1 - Активно");
-                System.out.println("2 - Заблокировано");
-                System.out.println("0 - Назад");
-                System.out.print("> ");
-                int selectedItem = ConsoleReader.chooseMenuItem(0, 2);
-                boolean status = true;
-                switch (selectedItem) {
-                    case 0 -> {
-                        return;
-                    }
-                    case 2 -> {
-                        status = false;
-                    }
-                }
-
-                ArrayList<WorkspaceDto> workspaces = service.getWorkspacesByStatus(status);
-                if (workspaces.isEmpty()) System.out.println("Рабочие пространства не найдены.");
-                else new ItemsListMenu<>(workspaces, "Найденные рабочие пространства", WorkspaceDto.getMenuTableHeader()).display();
-                ConsoleReader.waitInput();
-            } catch (ConsoleUserInputException e) {
-                System.out.println(e.getLocalizedMessage());
-                logger.error(e.getLocalizedMessage(), e);
-            } catch (SQLException e) {
-                System.out.println("Произошла ошибка на уровне базы данных");
-                logger.error(e.getLocalizedMessage(), e);
-            } catch (SecurityException e) {
-                System.out.println("Недостаточно прав для выполнения данной операции.");
-                logger.error(e.getLocalizedMessage(), e);
-            }
         }
     }
 

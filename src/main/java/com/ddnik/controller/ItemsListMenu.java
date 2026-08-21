@@ -38,6 +38,7 @@ public class ItemsListMenu<T extends IDto> {
         while (isRunning) {
             try {
                 display();
+                System.out.println("0 - Назад");
                 selectedItemIndex = ConsoleReader.chooseMenuItem(0, items.size());
 
                 if (selectedItemIndex == 0) return Optional.empty();
@@ -62,6 +63,5 @@ public class ItemsListMenu<T extends IDto> {
             System.out.println(i + " | " + item.toMenuTableRow());
             i++;
         }
-        System.out.print("> ");
     }
 }
