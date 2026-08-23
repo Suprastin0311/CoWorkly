@@ -43,6 +43,8 @@ public interface IRepository {
 
     ArrayList<BookingDto> getBookingsByUserId(long id) throws SQLException;
 
+    ArrayList<BookingDto> getBookingsByWorkspaceId(long id) throws SQLException;
+
     ArrayList<BookingDto> getBookingsByStatus(BookingStatuses status) throws SQLException;
 
     ArrayList<BookingDto> getUserBookingsByTime(long user_id, Date startTime, Date endTime) throws SQLException;

@@ -127,11 +127,11 @@ public class Repository implements IRepository {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    logger.debug("Была обновлена запись в таблице workspaces c id - {}", rs.getLong(1));
+                    logger.debug("Была обновлена запись в таблице workspaces c id - {}", workspace.id());
                     return Optional.of(rs.getBoolean(1));
                 }
                 else {
-                    logger.debug("Не удалось обновить запись в таблице workspaces c id - {}", rs.getLong(1));
+                    logger.debug("Не удалось обновить запись в таблице workspaces c id - {}", workspace.id());
                     return Optional.empty();
                 }
             }
@@ -257,6 +257,7 @@ public class Repository implements IRepository {
                         rs.getString("name"),
                         rs.getInt("capacity"),
                         rs.getBigDecimal("hourly_rate"),
+                        rs.getBoolean("is_active"),
                         rs.getString("status")));
             }
             logger.debug("Из БД извлечено {} записей.", result.size());
@@ -273,6 +274,15 @@ public class Repository implements IRepository {
     public ArrayList<BookingDto> getBookingsByUserId(long id) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?)")) {
+            ps.setLong(1, id);
+
+            return executeQueryAndBuildBookingDtoList(ps);
+        }
+    }
+
+    public ArrayList<BookingDto> getBookingsByWorkspaceId(long id) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings_by_workspace_id(?)")) {
             ps.setLong(1, id);
 
             return executeQueryAndBuildBookingDtoList(ps);

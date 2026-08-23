@@ -171,6 +171,15 @@ public interface IService {
     ArrayList<BookingDto> getBookingsByUserId(Users user) throws SQLException, SecurityException;
 
     /**
+     * Получает список броней указанного рабочего пространства.
+     * @param workspace рабочее пространство
+     * @return список броней.
+     * @throws SQLException в случае возникновения ошибки на уровне базы данных.
+     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     */
+    ArrayList<BookingDto> getBookingsByWorkspaceId(WorkspaceDto workspace) throws SQLException, SecurityException;
+
+    /**
      * Получает список броней с указанным статусом.
      * @param status статус брони.
      * @return список броней.
