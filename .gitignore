@@ -41,5 +41,4 @@ build/
 ### Custom ###
 /TZ-CoWorkly-formal.md
 /CoWorkly_Test_functionsonly.sql
-/CoWorkly_Debug.log
-/CoWorkly_Debug_HikariCP.log
+*.log
