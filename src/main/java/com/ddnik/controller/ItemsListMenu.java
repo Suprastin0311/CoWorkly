@@ -1,6 +1,6 @@
 package com.ddnik.controller;
 
-import com.ddnik.db.IDto;
+import com.ddnik.db.dto.IDto;
 import com.ddnik.exceptions.ConsoleUserInputException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -26,6 +26,7 @@ public class ConsoleReader {
 
     private static final Pattern VALID_DATE_REGEX =
             Pattern.compile("^[0-9]+\\.[0-9]+\\.[0-9]$", Pattern.CASE_INSENSITIVE);
+
     private static final Logger logger = LoggerFactory.getLogger(ConsoleReader.class);
 
     /**
@@ -187,8 +188,6 @@ public class ConsoleReader {
         }
     }
 
-
-
     /**
      * Читает дату из консоли
      * @return дата
@@ -212,6 +211,4 @@ public class ConsoleReader {
             return Date.valueOf(dateStr);
         }
     }
-
-
 }

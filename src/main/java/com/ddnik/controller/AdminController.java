@@ -2,6 +2,7 @@ package com.ddnik.controller;
 
 import com.ddnik.AuthorizedUser;
 import com.ddnik.db.Service;
+import com.ddnik.db.dto.BookingDto;
 import com.ddnik.db.dto.WorkspaceDto;
 import com.ddnik.db.dto.WorkspaceTypesDto;
 import com.ddnik.db.entity.*;
@@ -185,22 +186,156 @@ public class AdminController {
             menu.addItem("Просмотр всех", this::viwAll);
             menu.addItem("Просмотр выбранного", this::view);
             menu.addItem("Редактирование", this::edit);
-            menu.addItem("Скрытие", this::changeVisibility);
             menu.addItem("Создание", this::create);
             menu.addItem("Удаление", this::delete);
 
             logger.info("Администратор перешёл в меню управления рабочими пространствами.");
             menu.start();
         }
-
-        private void changeVisibility() {
+        
+        /**
+         * Редактирование рабочего пространства.
+         */
+        private void edit() throws SQLException, SecurityException {
             Optional<WorkspaceDto> workspace = select();
-            System.out.println("Деактивация рабочего пространства");
+
+            if (workspace.isPresent()) {
+                ConsoleMenu menu = new ConsoleMenu("Выберите редактируемый параметр рабочего пространства.");
+                menu.addItem("Тип", () -> editType(workspace.get()));
+                menu.addItem("Название", () -> editName(workspace.get()));
+                menu.addItem("Вместимость", () -> editCapacity(workspace.get()));
+                menu.addItem("Часовая стоимость", () -> editHourlyRate(workspace.get()));
+                menu.addItem("Переключить статус", () -> changeVisibility(workspace.get()));
+
+                logger.info("Администратор перешёл в меню редактирования рабочего пространства.");
+                menu.start();
+            }
+            else {
+                System.out.println("Не удалось выбрать рабочее пространство.");
+            }
         }
 
-        private void edit() {
-            Optional<WorkspaceDto> workspace = select();
-            System.out.println("Редактирование рабочего пространства");
+        private void editType(WorkspaceDto workspace) throws SQLException, SecurityException {
+            List<WorkspaceTypesDto> typeList = service.getWorkspaceTypes();
+            while (true) {
+                Optional<WorkspaceTypesDto> type = new ItemsListMenu<>(typeList,
+                        "Выберите новый тип рабочего пространства.",
+                        WorkspaceTypesDto.getMenuTableHeader()).start();
+                if (type.isPresent()) {
+                    if (type.get().id() == workspace.type().id())
+                        System.out.println("Выбранный тип совпадает с текущим.");
+                    else {
+                        Workspaces editedWorkspace = new Workspaces(
+                                workspace.id(),
+                                type.get().id(),
+                                workspace.name(),
+                                workspace.capacity(),
+                                workspace.hourlyRate(),
+                                workspace.is_active());
+
+                        update(editedWorkspace);
+                        return;
+                    }
+                }
+                else {
+                    System.out.println("Не удалось выбрать тип.");
+                    logger.debug("Не удалось выбрать тип рабочего пространства.");
+                    return;
+                }
+            }
+        }
+
+        private void editName(WorkspaceDto workspace) throws SQLException, SecurityException, ConsoleUserInputException {
+            while (true) {
+                System.out.print("Введите новое название: ");
+                String name = ConsoleReader.readString();
+
+                if (workspace.name().equals(name)) System.out.println("Введённое название совпадает с текущим.");
+                else {
+                    Workspaces editedWorkspace = new Workspaces(
+                            workspace.id(),
+                            workspace.type().id(),
+                            name,
+                            workspace.capacity(),
+                            workspace.hourlyRate(),
+                            workspace.is_active());
+
+                    update(editedWorkspace);
+                    return;
+                }
+            }
+        }
+
+        private void editCapacity(WorkspaceDto workspace) throws SQLException, SecurityException, ConsoleUserInputException {
+            while (true) {
+                System.out.print("Введите новое значение вместимости: ");
+                int capacity = ConsoleReader.readPositiveInt();
+                if (workspace.capacity() == capacity) System.out.println("Введённое значение совпадает с текущим.");
+                else if (capacity < workspace.type().minParticipantsCount()
+                        || capacity > workspace.type().maxParticipantsCount())
+                    System.out.println("Введённое значение выходит за рамки вместимости типа: "
+                            + workspace.type().nameRus() + ", вместимость [" + workspace.type().nameRus() + "]." );
+                else {
+                    Workspaces editedWorkspace = new Workspaces(
+                            workspace.id(),
+                            workspace.type().id(),
+                            workspace.name(),
+                            capacity,
+                            workspace.hourlyRate(),
+                            workspace.is_active());
+
+                    update(editedWorkspace);
+                    return;
+                }
+            }
+        }
+
+        private void editHourlyRate(WorkspaceDto workspace) throws SQLException, SecurityException, ConsoleUserInputException {
+            while (true) {
+                System.out.print("Введите новое значение часовой стоимости: ");
+                BigDecimal hourlyRate = BigDecimal.valueOf(ConsoleReader.readDouble());
+
+                if (workspace.hourlyRate().compareTo(hourlyRate) == 0)
+                    System.out.println("Введённое значение совпадает с текущим.");
+                else if (hourlyRate.compareTo(BigDecimal.ZERO) < 0)
+                    System.out.println("Часовая стоимость не может быть отрицательным числом.");
+                else {
+                    Workspaces editedWorkspace = new Workspaces(
+                            workspace.id(),
+                            workspace.type().id(),
+                            workspace.name(),
+                            workspace.capacity(),
+                            hourlyRate,
+                            workspace.is_active());
+
+                    update(editedWorkspace);
+                    return;
+                }
+            }
+        }
+
+        private void changeVisibility(WorkspaceDto workspace) throws SQLException, SecurityException {
+            Optional<Boolean> result = service.toggleWorkspaceActiveStatus(workspace.id());
+            if (result.isPresent())
+                if (result.get()) System.out.println("Статус успешно изменён.");
+                else System.out.println("Не удалось изменить статус рабочего пространства.");
+        }
+
+        private void update(Workspaces workspace) throws SQLException, SecurityException {
+            Optional<Boolean> updateStatus = service.updateWorkspace(workspace);
+            if (updateStatus.isPresent()) {
+                if (updateStatus.get()) {
+                    System.out.println("Рабочее пространство успешно обновлено.");
+                    logger.debug("Обновлено рабочее пространство по id {}", workspace.id());
+                }
+                else System.out.println("Не удалось обновить рабочее пространство.");
+                logger.debug("Не удалось обновить рабочее пространство по id {}", workspace.id());
+                ConsoleReader.waitInput();
+            }
+            else {
+                System.out.println("База данных не вернула ответ.");
+                logger.debug("База данных не вернула ответ.");
+            }
         }
 
         private void create() {
@@ -259,7 +394,8 @@ public class AdminController {
         }
 
         private WorkspaceDto getWorkspace(List<WorkspaceDto> workspaces) {
-            Optional<WorkspaceDto> workspace = new ItemsListMenu<>(workspaces, "Выберите рабочее пространство", WorkspaceDto.getMenuTableHeader()).start();
+            Optional<WorkspaceDto> workspace = new ItemsListMenu<>(workspaces, "Выберите рабочее пространство",
+                    WorkspaceDto.getMenuTableHeader()).start();
             if (workspace.isPresent()) {
                 logger.debug("Получено рабочее пространство: {}", workspace.get());
                 return workspace.get();
@@ -334,7 +470,6 @@ public class AdminController {
 
         /**
          * Выбрать тип рабочего пространства из списка.
-         *
          * @return тип рабочего пространства.
          */
         private Optional<WorkspaceTypesDto> selectWorkspaceType() throws SQLException {
