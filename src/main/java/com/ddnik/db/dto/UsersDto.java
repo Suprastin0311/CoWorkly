@@ -1,7 +1,5 @@
 package com.ddnik.db.dto;
 
-import com.ddnik.db.IDto;
-
 import java.sql.Date;
 import java.util.Objects;
 

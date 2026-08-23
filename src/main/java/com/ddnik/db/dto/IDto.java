@@ -1,4 +1,4 @@
-package com.ddnik.db;
+package com.ddnik.db.dto;
 
 public interface IDto {
 

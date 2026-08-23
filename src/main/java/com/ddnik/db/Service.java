@@ -245,7 +245,17 @@ public class Service implements IService {
     public ArrayList<BookingDto> getBookingsByUserId(Users user) throws SQLException, SecurityException {
         try {
             ArrayList<BookingDto> bookings = repo.getBookingsByUserId(user.id());
-            logger.debug("Получено {} броней пользователя с id {}", bookings.size(), user.id());
+            logger.debug("Получено {} броней пользователя по id {}", bookings.size(), user.id());
+            return bookings;
+        } catch (SQLException | SecurityException e) {
+            throw e;
+        }
+    }
+
+    public ArrayList<BookingDto> getBookingsByWorkspaceId(WorkspaceDto workspace) throws SQLException, SecurityException {
+        try {
+            ArrayList<BookingDto> bookings = repo.getBookingsByWorkspaceId(workspace.id());
+            logger.debug("Получено {} броней рабочего пространства по id {}", bookings.size(), workspace.id());
             return bookings;
         } catch (SQLException | SecurityException e) {
             throw e;

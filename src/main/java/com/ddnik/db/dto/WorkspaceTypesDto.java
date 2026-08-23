@@ -1,7 +1,5 @@
 package com.ddnik.db.dto;
 
-import com.ddnik.db.IDto;
-
 import java.util.Objects;
 
 public record WorkspaceTypesDto (

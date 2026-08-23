@@ -1,8 +1,5 @@
 package com.ddnik.db.dto;
 
-import com.ddnik.db.IDto;
-import com.ddnik.db.entity.Bookings;
-
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.Objects;
