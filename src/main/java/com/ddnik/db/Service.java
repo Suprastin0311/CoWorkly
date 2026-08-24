@@ -118,15 +118,33 @@ public class Service implements IService {
         }
     }
 
+    public Optional<Boolean> deleteWorkspace(long id) throws SQLException, SecurityException {
+        try {
+            Optional<Boolean> result = repo.deleteWorkspace(id);
+            if (result.isPresent()) {
+                if (result.get()) logger.debug("Удалено рабочее пространство с id {}", id);
+                else logger.debug("Не удалось удалить рабочее пространство с id {}", id);
+                return result;
+            }
+            else {
+                logger.debug("База данных не вернула ответ при удалении рабочего пространства с id {}", id);
+                return Optional.empty();
+            }
+        } catch (SQLException | SecurityException e) {
+            throw e;
+        }
+    }
+
     public Optional<Boolean> setBookingCancelled(long id) throws SQLException, SecurityException {
         try {
             Optional<Boolean> result = repo.setBookingCancelled(id);
             if (result.isPresent()) {
-                logger.debug("Отменена бронь по id {}", id);
+                if (result.get()) logger.debug("Отменена бронь по id {}", id);
+                else logger.debug("Не удалось отменить бронь по id {}", id);
                 return result;
             }
             else {
-                logger.debug("Не удалось отменить бронь по id {}", id);
+                logger.debug("База данных не вернула ответ при отмене брони по id {}", id);
                 return Optional.empty();
             }
         } catch (SQLException | SecurityException e) {
@@ -138,11 +156,12 @@ public class Service implements IService {
         try {
             Optional<Boolean> result = repo.confirmBooking(id);
             if (result.isPresent()) {
-                logger.debug("Подтверждена бронь по id {}", id);
+                if (result.get()) logger.debug("Подтверждена бронь по id {}", id);
+                else logger.debug("Не удалось подтвердить бронь по id {}", id);
                 return result;
             }
             else {
-                logger.debug("Не удалось подтвердить бронь по id {}", id);
+                logger.debug("База данных не вернула ответ при подтверждении брони по id {}", id);
                 return Optional.empty();
             }
         } catch (SQLException | SecurityException e) {
@@ -154,11 +173,12 @@ public class Service implements IService {
         try {
             Optional<Boolean> result = repo.toggleWorkspaceActiveStatus(id);
             if (result.isPresent()) {
-                logger.debug("Изменён статус активности рабочего пространства по id {}", id);
+                if (result.get()) logger.debug("Изменён статус активности рабочего пространства по id {}", id);
+                else logger.debug("Не удалось изменить статус активности рабочего пространства по id {}", id);
                 return result;
             }
             else {
-                logger.debug("Не удалось изменить статус активности рабочего пространства по id {}", id);
+                logger.debug("База данных не вернула ответ при изменении статуса активности рабочего пространства по id {}", id);
                 return Optional.empty();
             }
         } catch (SQLException | SecurityException e) {
@@ -170,11 +190,12 @@ public class Service implements IService {
         try {
             Optional<Boolean> result = repo.updateWorkspace(workspace);
             if (result.isPresent()) {
-                logger.debug("Обновлено рабочее пространство по id {}", workspace.id());
+                if (result.get()) logger.debug("Обновлено рабочее пространство по id {}", workspace.id());
+                else logger.debug("Не удалось обновить рабочее пространство по id {}", workspace.id());
                 return result;
             }
             else {
-                logger.debug("Не удалось обновить рабочее пространство по id {}", workspace.id());
+                logger.debug("База данных не вернула ответ при обновлении рабочего пространства по id {}", workspace.id());
                 return Optional.empty();
             }
         } catch (SQLException | SecurityException e) {

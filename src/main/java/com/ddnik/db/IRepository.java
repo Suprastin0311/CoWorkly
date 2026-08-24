@@ -25,6 +25,8 @@ public interface IRepository {
 
     Optional<Boolean> updateWorkspace(Workspaces workspace) throws SQLException;
 
+    Optional<Boolean> deleteWorkspace(long id) throws SQLException;
+
     Optional<UsersDto> getUserByEmail(String email) throws SQLException;
 
     Optional<WorkspaceDto> getWorkspaceById(long id) throws SQLException;

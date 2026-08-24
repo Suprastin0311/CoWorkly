@@ -197,7 +197,7 @@ public class AdminController {
         /**
          * Редактирование рабочего пространства.
          */
-        private void edit() throws SQLException, SecurityException {
+        private void edit() throws SecurityException {
             Optional<WorkspaceDto> workspace = select();
 
             if (workspace.isPresent()) {
@@ -216,21 +216,45 @@ public class AdminController {
             }
         }
 
-        private void editType(WorkspaceDto workspace) throws SQLException, SecurityException {
+        private void editType(WorkspaceDto workspace) throws SQLException, SecurityException, ConsoleUserInputException {
+            if (!service.getBookingsByWorkspaceId(workspace).isEmpty()) {
+                System.out.println("Выбранное рабочее пространство забронировано в данный момент - редактирование недоступно.");
+                return;
+            }
+
             List<WorkspaceTypesDto> typeList = service.getWorkspaceTypes();
             while (true) {
                 Optional<WorkspaceTypesDto> type = new ItemsListMenu<>(typeList,
                         "Выберите новый тип рабочего пространства.",
                         WorkspaceTypesDto.getMenuTableHeader()).start();
                 if (type.isPresent()) {
-                    if (type.get().id() == workspace.type().id())
+                    if (type.get().id() == workspace.type().id()) {
                         System.out.println("Выбранный тип совпадает с текущим.");
+                    }
                     else {
+                        int capacity = workspace.capacity();
+                        if (workspace.capacity() < type.get().minParticipantsCount()
+                                || workspace.capacity() > type.get().maxParticipantsCount()) {
+                            System.out.println("Текущее значение вместимости нарушает ограничения нового типа.");
+                            while (true) {
+                                System.out.printf("Введите новое значение вместимости [%d, %d]: ",
+                                        type.get().minParticipantsCount(),
+                                        type.get().maxParticipantsCount());
+                                capacity = ConsoleReader.readPositiveInt();
+                                if (capacity < type.get().minParticipantsCount()
+                                        || capacity > type.get().maxParticipantsCount())
+                                    System.out.printf("Введённое значение вместимости нарушает ограничения типа [%d, %d]\n",
+                                            type.get().minParticipantsCount(),
+                                            type.get().maxParticipantsCount());
+                                else break;
+                            }
+                        }
+
                         Workspaces editedWorkspace = new Workspaces(
                                 workspace.id(),
                                 type.get().id(),
                                 workspace.name(),
-                                workspace.capacity(),
+                                capacity,
                                 workspace.hourlyRate(),
                                 workspace.is_active());
 
@@ -274,8 +298,8 @@ public class AdminController {
                 if (workspace.capacity() == capacity) System.out.println("Введённое значение совпадает с текущим.");
                 else if (capacity < workspace.type().minParticipantsCount()
                         || capacity > workspace.type().maxParticipantsCount())
-                    System.out.println("Введённое значение выходит за рамки вместимости типа: "
-                            + workspace.type().nameRus() + ", вместимость [" + workspace.type().nameRus() + "]." );
+                    System.out.printf("Введённое значение вместимости нарушает ограничения типа [%d, %d]\n",
+                            workspace.type().minParticipantsCount(), workspace.type().maxParticipantsCount());
                 else {
                     Workspaces editedWorkspace = new Workspaces(
                             workspace.id(),
@@ -399,9 +423,24 @@ public class AdminController {
             ConsoleReader.waitInput();
         }
 
-        private void delete() {
+        private void delete() throws SQLException, SecurityException, ConsoleUserInputException {
+            System.out.println("Удаление рабочего пространства.");
             Optional<WorkspaceDto> workspace = select();
-            System.out.println("Удаление рабочего пространства" + workspace);
+            System.out.println("Рабочее пространство будет БЕЗВОЗВРАТНО удалено.");
+            System.out.println(WorkspaceDto.getMenuTableHeader());
+            System.out.println("1 | " + workspace.get().toMenuTableRow());
+            System.out.println("Подтвердить удаление? ");
+            System.out.println("1 - да");
+            System.out.println("2 - нет");
+            if (ConsoleReader.chooseMenuItem(1, 2) == 1) {
+                Optional<Boolean> result = service.deleteWorkspace(workspace.get().id());
+                if (result.isPresent()) {
+                    if (result.get()) System.out.println("Рабочее пространство успешно безвозвратно удалено.");
+                    else System.out.println("Не удалось удалить рабочее пространство.");
+                }
+                else System.out.println("Не удалось выполнить операцию.");
+                ConsoleReader.waitInput();
+            }
         }
 
         private Optional<WorkspaceDto> select() {

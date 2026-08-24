@@ -38,6 +38,18 @@ public interface IService {
     Optional<Long> insertWorkspace(Workspaces workspace) throws SQLException, SecurityException;
 
     /**
+     * Безвозвратно удаляет рабочее пространство.
+     * @param id код удаляемого рабочего пространства.
+     * @return признак успеха выполнения операции:<br>
+     *      <code>true</code> - рабочее пространство удалено успешно<br>
+     *      <code>false</code> - не получилось удалить рабочее пространство<br>
+     *      Возвращает {@link Optional#empty()}, если запрос не вернул данные.
+     * @throws SQLException в случае возникновения ошибки на уровне базы данных.
+     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     */
+    Optional<Boolean> deleteWorkspace(long id) throws SQLException, SecurityException;
+
+    /**
      * Отменяет бронь.
      * @param id идентификатор брони.
      * @return признак успеха выполнения операции:<br>

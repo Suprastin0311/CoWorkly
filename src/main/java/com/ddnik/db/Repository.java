@@ -138,6 +138,22 @@ public class Repository implements IRepository {
         }
     }
 
+    public Optional<Boolean> deleteWorkspace(long id) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM delete_workspace(?)")) {
+            ps.setLong(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(rs.getBoolean(1));
+                }
+                else return Optional.empty();
+            }
+        } catch (SQLTimeoutException e) {
+            throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
+        }
+    }
+
     public Optional<WorkspaceDto> getWorkspaceById(long id) throws SQLException {
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces_by_id(?)");) {
@@ -419,11 +435,11 @@ public class Repository implements IRepository {
                 ArrayList<WorkspaceTypesDto> result = new ArrayList<>();
                 while (rs.next()) {
                     result.add(new WorkspaceTypesDto(
-                            rs.getLong(1),
-                            rs.getString(2),
-                            rs.getInt(3),
-                            rs.getInt(4),
-                            rs.getString(5)
+                            rs.getLong("id"),
+                            rs.getString("name"),
+                            rs.getInt("min_participants_count"),
+                            rs.getInt("max_participants_count"),
+                            rs.getString("name_rus")
                     ));
                 }
                 logger.debug("Из БД извлечено {} записей.", result.size());

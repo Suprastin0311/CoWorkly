@@ -22,9 +22,10 @@ public record WorkspaceTypesDto (
     public WorkspaceTypesDto {
         Objects.requireNonNull(name);
         Objects.requireNonNull(nameRus);
+        maxParticipantsCount = maxParticipantsCount == 0 ? Integer.MAX_VALUE : maxParticipantsCount;
     }
 
-    public WorkspaceTypesDto (String name, Integer maxParticipantsCount, int minParticipantsCount, String nameRus) {
-        this(null, name, maxParticipantsCount, minParticipantsCount, nameRus);
+    public WorkspaceTypesDto (String name, int minParticipantsCount, Integer maxParticipantsCount, String nameRus) {
+        this(null, name, minParticipantsCount, maxParticipantsCount, nameRus);
     }
 }
