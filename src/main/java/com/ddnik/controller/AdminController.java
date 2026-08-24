@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Управляет консольным меню администратора.
@@ -338,8 +339,64 @@ public class AdminController {
             }
         }
 
-        private void create() {
-            System.out.println("Создание рабочего пространства");
+        private void create() throws SQLException, SecurityException, ConsoleUserInputException {
+            List<WorkspaceDto> workspaces = service.getWorkspacesByName(""); // получить все рабочие пространства
+            // имена существующих рабочих пространств
+            List<String> names = workspaces.stream()
+                                        .map(WorkspaceDto::name)
+                                        .filter(name -> name != null && !name.isBlank()).toList();
+            System.out.println("Создание рабочего пространства.");
+            Optional<WorkspaceTypesDto> type;
+            while (true) {
+                type = selectWorkspaceType();
+                if (type.isEmpty()) System.out.println("Не удалось выбрать тип.");
+                else break;
+            }
+
+            String name;
+            while (true) {
+                System.out.print("Название: ");
+                name = ConsoleReader.readString();
+                if (names.contains(name)) System.out.println("Данное название уже используется.");
+                else break;
+            }
+
+            int capacity;
+            while (true) {
+                System.out.printf("Вместимость [%d, %d]: ", type.get().minParticipantsCount(), type.get().maxParticipantsCount());
+                capacity = ConsoleReader.readPositiveInt();
+                if (capacity < type.get().minParticipantsCount() || capacity > type.get().maxParticipantsCount())
+                    System.out.printf("Указанная вместимость вне допустимых значений [%d, %d].\n",
+                            type.get().minParticipantsCount(),
+                            type.get().maxParticipantsCount());
+                else break;
+            }
+
+            BigDecimal hourlyRate;
+            while (true) {
+                System.out.print("Часовая стоимость: ");
+                hourlyRate = BigDecimal.valueOf(ConsoleReader.readDouble());
+                if (hourlyRate.compareTo(BigDecimal.ZERO) < 0)
+                    System.out.println("Часовая стоимость не может быть отрицательным числом.");
+                else break;
+            }
+
+            System.out.println("Доступно для брони сразу после создания?");
+            System.out.println("1 - да");
+            System.out.println("2 - нет");
+            boolean isActive = ConsoleReader.chooseMenuItem(1, 2) == 1;
+
+            Workspaces newWorkspace = new Workspaces(
+                type.get().id(),
+                name,
+                capacity,
+                hourlyRate,
+                isActive
+            );
+
+            Optional<Long> newWorkspaceId = service.insertWorkspace(newWorkspace);
+            if (newWorkspaceId.isPresent()) System.out.println("Рабочее пространство создано успешно.");
+            ConsoleReader.waitInput();
         }
 
         private void delete() {
