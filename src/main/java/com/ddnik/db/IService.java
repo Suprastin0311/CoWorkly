@@ -173,6 +173,16 @@ public interface IService {
      */
     ArrayList<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Date startTime, Date endTime, long workspaceTypeId, int participantsCount) throws SQLException, SecurityException;
 
+
+    /**
+     * Получает список всех броней.
+     * @return список броней.
+     * @throws SQLException в случае возникновения ошибки на уровне базы данных.
+     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     */
+    ArrayList<BookingDto> getBookings() throws SQLException, SecurityException;
+
+
     /**
      * Получает список броней указанного пользователя.
      * @param user данные пользователя.

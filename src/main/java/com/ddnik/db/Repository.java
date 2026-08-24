@@ -287,10 +287,26 @@ public class Repository implements IRepository {
 
     //region Bookings
 
+
+    public ArrayList<BookingDto> getBookings() throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?)")) {
+            ps.setNull(1, Types.BIGINT);
+            ps.setNull(2, Types.BIGINT);
+            ps.setNull(3, Types.TIMESTAMP);
+            ps.setNull(4, Types.TIMESTAMP);
+
+            return executeQueryAndBuildBookingDtoList(ps);
+        }
+    }
+
     public ArrayList<BookingDto> getBookingsByUserId(long id) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?)")) {
             ps.setLong(1, id);
+            ps.setNull(2, Types.BIGINT);
+            ps.setNull(3, Types.TIMESTAMP);
+            ps.setNull(4, Types.TIMESTAMP);
 
             return executeQueryAndBuildBookingDtoList(ps);
         }
@@ -308,7 +324,10 @@ public class Repository implements IRepository {
     public ArrayList<BookingDto> getBookingsByStatus(BookingStatuses status) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?)")) {
+            ps.setNull(1, Types.BIGINT);
             ps.setLong(2, status.id());
+            ps.setNull(3, Types.TIMESTAMP);
+            ps.setNull(4, Types.TIMESTAMP);
 
             return executeQueryAndBuildBookingDtoList(ps);
         }
@@ -316,10 +335,11 @@ public class Repository implements IRepository {
 
     public ArrayList<BookingDto> getUserBookingsByTime(long userId, Date start, Date end) throws SQLException {
         try (Connection conn = DataSource.getConnection();
-            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_user_bookings_by_time(?, ?, ?)")) {
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?)")) {
             ps.setLong(1, userId);
-            ps.setDate(2, start);
-            ps.setDate(3, end);
+            ps.setNull(2, Types.BIGINT);
+            ps.setDate(3, start);
+            ps.setDate(4, end);
 
             return executeQueryAndBuildBookingDtoList(ps);
         }

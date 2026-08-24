@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class Service implements IService {
@@ -262,7 +263,17 @@ public class Service implements IService {
             throw e;
         }
     }
-    
+
+    public ArrayList<BookingDto> getBookings() throws SQLException, SecurityException {
+        try {
+            ArrayList<BookingDto> bookings = repo.getBookings();
+            logger.debug("Получено {} броней", bookings.size());
+            return bookings;
+        } catch (SQLException | SecurityException e) {
+            throw e;
+        }
+    }
+
     public ArrayList<BookingDto> getBookingsByUserId(Users user) throws SQLException, SecurityException {
         try {
             ArrayList<BookingDto> bookings = repo.getBookingsByUserId(user.id());

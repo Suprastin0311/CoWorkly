@@ -628,22 +628,24 @@ public class AdminController {
     class BookingController {
 
         public void start() {
-            ConsoleMenu menu = new ConsoleMenu("Просмотр броней с фильтрацией.");
-            menu.addItem("Без фильтра", this::viwAll);
+            ConsoleMenu menu = new ConsoleMenu("Просмотр бронирований.");
+            menu.addItem("Все", this::viwAll);
             menu.addItem("По пользователю", this::viewByUser);
             menu.addItem("По рабочему пространству", this::viewByWorkspace);
             menu.addItem("По дате", this::viewByDate);
             menu.addItem("По статусу", this::viewByStatus);
 
-            logger.info("Администратор перешёл в меню управления бронированием.");
+            logger.info("Администратор перешёл в меню просмотра бронирований.");
             menu.start();
         }
 
         /**
          * Посмотреть все брони.
          */
-        private void viwAll() {
-            System.out.println("Все брони");
+        private void viwAll() throws SQLException, SecurityException {
+            List<BookingDto> bookings = service.getBookings();
+            new ItemsListMenu<>(bookings, "Все бронирования", BookingDto.getMenuTableHeader()).display();
+            ConsoleReader.waitInput();
         }
 
         /**
