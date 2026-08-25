@@ -1,4 +1,8 @@
 <configuration>
+    <statusListener class="ch.qos.logback.core.status.OnFileStatusListener">
+        <fileName>CoWorkly_Debug_Logback.log</fileName>
+    </statusListener>
+
     <appender name="FILE-debug" class="ch.qos.logback.core.FileAppender">
         <file>CoWorkly_Debug.log</file>
         <append>true</append>
