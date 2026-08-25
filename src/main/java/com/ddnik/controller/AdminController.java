@@ -349,7 +349,7 @@ public class AdminController {
             }
         }
 
-        private void editType(WorkspaceDto workspace) throws SQLException, SecurityException, ConsoleUserInputException {
+        private void editType(WorkspaceDto workspace) throws SQLException, SecurityException {
             if (!service.getBookingsByWorkspaceId(workspace).isEmpty()) {
                 System.out.println("Выбранное рабочее пространство забронировано в данный момент - редактирование недоступно.");
                 return;
@@ -396,7 +396,7 @@ public class AdminController {
             }
         }
 
-        private void editName(WorkspaceDto workspace) throws SQLException, SecurityException, ConsoleUserInputException {
+        private void editName(WorkspaceDto workspace) throws SQLException, SecurityException {
             while (true) {
                 Optional<String> name = ConsoleReader.readString("Введите новое название");
                 if (name.isEmpty()) return;
@@ -416,7 +416,7 @@ public class AdminController {
             }
         }
 
-        private void editCapacity(WorkspaceDto workspace) throws SQLException, SecurityException, ConsoleUserInputException {
+        private void editCapacity(WorkspaceDto workspace) throws SQLException, SecurityException {
             Optional<Integer> capacity = ConsoleReader.readIntInRange("Введите новое значение вместимости",
                     workspace.type().minParticipantsCount(), workspace.type().maxParticipantsCount());
             if (capacity.isPresent()) {
@@ -432,7 +432,7 @@ public class AdminController {
             }
         }
 
-        private void editHourlyRate(WorkspaceDto workspace) throws SQLException, SecurityException, ConsoleUserInputException {
+        private void editHourlyRate(WorkspaceDto workspace) throws SQLException, SecurityException {
             while (true) {
                 Optional<BigDecimal> hourlyRate = ConsoleReader.readPositiveBigDecimal("Введите новое значение часовой стоимости");
                 if (hourlyRate.isEmpty()) return;
@@ -478,7 +478,7 @@ public class AdminController {
             }
         }
 
-        private void create() throws SQLException, SecurityException, ConsoleUserInputException {
+        private void create() throws SQLException, SecurityException {
             // имена существующих рабочих пространств
             List<String> names = service.getWorkspacesByName("").stream()
                                         .map(WorkspaceDto::name)
@@ -595,15 +595,9 @@ public class AdminController {
         }
 
         private List<WorkspaceDto> selectByType() throws SQLException, SecurityException {
-            ConsoleReader.cls();
             Optional<WorkspaceTypesDto> type = selectWorkspaceType();
-
-            if (type.isPresent()) {
-                ConsoleReader.cls();
-                return service.getWorkspacesByType(type.get().id());
-            } else {
-                return new ArrayList<>();
-            }
+            if (type.isPresent()) return service.getWorkspacesByType(type.get().id());
+            else return new ArrayList<>();
         }
 
         private List<WorkspaceDto> selectByName() throws SQLException, SecurityException {
@@ -656,14 +650,11 @@ public class AdminController {
          * @return тип рабочего пространства.
          */
         private Optional<WorkspaceTypesDto> selectWorkspaceType() throws SQLException {
-            Optional<WorkspaceTypesDto> type;
             ConsoleReader.cls();
-            type = new ItemsListMenu<>(
+            return new ItemsListMenu<>(
                     service.getWorkspaceTypes(),
                     "Выберите тип рабочего пространства",
                     WorkspaceTypesDto.getMenuTableHeader()).start();
-
-            return type;
         }
 
         /**
