@@ -3,6 +3,7 @@ package com.ddnik.controller;
 import com.ddnik.AuthorizedUser;
 import com.ddnik.db.Service;
 import com.ddnik.db.dto.BookingDto;
+import com.ddnik.db.dto.UsersDto;
 import com.ddnik.db.dto.WorkspaceDto;
 import com.ddnik.db.dto.WorkspaceTypesDto;
 import com.ddnik.db.entity.*;
@@ -174,6 +175,54 @@ public class AdminController {
          */
         private void edit() {
             System.out.println("Тут будет меню редактирования доступа пользователей к программе.");
+        }
+
+        private Optional<UsersDto> select() {
+            AtomicReference<UsersDto> result = new AtomicReference<>();
+
+            ConsoleMenu menu = new ConsoleMenu("Выберите параметр поиска пользователя: ");
+            menu.addItem("Email", () -> selectByEmail().ifPresent(u ->  {
+                result.set(u);
+                menu.close();
+            }));
+            menu.addItem("Имя", () -> getUser(selectByName()).ifPresent(u ->  {
+                result.set(u);
+                menu.close();
+            }));
+            menu.addItem("Роль", () -> getUser(selectByRole()).ifPresent(u ->  {
+                result.set(u);
+                menu.close();
+            }));
+
+            logger.info("Администратор перешёл в меню выбора пользователей.");
+            menu.start();
+
+            return Optional.ofNullable(result.get());
+        }
+
+        private Optional<UsersDto> getUser(List<UsersDto> users) throws SQLException, SecurityException, ConsoleUserInputException {
+            return Optional.empty();
+        }
+
+        private Optional<UsersDto> selectByEmail() throws SQLException, SecurityException, ConsoleUserInputException {
+            ConsoleReader.cls();
+            System.out.print("Введите email: ");
+            String email = ConsoleReader.readString();
+
+            if (ConsoleReader.validateEmail(email)) {
+                System.out.println("Email не соответствует шаблону example@mail.domen");
+                return Optional.empty();
+            }
+
+            return service.getUserByEmail(email);
+        }
+
+        private List<UsersDto> selectByRole() {
+            return new ArrayList<>();
+        }
+
+        private List<UsersDto> selectByName() {
+            return new ArrayList<>();
         }
     }
 
@@ -500,14 +549,12 @@ public class AdminController {
 
         private List<WorkspaceDto> selectByName() throws SQLException, SecurityException, ConsoleUserInputException {
             ConsoleReader.cls();
-            System.out.print("Введите название рабочего пространства: ");
-            String name = ConsoleReader.readString();
+            while (true) {
+                System.out.print("Введите название рабочего пространства: ");
+                String name = ConsoleReader.readString();
 
-            if (name.isEmpty()) {
-                System.out.println("Была введена пустая строка.");
-                return new ArrayList<>();
-            } else {
-                return service.getWorkspacesByName(name);
+                if (name.isEmpty()) System.out.println("Была введена пустая строка.");
+                else return service.getWorkspacesByName(name);
             }
         }
 
@@ -637,7 +684,7 @@ public class AdminController {
          * Посмотреть брони с фильтром по пользователю.
          */
         private void viewByUser() {
-            System.out.println("Фильтр по пользователю");
+            //List<BookingDto> bookings = service.getBookingsByUserId();
         }
 
         /**
