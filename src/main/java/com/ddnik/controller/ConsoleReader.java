@@ -112,7 +112,7 @@ public class ConsoleReader {
      * @return номер выбранного пункта.
      * @throws ConsoleUserInputException если произошла ошибка при вводе.
      */
-    public static int chooseMenuItem(int minItem, int maxItem) throws ConsoleUserInputException {
+    public static int chooseMenuItem(int minItem, int maxItem) {
         while (true) {
             try {
                 System.out.print("> ");

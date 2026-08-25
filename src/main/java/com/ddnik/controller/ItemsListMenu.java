@@ -36,18 +36,12 @@ public class ItemsListMenu<T extends IDto> {
         boolean isRunning = true;
         int selectedItemIndex = 1;
         while (isRunning) {
-            try {
-                display();
-                System.out.println("0 - Назад");
-                selectedItemIndex = ConsoleReader.chooseMenuItem(0, items.size());
+            display();
+            System.out.println("0 - Назад");
+            selectedItemIndex = ConsoleReader.chooseMenuItem(0, items.size());
 
-                if (selectedItemIndex == 0) return Optional.empty();
-                else isRunning = false;
-
-            } catch (ConsoleUserInputException e) {
-                System.out.println(e.getLocalizedMessage());
-                logger.error("Ошибка консольного ввода.", e);
-            }
+            if (selectedItemIndex == 0) return Optional.empty();
+            else isRunning = false;
         }
         return Optional.of(items.get(selectedItemIndex-1));
     }

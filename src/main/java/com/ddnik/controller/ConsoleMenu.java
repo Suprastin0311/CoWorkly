@@ -38,17 +38,12 @@ public class ConsoleMenu {
     public void start() {
         isRunning = true;
         while (isRunning) {
-            try {
-                display();
-                System.out.println("0 - Назад");
-                int choice = ConsoleReader.chooseMenuItem(0, items.size());
+            display();
+            System.out.println("0 - Назад");
+            int choice = ConsoleReader.chooseMenuItem(0, items.size());
 
-                if (choice == 0) isRunning = false; // Назад
-                else executeAction(items.get(choice-1)); // Выполнить действие выбранного пункта
-            } catch (ConsoleUserInputException e) {
-                System.out.println(e.getLocalizedMessage());
-                logger.error("Ошибка консольного ввода.", e);
-            }
+            if (choice == 0) isRunning = false; // Назад
+            else executeAction(items.get(choice-1)); // Выполнить действие выбранного пункта
         }
     }
 

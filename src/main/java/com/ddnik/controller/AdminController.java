@@ -318,7 +318,7 @@ public class AdminController {
         public void start() {
             ConsoleMenu menu = new ConsoleMenu("Управление рабочими пространствами");
             menu.addItem("Просмотр всех", this::viwAll);
-            menu.addItem("Просмотр выбранного", this::view);
+            menu.addItem("Просмотр по фильтру", this::view);
             menu.addItem("Редактирование", this::edit);
             menu.addItem("Создание", this::create);
             menu.addItem("Удаление", this::delete);
@@ -459,6 +459,7 @@ public class AdminController {
             if (result.isPresent())
                 if (result.get()) System.out.println("Статус успешно изменён.");
                 else System.out.println("Не удалось изменить статус рабочего пространства.");
+            else System.out.println("Ответ об успешности операции не получен.");
         }
 
         private void update(Workspaces workspace) throws SQLException, SecurityException {
@@ -531,7 +532,7 @@ public class AdminController {
             ConsoleReader.waitInput();
         }
 
-        private void delete() throws SQLException, SecurityException, ConsoleUserInputException {
+        private void delete() throws SQLException, SecurityException {
             System.out.println("Удаление рабочего пространства.");
             Optional<WorkspaceDto> workspace = select();
             System.out.println("Рабочее пространство будет БЕЗВОЗВРАТНО удалено.");
@@ -607,14 +608,14 @@ public class AdminController {
             else return service.getWorkspacesByName(name.get());
         }
 
-        private List<WorkspaceDto> selectByCapacity() throws SQLException, SecurityException, ConsoleUserInputException {
+        private List<WorkspaceDto> selectByCapacity() throws SQLException, SecurityException {
             ConsoleReader.cls();
             Optional<Integer> capacity = ConsoleReader.readPositiveInt("Введите вместимость рабочего пространства");
             if (capacity.isEmpty()) return new ArrayList<>();
             else return service.getWorkspacesByCapacity(capacity.get());
         }
 
-        private List<WorkspaceDto> selectByHourlyRate() throws SQLException, SecurityException, ConsoleUserInputException {
+        private List<WorkspaceDto> selectByHourlyRate() throws SQLException, SecurityException {
             ConsoleReader.cls();
             Optional<BigDecimal> minRate = ConsoleReader.readPositiveBigDecimal("Введите минимальную часовую стоимость рабочего пространства");
             if (minRate.isEmpty()) return new ArrayList<>();
@@ -625,7 +626,7 @@ public class AdminController {
             return service.getWorkspacesByHourlyRate(minRate.get(), maxRate.get());
         }
 
-        private List<WorkspaceDto> selectByStatus() throws SQLException, SecurityException, ConsoleUserInputException {
+        private List<WorkspaceDto> selectByStatus() throws SQLException, SecurityException {
             ConsoleReader.cls();
             System.out.println("Выберите статус рабочего пространства: ");
             System.out.println("1 - Активно");
@@ -660,7 +661,7 @@ public class AdminController {
         /**
          * Просмотреть рабочие пространства.
          */
-        private void viwAll() throws SQLException, SecurityException, ConsoleUserInputException {
+        private void viwAll() throws SQLException, SecurityException {
             new ItemsListMenu<>(
                     service.getWorkspacesByName(""),
                     "Все рабочие пространства",
