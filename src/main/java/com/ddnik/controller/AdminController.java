@@ -447,41 +447,26 @@ public class AdminController {
             AtomicReference<WorkspaceDto> result = new AtomicReference<>();
 
             ConsoleMenu menu = new ConsoleMenu("Выберите параметр поиска рабочего пространства: ");
-            menu.addItem("Тип", () -> {
-                WorkspaceDto w = getWorkspace(selectByType());
-                if (w != null) {
-                    result.set(w);
-                    menu.close();
-                }
-            });
-            menu.addItem("Название", () -> {
-                WorkspaceDto w = getWorkspace(selectByName());
-                if (w != null) {
-                    result.set(w);
-                    menu.close();
-                }
-            });
-            menu.addItem("Вместимость", () -> {
-                WorkspaceDto w = getWorkspace(selectByCapacity());
-                if (w != null) {
-                    result.set(w);
-                    menu.close();
-                }
-            });
-            menu.addItem("Часовая стоимость", () -> {
-                WorkspaceDto w = getWorkspace(selectByHourlyRate());
-                if (w != null) {
-                    result.set(w);
-                    menu.close();
-                }
-            });
-            menu.addItem("Статус", () -> {
-                WorkspaceDto w = getWorkspace(selectByStatus());
-                if (w != null) {
-                    result.set(w);
-                    menu.close();
-                }
-            });
+            menu.addItem("Тип", () -> getWorkspace(selectByType()).ifPresent(w -> {
+                result.set(w);
+                menu.close();
+            }));
+            menu.addItem("Название", () -> getWorkspace(selectByName()).ifPresent(w -> {
+                result.set(w);
+                menu.close();
+            }));
+            menu.addItem("Вместимость", () -> getWorkspace(selectByCapacity()).ifPresent(w -> {
+                result.set(w);
+                menu.close();
+            }));
+            menu.addItem("Часовая стоимость", () -> getWorkspace(selectByHourlyRate()).ifPresent(w -> {
+                result.set(w);
+                menu.close();
+            }));
+            menu.addItem("Статус", () -> getWorkspace(selectByStatus()).ifPresent(w -> {
+                result.set(w);
+                menu.close();
+            }));
 
             logger.info("Администратор перешёл в меню выбора рабочих пространств.");
             menu.start();
@@ -489,15 +474,15 @@ public class AdminController {
             return Optional.ofNullable(result.get());
         }
 
-        private WorkspaceDto getWorkspace(List<WorkspaceDto> workspaces) {
+        private Optional<WorkspaceDto> getWorkspace(List<WorkspaceDto> workspaces) {
             Optional<WorkspaceDto> workspace = new ItemsListMenu<>(workspaces, "Выберите рабочее пространство",
                     WorkspaceDto.getMenuTableHeader()).start();
             if (workspace.isPresent()) {
                 logger.debug("Получено рабочее пространство: {}", workspace.get());
-                return workspace.get();
+                return workspace;
             } else {
                 logger.debug("Не удалось получить рабочее пространство.");
-                return null;
+                return Optional.empty();
             }
         }
 
