@@ -154,25 +154,33 @@ public class Repository implements IRepository {
         }
     }
 
-    public Optional<WorkspaceDto> getWorkspaceById(long id) throws SQLException {
+    public Optional<WorkspaceDto> getWorkspaceById(long id) throws SQLException, SQLException {
         try (Connection conn = DataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces_by_id(?)");) {
+             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces(?, ?, ?, ?, ?, ?, ?)")) {
             ps.setLong(1, id);
+            ps.setNull(2, Types.INTEGER);
+            ps.setNull(3, Types.NUMERIC);
+            ps.setNull(4, Types.NUMERIC);
+            ps.setNull(5, Types.VARCHAR);
+            ps.setNull(6, Types.BOOLEAN);
+            ps.setNull(7, Types.BIGINT);
 
             ArrayList<WorkspaceDto> workspaces = executeQueryAndBuildWorkspaceDtoList(ps);
-            if (!workspaces.isEmpty())
-                return Optional.of(workspaces.get(0));
-            else
-                return Optional.empty();
-        } catch (SQLTimeoutException e) {
-            throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
+            if (!workspaces.isEmpty()) return Optional.of(workspaces.getFirst());
+            else return Optional.empty();
         }
     }
 
     public ArrayList<WorkspaceDto> getWorkspacesByCapacity(int capacity) throws SQLException {
         try (Connection conn = DataSource.getConnection();
-            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces_by_capacity(?)")) {
-            ps.setInt(1, capacity);
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces(?, ?, ?, ?, ?, ?, ?)")) {
+            ps.setNull(1, Types.BIGINT);
+            ps.setInt(2, capacity);
+            ps.setNull(3, Types.NUMERIC);
+            ps.setNull(4, Types.NUMERIC);
+            ps.setNull(5, Types.VARCHAR);
+            ps.setNull(6, Types.BOOLEAN);
+            ps.setNull(7, Types.BIGINT);
 
             return executeQueryAndBuildWorkspaceDtoList(ps);
         }
@@ -180,9 +188,14 @@ public class Repository implements IRepository {
 
     public ArrayList<WorkspaceDto> getWorkspacesByHourlyRate(BigDecimal minRate, BigDecimal maxRate) throws SQLException {
         try (Connection conn = DataSource.getConnection();
-            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces_by_hourly_rate(?, ?)")) {
-            ps.setBigDecimal(1, minRate);
-            ps.setBigDecimal(2, maxRate);
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces(?, ?, ?, ?, ?, ?, ?)")) {
+            ps.setNull(1, Types.BIGINT);
+            ps.setNull(2, Types.INTEGER);
+            ps.setBigDecimal(3, minRate);
+            ps.setBigDecimal(4, maxRate);
+            ps.setNull(5, Types.VARCHAR);
+            ps.setNull(6, Types.BOOLEAN);
+            ps.setNull(7, Types.BIGINT);
 
             return executeQueryAndBuildWorkspaceDtoList(ps);
         }
@@ -190,8 +203,14 @@ public class Repository implements IRepository {
 
     public ArrayList<WorkspaceDto> getWorkspacesByName(String name) throws SQLException {
         try (Connection conn = DataSource.getConnection();
-            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces_by_name(?)")) {
-            ps.setString(1, name);
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces(?, ?, ?, ?, ?, ?, ?)")) {
+            ps.setNull(1, Types.BIGINT);
+            ps.setNull(2, Types.INTEGER);
+            ps.setNull(3, Types.NUMERIC);
+            ps.setNull(4, Types.NUMERIC);
+            ps.setString(5, name);
+            ps.setNull(6, Types.BOOLEAN);
+            ps.setNull(7, Types.BIGINT);
 
             return executeQueryAndBuildWorkspaceDtoList(ps);
         }
@@ -199,8 +218,14 @@ public class Repository implements IRepository {
 
     public ArrayList<WorkspaceDto> getWorkspacesByStatus(boolean is_active) throws SQLException {
         try (Connection conn = DataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces_by_status(?)")) {
-            ps.setBoolean(1, is_active);
+             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces(?, ?, ?, ?, ?, ?, ?)")) {
+            ps.setNull(1, Types.BIGINT);
+            ps.setNull(2, Types.INTEGER);
+            ps.setNull(3, Types.NUMERIC);
+            ps.setNull(4, Types.NUMERIC);
+            ps.setNull(5, Types.VARCHAR);
+            ps.setBoolean(6, is_active);
+            ps.setNull(7, Types.BIGINT);
 
             return executeQueryAndBuildWorkspaceDtoList(ps);
         } catch (SQLTimeoutException e) {
@@ -210,8 +235,14 @@ public class Repository implements IRepository {
 
     public ArrayList<WorkspaceDto> getWorkspacesByType(long typeId) throws SQLException {
         try (Connection conn = DataSource.getConnection();
-            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces_by_type(?)")) {
-            ps.setLong(1, typeId);
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces(?, ?, ?, ?, ?, ?, ?)")) {
+            ps.setNull(1, Types.BIGINT);
+            ps.setNull(2, Types.INTEGER);
+            ps.setNull(3, Types.NUMERIC);
+            ps.setNull(4, Types.NUMERIC);
+            ps.setNull(5, Types.VARCHAR);
+            ps.setNull(6, Types.BOOLEAN);
+            ps.setLong(7, typeId);
 
             return executeQueryAndBuildWorkspaceDtoList(ps);
         } catch (SQLTimeoutException e) {
@@ -279,6 +310,7 @@ public class Repository implements IRepository {
             logger.debug("Из БД извлечено {} записей.", result.size());
             return result;
         } catch (SQLTimeoutException e) {
+            logger.error("Время выполнения превысило установленный лимит и запрос был прерван.", e);
             throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
         }
     }
