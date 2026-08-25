@@ -38,13 +38,13 @@ public class AuthController {
                     if (!PasswordHasher.checkPassword(password.get(), user.get().passwordHash()))
                         System.out.println("Неверный пароль.");
                     else {
-                        if (user.get().role().equals("Admin")) {
+                        if (user.get().role().name().equals("Admin")) {
                             AuthorizedUser authorizedUser = new AuthorizedUser(user.get().email(), user.get().fullName(), UserRole.Admin, user.get().isBlocked());
                             SecurityContextHolder.setLoggedUser(authorizedUser);
                             logger.info("Пользователь вошёл под ролью Admin.");
                             return authorizedUser;
                         }
-                        else if (user.get().role().equals("User")) {
+                        else if (user.get().role().name().equals("User")) {
                             AuthorizedUser authorizedUser = new AuthorizedUser(user.get().email(), user.get().fullName(), UserRole.User, user.get().isBlocked());
                             SecurityContextHolder.setLoggedUser(authorizedUser);
                             logger.info("Пользователь вошёл под ролью User.");
