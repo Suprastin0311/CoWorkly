@@ -5,10 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.util.InputMismatchException;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -111,76 +113,172 @@ public class ConsoleReader {
      * @throws ConsoleUserInputException если произошла ошибка при вводе.
      */
     public static int chooseMenuItem(int minItem, int maxItem) throws ConsoleUserInputException {
-        try {
-            Scanner sc = new Scanner(System.in);
-            System.out.print("> ");
-            int choice = sc.nextInt();
+        while (true) {
+            try {
+                System.out.print("> ");
+                Optional<Integer> choice = inputInteger();
 
-            if (choice < 0) {
-                throw new ConsoleUserInputException("Ошибка: вводимое число не может быть отрицательным.");
+                if (choice.isPresent()) {
+                    if (choice.get() < minItem || choice.get() > maxItem)
+                        throw new ConsoleUserInputException("Ошибка: данного пункта не существует в меню.");
+                    else return choice.get();
+                }
+                else System.out.println("Ошибка: не удалось прочитать введённое число.");
+            } catch (ConsoleUserInputException e) {
+                System.out.println(e.getMessage());
             }
-            else if (choice < minItem || choice > maxItem) {
-                throw new ConsoleUserInputException("Ошибка: данного пункта не существует в меню.");
-            }
-            else {
-                return choice;
-            }
-        } catch (InputMismatchException e) {
-            throw new ConsoleUserInputException("Ошибка: введите целое число для выбора пункта меню.", e);
-        } catch (NoSuchElementException e) {
-            throw new ConsoleUserInputException("Ошибка: нет данных для чтения.", e);
-        } catch (IllegalStateException e) {
-            throw new ConsoleUserInputException("Ошибка: консоль не отвечает.", e);
+        }
+    }
+
+    /**
+     * Читает введённый строку с email из консоли.
+     * @return введённая строка.
+     * <br>Возвращает {@link Optional#empty()}, если пользователь ввёл символ <code>q</code> и хочет прекратить ввод
+     */
+    public static Optional<String> readEmail() {
+        while (true) {
+            Optional<String> email = readString("Введите email");
+            if (email.isPresent())
+                if (validateEmail(email.get())) return email;
+                else System.out.println("Email не соответствует шаблону example@mail.domen");
+            else return Optional.empty();
         }
     }
 
     /**
      * Читает введённую строку из консоли.
+     * @param message сообщение, выводимое в строке ввода.<br>
+     *                Пример: Введите вместимость: [ввод]
      * @return введённая строка.
-     * @throws ConsoleUserInputException если произошла ошибка при вводе.
+     * <br>Возвращает {@link Optional#empty()}, если пользователь ввёл символ <code>q</code> и хочет прекратить ввод
      */
-    public static String readString() throws ConsoleUserInputException {
-        try {
-            return new Scanner(System.in).nextLine().trim();
-        } catch (NoSuchElementException e) {
-            throw new ConsoleUserInputException("Ошибка: нет данных для чтения.", e);
-        } catch (IllegalStateException e) {
-            throw new ConsoleUserInputException("Ошибка: консоль не отвечает.", e);
-        }
-    }
-
-    /**
-     * Читает положительное целое число из консоли.
-     * @return ведённое положительное целое число
-     * @throws ConsoleUserInputException если произошла ошибка при вводе.
-     */
-    public static int readPositiveInt() throws ConsoleUserInputException {
-        try {
-            Scanner sc = new Scanner(System.in);
-            int number = sc.nextInt();
-            if (number < 0) {
-                throw new ConsoleUserInputException("Ошибка: число не может быть отрицательным.");
+    public static Optional<String> readString(String message) {
+        while (true) {
+            try {
+                System.out.print(message + ": ");
+                String input = inputString();
+                if (input.equals("q")) return Optional.empty();
+                else return Optional.of(input);
+            } catch (ConsoleUserInputException e) {
+                System.out.println(e.getLocalizedMessage());
             }
-            return number;
-        } catch (InputMismatchException e) {
-            throw new ConsoleUserInputException("Ошибка: введите целое число.", e);
-        } catch (NoSuchElementException e) {
-            throw new ConsoleUserInputException("Ошибка: нет данных для чтения.", e);
-        } catch (IllegalStateException e) {
-            throw new ConsoleUserInputException("Ошибка: консоль не отвечает.", e);
         }
     }
 
     /**
-     * Читает вещественное число из консоли.
+     * Циклично читает положительное целое число из консоли.
+     * @param message сообщение, выводимое в строке ввода.<br>
+     *                Пример: Введите вместимость: [ввод]
+     * @return ведённое положительное целое число.
+     * <br>Возвращает {@link Optional#empty()}, если пользователь ввёл символ <code>q</code> и хочет прекратить ввод
+     */
+    public static Optional<Integer> readPositiveInt(String message) {
+        while (true) {
+            try {
+                System.out.print(message + ": ");
+                Optional<Integer> number = inputInteger();
+                if (number.isEmpty()) return Optional.empty();
+                else if (number.get() < 0) System.out.println("Ошибка: число не должно быть отрицательным.");
+                else return number;
+            } catch (ConsoleUserInputException e) {
+                System.out.println(e.getLocalizedMessage());
+            }
+        }
+    }
+
+    /**
+     * Циклично читает целое число в пределах указанного диапазона.
+     * @param message сообщение, выводимое в строке ввода без указания диапазона.<br>
+     *                Пример: "Введите вместимость", но не "Введите вместимость от, до"
+     * @param min левая граница диапазона.
+     * @param max правая граница диапазона.
+     * @return введённое положительное число.
+     * <br>Возвращает {@link Optional#empty()}, если пользователь ввёл символ <code>q</code> и хочет прекратить ввод
+     */
+    public static Optional<Integer> readIntInRange(String message, int min, int max) {
+        while(true) {
+            try {
+                System.out.print(String.format("%s в пределах от %d до %d: ", message, min, max));
+                Optional<Integer> number = inputInteger();
+                if (number.isEmpty()) return Optional.empty();
+                else if (number.get() < min || number.get() > max)
+                    System.out.println("Ошибка: введено число вне допустимых значений.");
+                else return number;
+            } catch (ConsoleUserInputException e) {
+                System.out.println(e.getLocalizedMessage());
+            }
+        }
+    }
+
+    /**
+     * Циклично читает вещественное число из консоли.
+     * @param message сообщение, выводимое в строке ввода.<br>
+     *                Пример: Введите вместимость: [ввод]
      * @return введённое вещественное число
-     * @throws ConsoleUserInputException если произошла ошибка при вводе.
+     * <br>Возвращает {@link Optional#empty()}, если пользователь ввёл символ <code>q</code> и хочет прекратить ввод
      */
-    public static double readDouble() throws ConsoleUserInputException {
+    public static Optional<Double> readPositiveDouble(String message) {
+        while (true) {
+            try {
+                System.out.print(message + ": ");
+                Optional<Double> number = inputDouble();
+                if (number.isEmpty()) return Optional.empty();
+                else if (number.get() < 0.0) System.out.println("Ошибка: число не должно быть отрицательным.");
+                else return number;
+            } catch (ConsoleUserInputException e) {
+                System.out.println(e.getLocalizedMessage());
+            }
+        }
+    }
+
+    /**
+     * Циклично читает BigDecimal число из консоли.
+     * @param message сообщение, выводимое в строке ввода.<br>
+     *                Пример: Введите вместимость: [ввод]
+     * @return введённое BigDecimal число
+     * <br>Возвращает {@link Optional#empty()}, если пользователь ввёл символ <code>q</code> и хочет прекратить ввод
+     */
+    public static Optional<BigDecimal> readPositiveBigDecimal(String message) {
+        while (true) {
+            try {
+                Optional<Double> number = readPositiveDouble(message);
+                return number.map(BigDecimal::valueOf);
+            } catch (NumberFormatException e) {
+                logger.error("Ошибка при вводе значения BigDecimal.", e);
+                System.out.println("Ошибка: введите вещественное значение.");
+            } catch (NullPointerException e) {
+                logger.error("Ошибка при вводе значения BigDecimal.", e);
+                System.out.println("Ошибка: непредвиденная ошибка.");
+            }
+        }
+    }
+
+    /**
+     * Читает дату из консоли.
+     * @param message сообщение, выводимое в строке ввода.<br>
+     *                Пример: Введите вместимость: [ввод]
+     * @return введённая дата
+     * <br>Возвращает {@link Optional#empty()}, если пользователь ввёл символ <code>q</code> и хочет прекратить ввод
+     */
+    public static Optional<Date> readDate(String message) {
+        while (true) {
+            try {
+                return inputDate();
+            } catch (ConsoleUserInputException e) {
+                System.out.println(e.getLocalizedMessage());
+            }
+        }
+    }
+
+    /**
+     * Считывает из консоли введённую строку.
+     * @return введённая строка.
+     */
+    private static String inputString() throws ConsoleUserInputException {
         try {
-            return new Scanner(System.in).nextDouble();
-        } catch (InputMismatchException e) {
-            throw new ConsoleUserInputException("Ошибка: введите число.", e);
+            String input = new Scanner(System.in).nextLine().trim();
+            if (input.isBlank()) throw new ConsoleUserInputException("Ошибка: введена пустая строка.");
+            else return input;
         } catch (NoSuchElementException e) {
             throw new ConsoleUserInputException("Ошибка: нет данных для чтения.", e);
         } catch (IllegalStateException e) {
@@ -189,26 +287,61 @@ public class ConsoleReader {
     }
 
     /**
-     * Читает дату из консоли
-     * @return дата
-     * @throws ConsoleUserInputException если произошла ошибка при вводе
+     * Считывает из консоли вещественное число и обрабатывает исключения.
+     * @return введённое из консоли вещественное число.
+     * @throws ConsoleUserInputException в случае ошибки ввода.
+     * <br>Возвращает {@link Optional#empty()}, если пользователь ввёл символ <code>q</code> и хочет прекратить ввод
      */
-    public static Date readDate() throws ConsoleUserInputException {
-        String dateStr = "";
+    private static Optional<Double> inputDouble() throws ConsoleUserInputException {
         try {
-            System.out.print("Введите дату (гггг.мм.дд.): ");
-            dateStr = readString();
-            if (dateStr.isEmpty()) {
-                throw new ConsoleUserInputException("Ошибка: введена пустая строка.");
-            }
-            else if (!validateDate(dateStr)) {
-                throw new ConsoleUserInputException("Ошибка: введённое значение не соответствует формату гггг.мм.дд.");
-            }
-        } catch (ConsoleUserInputException e) {
-            System.out.println(e.getMessage());
+            String input = inputString();
+            if (input.equals("q")) return Optional.empty();
+            return Optional.of(Double.valueOf(input));
+        } catch (NullPointerException e) {
+            logger.error("Ошибка при вводе даты", e);
+            throw new ConsoleUserInputException("Ошибка: не удалось прочитать вещественное число.", e);
+        } catch (NumberFormatException e) {
+            logger.error("Ошибка при вводе вещественного числа", e);
+            throw new ConsoleUserInputException("Ошибка: введите вещественное число.", e);
         }
-        finally {
-            return Date.valueOf(dateStr);
+    }
+
+    /**
+     * Считывает из консоли дату и обрабатывает исключения.
+     * @return введённая из консоли дата.
+     * @throws ConsoleUserInputException в случае ошибки ввода.
+     */
+    private static Optional<Date> inputDate() throws ConsoleUserInputException {
+        try {
+            String input = inputString();
+            if (input.equals("q")) return Optional.empty();
+            if (!validateDate(input)) throw new ConsoleUserInputException("Ошибка: введённое значение не соответствует формату [гггг.мм.дд].");
+            return Optional.of(Date.valueOf(new Scanner(System.in).nextLine()));
+        } catch (NullPointerException e) {
+            logger.error("Ошибка при вводе даты", e);
+            throw new ConsoleUserInputException("Ошибка: не удалось прочитать дату.", e);
+        } catch (IllegalArgumentException e) {
+            logger.error("Ошибка при вводе даты", e);
+            throw new ConsoleUserInputException("Ошибка: введённое значение не соответствует формату [гггг.мм.дд].", e);
+        }
+    }
+
+    /**
+     * Считывает из консоли целое число и обрабатывает исключения.
+     * @return введённое из консоли целое число.
+     * @throws ConsoleUserInputException в случае ошибки ввода.
+     */
+    private static Optional<Integer> inputInteger() throws ConsoleUserInputException {
+        try {
+            String input = inputString();
+            if (input.equals("q")) return Optional.empty();
+            return Optional.of(Integer.parseInt(input));
+        } catch (NullPointerException e) {
+            logger.error("Ошибка при вводе даты", e);
+            throw new ConsoleUserInputException("Ошибка: не удалось прочитать целое число.", e);
+        } catch (NumberFormatException e) {
+            logger.error("Ошибка при вводе целого числа", e);
+            throw new ConsoleUserInputException("Ошибка: введите целое число.", e);
         }
     }
 }

@@ -25,77 +25,43 @@ public class RegistrationController {
         ConsoleReader.cls();
         System.out.println("Регистрация (введите букву [q] для выхода.)\n");
 
-        // Ввод email
         boolean isEmailValid = false,
                 nextStep = false;
-        String email = "";
-        do {
-            try {
-                System.out.print("Введите email: ");
-                email = ConsoleReader.readString();
-                if (email.equals("q")) return false;
-                isEmailValid = ConsoleReader.validateEmail(email);
 
-                if (isEmailValid) {
-                    try {
-                        Optional<UsersDto> user = service.getUserByEmail(email);
-                        if (user.isPresent()) {
-                            System.out.println("Пользователь с таким email уже существует.");
-                            return false;
-                        }
-                        else {
-                            nextStep = true;
-                        }
-                    } catch (SQLException e) {
-                        System.out.println("Возникла ошибка с базой данных.");
-                    }
-                }
-                else {
-                    System.out.println("Ошибка: email не соответствует шаблону example@mail.domen");
-                }
-            } catch (ConsoleUserInputException e) {
-                System.out.println(e.getMessage());
-                logger.error("Ошибка консольного ввода.", e);
+        // Ввод email
+        Optional<String> email;
+        email = ConsoleReader.readEmail();
+        if (email.isEmpty()) return false;
+        try {
+            Optional<UsersDto> user = service.getUserByEmail(email.get());
+            if (user.isPresent()) {
+                System.out.println("Пользователь с таким email уже существует.");
+                return false;
             }
-        } while (!nextStep);
+            else nextStep = true;
+        } catch (SQLException e) {
+            System.out.println("Возникла ошибка с базой данных.");
+        }
 
-        nextStep = false;
         // Ввод пароля
-        String password = "";
+        Optional<String> password;
         do {
-            try {
-                System.out.print("Введите пароль: ");
-                password = ConsoleReader.readString();
-                if (password.equals("q")) return false;  // выход по q
-                System.out.print("Повторите пароль: ");
-                String repeatPassword = ConsoleReader.readString();
-                if (repeatPassword.equals("q")) return false; // выход по q
-                if (!password.equals(repeatPassword)) {
-                    System.out.println("Пароль не совпадают.");
-                } else {
-                    nextStep = true;
-                }
-            } catch (ConsoleUserInputException e) {
-                System.out.println(e.getMessage());
-                logger.error("Ошибка консольного ввода.", e);
-            }
-        } while (!nextStep);
+            password = ConsoleReader.readString("Введите пароль");
+            if (password.isEmpty()) return false;
 
-        nextStep = false;
+            Optional<String> repeatPassword = ConsoleReader.readString("Повторите пароль");
+            if (repeatPassword.isEmpty()) return false;
+
+            if (!password.equals(repeatPassword)) System.out.println("Пароль не совпадают.");
+            else nextStep = true;
+        } while (nextStep);
+
         // ФИО
-        String fullName = "";
-        do {
-            try {
-                System.out.print("Введите Фамилию Имя Отчество полностью: ");
-                fullName = ConsoleReader.readString();
-                nextStep = true;
-            } catch (ConsoleUserInputException e) {
-                System.out.println(e.getMessage());
-            }
-        } while (!nextStep);
+        Optional<String>fullName = ConsoleReader.readString("Введите Фамилию Имя Отчество полностью");
+        if (fullName.isEmpty()) return false;
 
         try {
-            Users newUser = new Users(email, password, fullName, 2, false, new Date(Instant.now().toEpochMilli()));
+            Users newUser = new Users(email.get(), password.get(), fullName.get(), 2, false, new Date(Instant.now().toEpochMilli()));
             service.createUser(newUser);
             logger.info("Создан новый пользователь: email - {}, fullName - {}", email, fullName);
             return true;

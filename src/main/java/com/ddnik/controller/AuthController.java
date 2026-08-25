@@ -9,6 +9,8 @@ import com.ddnik.enums.UserRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.text.html.Option;
+import java.io.Console;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.Scanner;
@@ -24,19 +26,17 @@ public class AuthController {
 
         do {
             try {
-                System.out.print("Email: ");
-                String email = scanner.next().trim();
-                Optional<UsersDto> user = service.getUserByEmail(email);
-                if (user.isEmpty()) {
-                    System.out.println("Пользователь не найден.");
-                }
-                else {
-                    System.out.print("Password: ");
-                    String password = scanner.next().trim();
+                Optional<String> email = ConsoleReader.readEmail();
+                if (email.isEmpty()) return new AuthorizedUser("", "", UserRole.NoAuth, true);
 
-                    if (!PasswordHasher.checkPassword(password, user.get().passwordHash())) {
+                Optional<UsersDto> user = service.getUserByEmail(email.get());
+                if (user.isEmpty()) System.out.println("Пользователь не найден.");
+                else {
+                    Optional<String> password = ConsoleReader.readString("Password");
+                    if (password.isEmpty()) return new AuthorizedUser("", "", UserRole.NoAuth, true);
+
+                    if (!PasswordHasher.checkPassword(password.get(), user.get().passwordHash()))
                         System.out.println("Неверный пароль.");
-                    }
                     else {
                         if (user.get().role().equals("Admin")) {
                             AuthorizedUser authorizedUser = new AuthorizedUser(user.get().email(), user.get().fullName(), UserRole.Admin, user.get().isBlocked());

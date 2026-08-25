@@ -84,7 +84,7 @@ public interface IService {
      */
     Optional<Boolean> toggleWorkspaceActiveStatus(long id) throws SQLException, SecurityException;
 
-    /**
+     /**
      * Обновляет рабочее пространство.
      * @param workspace обновлённые данные рабочего пространства. Возвращает {@link Optional#empty()}, если запрос не вернул данные.
      * @return признак успеха выполнения операции:<br>

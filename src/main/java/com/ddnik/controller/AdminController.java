@@ -12,12 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.text.html.Option;
+import java.io.Console;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * Управляет консольным меню администратора.
@@ -206,15 +205,9 @@ public class AdminController {
 
         private Optional<UsersDto> selectByEmail() throws SQLException, SecurityException, ConsoleUserInputException {
             ConsoleReader.cls();
-            System.out.print("Введите email: ");
-            String email = ConsoleReader.readString();
-
-            if (ConsoleReader.validateEmail(email)) {
-                System.out.println("Email не соответствует шаблону example@mail.domen");
-                return Optional.empty();
-            }
-
-            return service.getUserByEmail(email);
+            Optional<String> email = ConsoleReader.readEmail();
+            if (email.isEmpty()) return Optional.empty();
+            else return service.getUserByEmail(email.get());
         }
 
         private List<UsersDto> selectByRole() {
@@ -277,26 +270,19 @@ public class AdminController {
                         "Выберите новый тип рабочего пространства.",
                         WorkspaceTypesDto.getMenuTableHeader()).start();
                 if (type.isPresent()) {
-                    if (type.get().id() == workspace.type().id()) {
+                    if (Objects.equals(type.get().id(), workspace.type().id()))
                         System.out.println("Выбранный тип совпадает с текущим.");
-                    }
                     else {
                         int capacity = workspace.capacity();
                         if (workspace.capacity() < type.get().minParticipantsCount()
                                 || workspace.capacity() > type.get().maxParticipantsCount()) {
                             System.out.println("Текущее значение вместимости нарушает ограничения нового типа.");
-                            while (true) {
-                                System.out.printf("Введите новое значение вместимости [%d, %d]: ",
-                                        type.get().minParticipantsCount(),
-                                        type.get().maxParticipantsCount());
-                                capacity = ConsoleReader.readPositiveInt();
-                                if (capacity < type.get().minParticipantsCount()
-                                        || capacity > type.get().maxParticipantsCount())
-                                    System.out.printf("Введённое значение вместимости нарушает ограничения типа [%d, %d]\n",
-                                            type.get().minParticipantsCount(),
-                                            type.get().maxParticipantsCount());
-                                else break;
-                            }
+                            Optional<Integer> newCapacity = ConsoleReader.readIntInRange(
+                                    "Введите новое значение вместимости",
+                                    type.get().minParticipantsCount(),
+                                    type.get().maxParticipantsCount());
+                            if (newCapacity.isEmpty()) return;
+                            capacity = newCapacity.get();
                         }
 
                         Workspaces editedWorkspace = new Workspaces(
@@ -321,15 +307,14 @@ public class AdminController {
 
         private void editName(WorkspaceDto workspace) throws SQLException, SecurityException, ConsoleUserInputException {
             while (true) {
-                System.out.print("Введите новое название: ");
-                String name = ConsoleReader.readString();
-
-                if (workspace.name().equals(name)) System.out.println("Введённое название совпадает с текущим.");
+                Optional<String> name = ConsoleReader.readString("Введите новое название");
+                if (name.isEmpty()) return;
+                else if (workspace.name().equals(name.get())) System.out.println("Введённое название совпадает с текущим.");
                 else {
                     Workspaces editedWorkspace = new Workspaces(
                             workspace.id(),
                             workspace.type().id(),
-                            name,
+                            name.get(),
                             workspace.capacity(),
                             workspace.hourlyRate(),
                             workspace.is_active());
@@ -341,45 +326,35 @@ public class AdminController {
         }
 
         private void editCapacity(WorkspaceDto workspace) throws SQLException, SecurityException, ConsoleUserInputException {
-            while (true) {
-                System.out.print("Введите новое значение вместимости: ");
-                int capacity = ConsoleReader.readPositiveInt();
-                if (workspace.capacity() == capacity) System.out.println("Введённое значение совпадает с текущим.");
-                else if (capacity < workspace.type().minParticipantsCount()
-                        || capacity > workspace.type().maxParticipantsCount())
-                    System.out.printf("Введённое значение вместимости нарушает ограничения типа [%d, %d]\n",
-                            workspace.type().minParticipantsCount(), workspace.type().maxParticipantsCount());
-                else {
-                    Workspaces editedWorkspace = new Workspaces(
-                            workspace.id(),
-                            workspace.type().id(),
-                            workspace.name(),
-                            capacity,
-                            workspace.hourlyRate(),
-                            workspace.is_active());
+            Optional<Integer> capacity = ConsoleReader.readIntInRange("Введите новое значение вместимости",
+                    workspace.type().minParticipantsCount(), workspace.type().maxParticipantsCount());
+            if (capacity.isPresent()) {
+                Workspaces editedWorkspace = new Workspaces(
+                        workspace.id(),
+                        workspace.type().id(),
+                        workspace.name(),
+                        capacity.get(),
+                        workspace.hourlyRate(),
+                        workspace.is_active());
 
-                    update(editedWorkspace);
-                    return;
-                }
+                update(editedWorkspace);
             }
         }
 
         private void editHourlyRate(WorkspaceDto workspace) throws SQLException, SecurityException, ConsoleUserInputException {
             while (true) {
-                System.out.print("Введите новое значение часовой стоимости: ");
-                BigDecimal hourlyRate = BigDecimal.valueOf(ConsoleReader.readDouble());
+                Optional<BigDecimal> hourlyRate = ConsoleReader.readPositiveBigDecimal("Введите новое значение часовой стоимости");
+                if (hourlyRate.isEmpty()) return;
 
-                if (workspace.hourlyRate().compareTo(hourlyRate) == 0)
+                if (workspace.hourlyRate().compareTo(hourlyRate.get()) == 0)
                     System.out.println("Введённое значение совпадает с текущим.");
-                else if (hourlyRate.compareTo(BigDecimal.ZERO) < 0)
-                    System.out.println("Часовая стоимость не может быть отрицательным числом.");
                 else {
                     Workspaces editedWorkspace = new Workspaces(
                             workspace.id(),
                             workspace.type().id(),
                             workspace.name(),
                             workspace.capacity(),
-                            hourlyRate,
+                            hourlyRate.get(),
                             workspace.is_active());
 
                     update(editedWorkspace);
@@ -413,62 +388,55 @@ public class AdminController {
         }
 
         private void create() throws SQLException, SecurityException, ConsoleUserInputException {
-            List<WorkspaceDto> workspaces = service.getWorkspacesByName(""); // получить все рабочие пространства
             // имена существующих рабочих пространств
-            List<String> names = workspaces.stream()
+            List<String> names = service.getWorkspacesByName("").stream()
                                         .map(WorkspaceDto::name)
                                         .filter(name -> name != null && !name.isBlank()).toList();
             System.out.println("Создание рабочего пространства.");
-            Optional<WorkspaceTypesDto> type;
+
+            // Тип
+            Optional<WorkspaceTypesDto> type = selectWorkspaceType();
+            if (type.isEmpty()) return;
+
+            // Название
+            Optional<String> name;
             while (true) {
-                type = selectWorkspaceType();
-                if (type.isEmpty()) System.out.println("Не удалось выбрать тип.");
+                name = ConsoleReader.readString("Название");
+                if (name.isEmpty()) return;
+                else if (names.contains(name.get())) System.out.println("Данное название уже используется.");
                 else break;
             }
 
-            String name;
-            while (true) {
-                System.out.print("Название: ");
-                name = ConsoleReader.readString();
-                if (names.contains(name)) System.out.println("Данное название уже используется.");
-                else break;
-            }
+            // Вместимость
+            Optional<Integer> capacity;
+            capacity = ConsoleReader.readIntInRange("Вместимсоть", type.get().minParticipantsCount(), type.get().maxParticipantsCount());
 
-            int capacity;
-            while (true) {
-                System.out.printf("Вместимость [%d, %d]: ", type.get().minParticipantsCount(), type.get().maxParticipantsCount());
-                capacity = ConsoleReader.readPositiveInt();
-                if (capacity < type.get().minParticipantsCount() || capacity > type.get().maxParticipantsCount())
-                    System.out.printf("Указанная вместимость вне допустимых значений [%d, %d].\n",
-                            type.get().minParticipantsCount(),
-                            type.get().maxParticipantsCount());
-                else break;
-            }
+            // Часовая стоимость
+            Optional<BigDecimal> hourlyRate = ConsoleReader.readPositiveBigDecimal("Часовая стоимость");
+            if (hourlyRate.isEmpty()) return;
 
-            BigDecimal hourlyRate;
-            while (true) {
-                System.out.print("Часовая стоимость: ");
-                hourlyRate = BigDecimal.valueOf(ConsoleReader.readDouble());
-                if (hourlyRate.compareTo(BigDecimal.ZERO) < 0)
-                    System.out.println("Часовая стоимость не может быть отрицательным числом.");
-                else break;
-            }
-
+            // Статус
             System.out.println("Доступно для брони сразу после создания?");
-            System.out.println("1 - да");
-            System.out.println("2 - нет");
-            boolean isActive = ConsoleReader.chooseMenuItem(1, 2) == 1;
+            System.out.println("1 - Да");
+            System.out.println("2 - Нет");
+            System.out.println("0 - Назад");
+            int choice = ConsoleReader.chooseMenuItem(1, 2);
+            if (choice == 0) return;
+            boolean isActive = choice == 1;
 
+            // Собирать сущность
             Workspaces newWorkspace = new Workspaces(
                 type.get().id(),
-                name,
-                capacity,
-                hourlyRate,
+                name.get(),
+                capacity.get(),
+                hourlyRate.get(),
                 isActive
             );
 
+            // Создание
             Optional<Long> newWorkspaceId = service.insertWorkspace(newWorkspace);
             if (newWorkspaceId.isPresent()) System.out.println("Рабочее пространство создано успешно.");
+            else System.out.println("Не удалось создать рабочее пространство.");
             ConsoleReader.waitInput();
         }
 
@@ -547,33 +515,29 @@ public class AdminController {
             }
         }
 
-        private List<WorkspaceDto> selectByName() throws SQLException, SecurityException, ConsoleUserInputException {
+        private List<WorkspaceDto> selectByName() throws SQLException, SecurityException {
             ConsoleReader.cls();
-            while (true) {
-                System.out.print("Введите название рабочего пространства: ");
-                String name = ConsoleReader.readString();
-
-                if (name.isEmpty()) System.out.println("Была введена пустая строка.");
-                else return service.getWorkspacesByName(name);
-            }
+            Optional<String> name = ConsoleReader.readString("Введите название рабочего пространства");
+            if (name.isEmpty()) return new ArrayList<>();
+            else return service.getWorkspacesByName(name.get());
         }
 
         private List<WorkspaceDto> selectByCapacity() throws SQLException, SecurityException, ConsoleUserInputException {
             ConsoleReader.cls();
-            System.out.print("Введите вместимость рабочего пространства: ");
-            int capacity = ConsoleReader.readPositiveInt();
-
-            return service.getWorkspacesByCapacity(capacity);
+            Optional<Integer> capacity = ConsoleReader.readPositiveInt("Введите вместимость рабочего пространства");
+            if (capacity.isEmpty()) return new ArrayList<>();
+            else return service.getWorkspacesByCapacity(capacity.get());
         }
 
         private List<WorkspaceDto> selectByHourlyRate() throws SQLException, SecurityException, ConsoleUserInputException {
             ConsoleReader.cls();
-            System.out.print("Введите минимальную часовую стоимость рабочего пространства: ");
-            BigDecimal minRate = BigDecimal.valueOf(ConsoleReader.readDouble());
-            System.out.print("Введите максимальную часовую стоимость рабочего пространства: ");
-            BigDecimal maxRate = BigDecimal.valueOf(ConsoleReader.readDouble());
+            Optional<BigDecimal> minRate = ConsoleReader.readPositiveBigDecimal("Введите минимальную часовую стоимость рабочего пространства");
+            if (minRate.isEmpty()) return new ArrayList<>();
 
-            return service.getWorkspacesByHourlyRate(minRate, maxRate);
+            Optional<BigDecimal> maxRate = ConsoleReader.readPositiveBigDecimal("Введите максимальную часовую стоимость рабочего пространства");
+            if (maxRate.isEmpty()) return new ArrayList<>();
+
+            return service.getWorkspacesByHourlyRate(minRate.get(), maxRate.get());
         }
 
         private List<WorkspaceDto> selectByStatus() throws SQLException, SecurityException, ConsoleUserInputException {
