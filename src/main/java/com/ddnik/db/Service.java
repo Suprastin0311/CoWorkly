@@ -52,10 +52,6 @@ public class Service implements IService {
     }
 
     public Optional<UsersDto> getUserByEmail(String email) throws SQLException {
-        if (email == null || email.isEmpty()) {
-            throw new IllegalArgumentException("Email равен null или пустой.");
-        }
-
         try {
             Optional<UsersDto> user = repo.getUserByEmail(email);
             if (user.isPresent()) {
@@ -69,6 +65,44 @@ public class Service implements IService {
         } catch (SQLException e) {
             throw e;
         }
+    }
+
+    public List<UsersDto> getUsersByEmail(String email) throws SQLException, SecurityException {
+        List<UsersDto> users = repo.getUsersByEmail(email);
+        logger.debug("Получено {} пользователей с входящей в email подстрокой {}.", users.size(), email);
+        return users;
+    }
+
+    public List<UsersDto> getUsersByRole(UserRolesDto role) throws SQLException, SecurityException {
+        List<UsersDto> users = repo.getUsersByRole(role.id());
+        logger.debug("Получено {} пользователей с ролью {}.", users.size(), role.name());
+        return users;
+    }
+
+    public List<UsersDto> getUsersByCreatedAt(Date minDate, Date maxDate) throws SQLException, SecurityException {
+        List<UsersDto> users = repo.getUsersByCreatedAt(minDate, maxDate);
+        logger.debug("Получено {} пользователей, зарегистрированных во временном промежутке с {} по {}.",
+                users.size(), minDate, maxDate);
+        return users;
+    }
+
+    public List<UsersDto> getUsersByStatus(boolean is_active) throws SQLException, SecurityException {
+        List<UsersDto> users = repo.getUsersByStatus(is_active);
+        logger.debug("Получено {} {} пользователей.",
+                users.size(), is_active ? "активированных" : "заблокированных");
+        return users;
+    }
+
+    public List<UsersDto> getUsersByName(String name) throws SQLException, SecurityException {
+        List<UsersDto> users = repo.getUsersByName(name);
+        logger.debug("Получено {} пользователей с входящей в ФИО подстрокой {}.", users.size(), name);
+        return users;
+    }
+
+    public List<UserRolesDto> getUserRoles() throws SQLException, SecurityException {
+        List<UserRolesDto> userRoles = repo.getUserRoles();
+        logger.debug("Получено {} статусов пользователей", userRoles.size());
+        return userRoles;
     }
 
     public Optional<WorkspaceDto> getWorkspaceById(long id) throws SQLException, SecurityException {
@@ -186,7 +220,20 @@ public class Service implements IService {
             throw e;
         }
     }
-    
+
+    public Optional<Boolean> toggleUserActiveStatus(long id) throws SQLException, SecurityException {
+        Optional<Boolean> result = repo.toggleUserActiveStatus(id);
+        if (result.isPresent()) {
+            if (result.get()) logger.debug("Изменён статус пользователя по id {}", id);
+            else logger.debug("Не удалось изменить статус пользователя по id {}", id);
+            return result;
+        }
+        else {
+            logger.debug("База данных не вернула ответ при изменении статуса пользователя по id {}", id);
+            return Optional.empty();
+        }
+    }
+
     public Optional<Boolean> updateWorkspace(Workspaces workspace) throws SQLException, SecurityException {
         try {
             Optional<Boolean> result = repo.updateWorkspace(workspace);

@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class Repository implements IRepository {
@@ -55,11 +56,13 @@ public class Repository implements IRepository {
                             rs.getString("email"),
                             rs.getString("password_hash"),
                             rs.getString("full_name"),
-                            rs.getString("role"),
+                            new UserRolesDto(
+                                    rs.getLong("role_id"),
+                                    rs.getString("role")),
                             rs.getBoolean("is_blocked"),
                             new Date(rs.getTimestamp("created_at").getTime())
                     );
-                    logger.debug("Из БД извлечена 1 запись из таблицы users по email {}", user.email());
+                    logger.debug("Из таблицы users извлечена 1 запись по email {}", user.email());
                     return Optional.of(user);
                 }
                 else {
@@ -71,6 +74,151 @@ public class Repository implements IRepository {
             }
         }
     }
+
+    public List<UsersDto> getUsersById(long id) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_users(?, ?, ?, ?, ?, ?, ?)")) {
+            ps.setLong(1, id);
+            ps.setNull(2, Types.VARCHAR);
+            ps.setNull(3, Types.VARCHAR);
+            ps.setNull(4, Types.BIGINT);
+            ps.setNull(5, Types.BOOLEAN);
+            ps.setNull(6, Types.TIMESTAMP);
+            ps.setNull(7, Types.TIMESTAMP);
+
+            return executeQueryAndBuildUsersDtoList(ps);
+        }
+    }
+
+    public List<UsersDto> getUsersByEmail(String email) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_users(?, ?, ?, ?, ?, ?, ?)")) {
+            ps.setNull(1, Types.BIGINT);
+            ps.setString(2, email);
+            ps.setNull(3, Types.VARCHAR);
+            ps.setNull(4, Types.BIGINT);
+            ps.setNull(5, Types.BOOLEAN);
+            ps.setNull(6, Types.TIMESTAMP);
+            ps.setNull(7, Types.TIMESTAMP);
+
+            return executeQueryAndBuildUsersDtoList(ps);
+        }
+    }
+
+    public List<UsersDto> getUsersByRole(long id) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_users(?, ?, ?, ?, ?, ?, ?)")) {
+            ps.setNull(1, Types.BIGINT);
+            ps.setNull(2, Types.VARCHAR);
+            ps.setNull(3, Types.VARCHAR);
+            ps.setLong(4, id);
+            ps.setNull(5, Types.BOOLEAN);
+            ps.setNull(6, Types.TIMESTAMP);
+            ps.setNull(7, Types.TIMESTAMP);
+
+            return executeQueryAndBuildUsersDtoList(ps);
+        }
+    }
+
+    public List<UsersDto> getUsersByCreatedAt(Date minDate, Date maxDate) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_users(?, ?, ?, ?, ?, ?, ?)")) {
+            ps.setNull(1, Types.BIGINT);
+            ps.setNull(2, Types.VARCHAR);
+            ps.setNull(3, Types.VARCHAR);
+            ps.setNull(4, Types.BIGINT);
+            ps.setNull(5, Types.BOOLEAN);
+            ps.setDate(6, minDate);
+            ps.setDate(7, maxDate);
+
+            return executeQueryAndBuildUsersDtoList(ps);
+        }
+    }
+
+    public List<UsersDto> getUsersByStatus(boolean is_active) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_users(?, ?, ?, ?, ?, ?, ?)")) {
+            ps.setNull(1, Types.BIGINT);
+            ps.setNull(2, Types.VARCHAR);
+            ps.setNull(3, Types.VARCHAR);
+            ps.setNull(4, Types.BIGINT);
+            ps.setBoolean(5, is_active);
+            ps.setNull(6, Types.TIMESTAMP);
+            ps.setNull(7, Types.TIMESTAMP);
+
+            return executeQueryAndBuildUsersDtoList(ps);
+        }
+    }
+
+    public List<UsersDto> getUsersByName(String name) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_users(?, ?, ?, ?, ?, ?, ?)")) {
+            ps.setNull(1, Types.BIGINT);
+            ps.setNull(2, Types.VARCHAR);
+            ps.setString(3, name);
+            ps.setNull(4, Types.BIGINT);
+            ps.setNull(5, Types.BOOLEAN);
+            ps.setNull(6, Types.TIMESTAMP);
+            ps.setNull(7, Types.TIMESTAMP);
+
+            return executeQueryAndBuildUsersDtoList(ps);
+        }
+    }
+
+    public Optional<Boolean> toggleUserActiveStatus(long id) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM toggle_user_active_status(?)")) {
+            ps.setLong(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(rs.getBoolean(1));
+                }
+                else return Optional.empty();
+            }
+        } catch (SQLTimeoutException e) {
+            logger.error(e.getMessage(), e);
+            throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
+        } catch (SQLException e) {
+            logger.error(e.getMessage(), e);
+            throw new SQLException("Ошибка на уровне базы данных", e);
+        }
+    }
+
+    /**
+     * Выполняет запрос к базе данных и составляет результирующий список пользователей.
+     * Предназначен для выполнения хранимых функций, возвращающих таблицу пользователей со структурой {@link UsersDto}.
+     * @param ps подготовленный запрос к хранимой процедуре.
+     * @return список пользователей, удовлетворяющих условию.
+     * @throws SQLException в случае возникновения ошибки на уровне баз данных.
+     */
+    private List<UsersDto> executeQueryAndBuildUsersDtoList(PreparedStatement ps) throws SQLException {
+        try (ResultSet rs = ps.executeQuery()) {
+            List<UsersDto> result = new ArrayList<>();
+            while(rs.next()) {
+                result.add(new UsersDto(
+                        rs.getLong("id"),
+                        rs.getString("email"),
+                        rs.getString("password_hash"),
+                        rs.getString("full_name"),
+                        new UserRolesDto(
+                                rs.getLong("role_id"),
+                                rs.getString("role")),
+                        rs.getBoolean("is_blocked"),
+                        rs.getDate("created_at")
+                ));
+            }
+            logger.debug("Из таблицы users извлечено {} записей.", result.size());
+            return result;
+        } catch (SQLTimeoutException e) {
+            logger.error(e.getMessage(), e);
+            throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
+        } catch (SQLException e) {
+            logger.error(e.getMessage(), e);
+            throw new SQLException("Ошибка на уровне базы данных", e);
+        }
+    }
+
     //endregion
 
     //region Workspaces
@@ -307,7 +455,7 @@ public class Repository implements IRepository {
                         rs.getBoolean("is_active"),
                         rs.getString("status")));
             }
-            logger.debug("Из БД извлечено {} записей.", result.size());
+            logger.debug("Из таблицы workspaces извлечено {} записей.", result.size());
             return result;
         } catch (SQLTimeoutException e) {
             logger.error("Время выполнения превысило установленный лимит и запрос был прерван.", e);
@@ -469,7 +617,7 @@ public class Repository implements IRepository {
                         rs.getDate("created_at")
                 ));
             }
-            logger.debug("Из БД извлечено {} записей.", result.size());
+            logger.debug("Из таблицы bookings извлечено {} записей.", result.size());
             return result;
         }
     }
@@ -478,7 +626,6 @@ public class Repository implements IRepository {
 
     //region Справочники
 
-    @Override
     public ArrayList<WorkspaceTypesDto> getWorkspaceTypes() throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM workspace_types")) {
@@ -494,13 +641,12 @@ public class Repository implements IRepository {
                             rs.getString("name_rus")
                     ));
                 }
-                logger.debug("Из БД извлечено {} записей.", result.size());
+                logger.debug("Из таблицы workspace_types извлечено {} записей.", result.size());
                 return result;
             }
         }
     }
 
-    @Override
     public ArrayList<BookingStatuses> getBookingStatuses() throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM booking_statuses")) {
@@ -513,7 +659,24 @@ public class Repository implements IRepository {
                             rs.getString(2)
                     ));
                 }
-                logger.debug("Из БД извлечено {} записей.", result.size());
+                logger.debug("Из таблицы booking_statuses извлечено {} записей.", result.size());
+                return result;
+            }
+        }
+    }
+
+    public List<UserRolesDto> getUserRoles() throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT * FROM user_roles")) {
+
+            try (ResultSet rs = ps.executeQuery()) {
+                List<UserRolesDto> result = new ArrayList<>();
+                while(rs.next()) {
+                    result.add(new UserRolesDto(
+                            rs.getLong("id"),
+                            rs.getString("name")));
+                }
+                logger.debug("Из таблицы user_roles извлечено {} записей.", result.size());
                 return result;
             }
         }

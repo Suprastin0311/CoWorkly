@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public interface IService {
@@ -75,14 +76,27 @@ public interface IService {
 
     /**
      * Переключает статус активности рабочего пространства.
-     * @param id идентификатор рабочего пространства. Возвращает {@link Optional#empty()}, если запрос не вернул данные.
+     * @param id идентификатор рабочего пространства.
      * @return признак успеха выполнения операции:<br>
      *     <code>true</code> - статус рабочего пространства изменён успешно<br>
-     *     <code>false</code> - не получилось сменить статус рабочего пространства
+     *     <code>false</code> - не получилось сменить статус рабочего пространства<br>
+     *     Возвращает {@link Optional#empty()}, если запрос не вернул данные.
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
     Optional<Boolean> toggleWorkspaceActiveStatus(long id) throws SQLException, SecurityException;
+
+    /**
+     * Переключает статус активности пользователя (разблокировать, заблокировать).
+     * @param id код пользователя.
+     * @return признак успеха выполнения операции:<br>
+     *     <code>true</code> - статус пользователя изменён успешно<br>
+     *     <code>false</code> - не получилось сменить статус пользователя<br>
+     *     Возвращает {@link Optional#empty()}, если запрос не вернул данные.
+     * @throws SQLException в случае возникновения ошибки на уровне базы данных.
+     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     */
+    Optional<Boolean> toggleUserActiveStatus(long id) throws SQLException, SecurityException;
 
      /**
      * Обновляет рабочее пространство.
@@ -103,6 +117,62 @@ public interface IService {
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
     Optional<UsersDto> getUserByEmail(String email) throws SQLException, SecurityException;
+
+    /**
+     * Извлекает список пользователей по email. В качестве email можно использовать подстроку.
+     * @param email предполагаемый email пользователя.
+     * @return список пользователей.
+     * @throws SQLException в случае возникновения ошибки на уровне базы данных.
+     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     */
+    List<UsersDto> getUsersByEmail(String email) throws SQLException, SecurityException;
+
+    /**
+     * Извлекает список пользователей по роли.
+     * @param role роль пользователя.
+     * @return список пользователей.
+     * @throws SQLException в случае возникновения ошибки на уровне базы данных.
+     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     */
+    List<UsersDto> getUsersByRole(UserRolesDto role) throws SQLException, SecurityException;
+
+    /**
+     * Извлекает список пользователей по роли.
+     * @param minDate левая граница диапазона.
+     * @param maxDate правая граница диапазона.
+     * @return список пользователей.
+     * @throws SQLException в случае возникновения ошибки на уровне базы данных.
+     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     */
+    List<UsersDto> getUsersByCreatedAt(Date minDate, Date maxDate) throws SQLException, SecurityException;
+
+    /**
+     * Извлекает список пользователей по статусу.
+     * @param is_active статус пользователя:<br>
+     *                  <code>true</code> - активен<br>
+     *                  <code>false</code> - заблокирован
+     * @return список пользователей.
+     * @throws SQLException в случае возникновения ошибки на уровне базы данных.
+     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     */
+    List<UsersDto> getUsersByStatus(boolean is_active) throws SQLException, SecurityException;
+
+    /**
+     * Извлекает список пользователей по ФИО.
+     * @param name подстрока, входящая в ФИО.
+     * @return список пользователей.
+     * @throws SQLException в случае возникновения ошибки на уровне базы данных.
+     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     */
+    List<UsersDto> getUsersByName(String name) throws SQLException, SecurityException;
+
+    /**
+     * Извлекает список всех статусов пользователей.
+     * @return все статусы пользователей.
+     * @throws SQLException в случае возникновения ошибки на уровне базы данных.
+     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     */
+    List<UserRolesDto> getUserRoles() throws SQLException, SecurityException;
 
     /**
      * Получает данные рабочего пространства по id.

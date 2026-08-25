@@ -4,9 +4,9 @@ import com.ddnik.db.dto.*;
 import com.ddnik.db.entity.*;
 
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public interface IRepository {
@@ -28,6 +28,22 @@ public interface IRepository {
     Optional<Boolean> deleteWorkspace(long id) throws SQLException;
 
     Optional<UsersDto> getUserByEmail(String email) throws SQLException;
+
+    List<UsersDto> getUsersById(long id) throws SQLException;
+
+    List<UsersDto> getUsersByEmail(String email) throws SQLException;
+
+    List<UsersDto> getUsersByRole(long id) throws SQLException;
+
+    List<UsersDto> getUsersByCreatedAt(Date minDate, Date maxDate) throws SQLException;
+
+    List<UsersDto> getUsersByStatus(boolean is_active) throws SQLException;
+
+    List<UsersDto> getUsersByName(String name) throws SQLException;
+
+    Optional<Boolean> toggleUserActiveStatus(long id) throws SQLException;
+
+    List<UserRolesDto> getUserRoles() throws SQLException;
 
     Optional<WorkspaceDto> getWorkspaceById(long id) throws SQLException;
 
