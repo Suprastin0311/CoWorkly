@@ -2,18 +2,14 @@ package com.ddnik.controller;
 
 import com.ddnik.AuthorizedUser;
 import com.ddnik.db.Service;
-import com.ddnik.db.dto.BookingDto;
-import com.ddnik.db.dto.UsersDto;
-import com.ddnik.db.dto.WorkspaceDto;
-import com.ddnik.db.dto.WorkspaceTypesDto;
+import com.ddnik.db.dto.*;
 import com.ddnik.db.entity.*;
 import com.ddnik.exceptions.ConsoleUserInputException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.text.html.Option;
-import java.io.Console;
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -155,40 +151,91 @@ public class AdminController {
 
         public void start() {
             ConsoleMenu menu = new ConsoleMenu("Управление пользователями");
-            menu.addItem("Посмотреть всех пользователей", this::viewAll);
-            menu.addItem("Заблокировать / разблокировать пользователя", this::edit);
+            menu.addItem("Просмотр всех пользователей", this::viewAll);
+            menu.addItem("Просмотр по фильтру", this::view);
+            menu.addItem("Заблокировать / разблокировать пользователя", this::changeStatus);
 
             logger.info("Администратор перешёл в меню управления пользователями.");
             menu.start();
         }
 
         /**
+         * Меню просмотра пользователей.
+         */
+        private void view() {
+            ConsoleMenu menu = new ConsoleMenu("Выберите параметр поиска пользователя");
+            menu.addItem("Email", () -> {
+                new ItemsListMenu<>(selectByEmail(), "Выбранные пользователи", UsersDto.getMenuTableHeader()).display();
+                ConsoleReader.waitInput();
+            });
+            menu.addItem("ФИО", () -> {
+                new ItemsListMenu<>(selectByName(), "Выбранные пользователи", UsersDto.getMenuTableHeader()).display();
+                ConsoleReader.waitInput();
+            });
+            menu.addItem("Роль", () -> {
+                new ItemsListMenu<>(selectByRole(), "Выбранные пользователи", UsersDto.getMenuTableHeader()).display();
+                ConsoleReader.waitInput();
+            });
+            menu.addItem("Дата регистрации", () -> {
+                new ItemsListMenu<>(selectByCreateDate(), "Выбранные пользователи", UsersDto.getMenuTableHeader()).display();
+                ConsoleReader.waitInput();
+            });
+            menu.addItem("Статус", () -> {
+                new ItemsListMenu<>(selectByStatus(), "Выбранные пользователи", UsersDto.getMenuTableHeader()).display();
+                ConsoleReader.waitInput();
+            });
+
+            logger.info("Администратор перешёл в меню просмотра пользователей.");
+            menu.start();
+        }
+
+        /**
          * Вывод информации о пользователях.
          */
-        private void viewAll() {
-            System.out.println("Тут будет вывод всех пользователей.");
+        private void viewAll() throws SQLException {
+            new ItemsListMenu<>(
+                    service.getUsersByName(""),
+                    "Все пользователи",
+                    UsersDto.getMenuTableHeader()
+            ).display();
+            ConsoleReader.waitInput();
         }
 
         /**
          * Редактирование пользователя: заблокировать или разблокировать.
          */
-        private void edit() {
-            System.out.println("Тут будет меню редактирования доступа пользователей к программе.");
+        private void changeStatus() throws SQLException {
+            Optional<UsersDto> user = select();
+            if (user.isPresent()) {
+                Optional<Boolean> result = service.toggleUserActiveStatus(user.get().id());
+                if (result.isPresent())
+                    if (result.get()) System.out.println("Статус успешно изменён.");
+                    else System.out.println("Не удалось изменить статус.");
+                else System.out.println("Ответ об успешности операции не получен.");
+            }
         }
 
         private Optional<UsersDto> select() {
             AtomicReference<UsersDto> result = new AtomicReference<>();
 
             ConsoleMenu menu = new ConsoleMenu("Выберите параметр поиска пользователя: ");
-            menu.addItem("Email", () -> selectByEmail().ifPresent(u ->  {
+            menu.addItem("Email", () -> getUser(selectByEmail()).ifPresent(u ->  {
                 result.set(u);
                 menu.close();
             }));
-            menu.addItem("Имя", () -> getUser(selectByName()).ifPresent(u ->  {
+            menu.addItem("ФИО", () -> getUser(selectByName()).ifPresent(u ->  {
                 result.set(u);
                 menu.close();
             }));
             menu.addItem("Роль", () -> getUser(selectByRole()).ifPresent(u ->  {
+                result.set(u);
+                menu.close();
+            }));
+            menu.addItem("Дата регистрации", () -> getUser(selectByCreateDate()).ifPresent(u ->  {
+                result.set(u);
+                menu.close();
+            }));
+            menu.addItem("Статус", () -> getUser(selectByStatus()).ifPresent(u ->  {
                 result.set(u);
                 menu.close();
             }));
@@ -199,23 +246,67 @@ public class AdminController {
             return Optional.ofNullable(result.get());
         }
 
-        private Optional<UsersDto> getUser(List<UsersDto> users) throws SQLException, SecurityException, ConsoleUserInputException {
-            return Optional.empty();
+        private Optional<UsersDto> getUser(List<UsersDto> users) {
+            Optional<UsersDto> user = new ItemsListMenu<>(
+                    users,
+                    "Выберите пользователя",
+                    UsersDto.getMenuTableHeader()).start();
+            if (user.isPresent()) {
+                logger.debug("Получен пользователь: {}", user.get());
+                return user;
+            } else {
+                logger.debug("Не удалось получить пользователя.");
+                return Optional.empty();
+            }
         }
 
-        private Optional<UsersDto> selectByEmail() throws SQLException, SecurityException, ConsoleUserInputException {
+        private List<UsersDto> selectByEmail() throws SQLException, SecurityException {
             ConsoleReader.cls();
             Optional<String> email = ConsoleReader.readEmail();
-            if (email.isEmpty()) return Optional.empty();
-            else return service.getUserByEmail(email.get());
+            if (email.isEmpty()) return new ArrayList<>();
+            else return service.getUsersByEmail(email.get());
         }
 
-        private List<UsersDto> selectByRole() {
-            return new ArrayList<>();
+        private List<UsersDto> selectByRole() throws SQLException, SecurityException {
+            Optional<UserRolesDto> role = selectUserRole();
+            if (role.isEmpty()) return new ArrayList<>();
+            else return service.getUsersByRole(role.get());
         }
 
-        private List<UsersDto> selectByName() {
-            return new ArrayList<>();
+        private List<UsersDto> selectByName() throws SQLException, SecurityException {
+            ConsoleReader.cls();
+            Optional<String> name = ConsoleReader.readString("Введите ФИО (фамилию, имя, отчество или полное ФИО, или предполагаемую часть ФИО)");
+            if (name.isEmpty()) return new ArrayList<>();
+            else return service.getUsersByName(name.get());
+        }
+
+        private List<UsersDto> selectByCreateDate() throws SQLException, SecurityException {
+            ConsoleReader.cls();
+            Optional<Date> minDate = ConsoleReader.readDate("Введите нижнюю границу даты");
+            if (minDate.isEmpty()) return new ArrayList<>();
+            Optional<Date> maxDate = ConsoleReader.readDate("Введите верхнюю границу даты");
+            if (maxDate.isEmpty()) return new ArrayList<>();
+            return service.getUsersByCreatedAt(minDate.get(), maxDate.get());
+        }
+
+        private List<UsersDto> selectByStatus() throws SQLException, SecurityException {
+            ConsoleReader.cls();
+            System.out.println("Выберите статус:");
+            System.out.println("1 - Активен");
+            System.out.println("2 - Заблокирован");
+            System.out.println("0 - Назад");
+            int choice = ConsoleReader.chooseMenuItem(0, 2);
+            if (choice == 0) return new ArrayList<>();
+            boolean is_blocked = choice == 2;
+            return service.getUsersByStatus(is_blocked);
+        }
+
+        private Optional<UserRolesDto> selectUserRole() throws SQLException, SecurityException {
+            ConsoleReader.cls();
+            return new ItemsListMenu<>(
+                    service.getUserRoles(),
+                    "Выберите роль пользователя",
+                    UserRolesDto.getMenuTableHeader()).start();
         }
     }
 
