@@ -20,8 +20,6 @@ import java.util.regex.Pattern;
  */
 public class ConsoleReader {
 
-
-
     /**
      * Константа с маской для ввода email
      */
@@ -48,7 +46,7 @@ public class ConsoleReader {
      * Кроссплатформенный способ очистки консоли.
      */
     public static void cls() {
-        System.out.print("\033[H\033[2J");
+        System.out.print("\033[H\033[2J\033[3J");
         System.out.flush();
     }
 
