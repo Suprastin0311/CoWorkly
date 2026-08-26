@@ -8,6 +8,9 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.InputMismatchException;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -26,8 +29,7 @@ public class ConsoleReader {
     private static final Pattern VALID_EMAIL_ADDRESS_REGEX =
             Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
 
-    private static final Pattern VALID_DATE_REGEX =
-            Pattern.compile("^[0-9]+\\.[0-9]+\\.[0-9]$", Pattern.CASE_INSENSITIVE);
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd");
 
     private static final Logger logger = LoggerFactory.getLogger(ConsoleReader.class);
 
@@ -65,18 +67,6 @@ public class ConsoleReader {
      */
     public static boolean validateEmail(String emailStr) {
         Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(emailStr);
-        return matcher.matches();
-    }
-
-    /**
-     * Валидация строкового представления даты.
-     * @param dateStr строковое представление даты
-     * @return результат валидации<br>
-     * true - дата совпадает с маской<br>
-     * false - дата не совпадает с маской
-     */
-    public static boolean validateDate(String dateStr) {
-        Matcher matcher = VALID_DATE_REGEX.matcher(dateStr);
         return matcher.matches();
     }
 
@@ -263,6 +253,7 @@ public class ConsoleReader {
     public static Optional<Date> readDate(String message) {
         while (true) {
             try {
+                System.out.print(message + ": ");
                 return inputDate();
             } catch (ConsoleUserInputException e) {
                 System.out.println(e.getLocalizedMessage());
@@ -315,14 +306,13 @@ public class ConsoleReader {
         try {
             String input = inputString();
             if (input.equals("q")) return Optional.empty();
-            if (!validateDate(input)) throw new ConsoleUserInputException("Ошибка: введённое значение не соответствует формату [гггг.мм.дд].");
-            return Optional.of(Date.valueOf(new Scanner(System.in).nextLine()));
+            return Optional.of(Date.valueOf(LocalDate.parse(input, DATE_TIME_FORMATTER)));
         } catch (NullPointerException e) {
             logger.error("Ошибка при вводе даты", e);
             throw new ConsoleUserInputException("Ошибка: не удалось прочитать дату.", e);
-        } catch (IllegalArgumentException e) {
+        } catch (DateTimeParseException e) {
             logger.error("Ошибка при вводе даты", e);
-            throw new ConsoleUserInputException("Ошибка: введённое значение не соответствует формату [гггг.мм.дд].", e);
+            throw new ConsoleUserInputException("Ошибка: введённое значение не соответствует формату [гггг.мм.дд] или недопустимые значения.", e);
         }
     }
 
