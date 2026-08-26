@@ -12,6 +12,7 @@ public class MainController {
     private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 
     public void start() {
+        ConsoleReader.cls();
         ConsoleMenu menu = new ConsoleMenu("Добро пожаловать в CoWorkly!");
         menu.addItem("Войти", this::login);
         menu.addItem("Зарегистрироваться", this::registration);
@@ -46,6 +47,8 @@ public class MainController {
 
     private void registration() {
         RegistrationController regController = new RegistrationController();
-        regController.start();
+        if (regController.start()) Out.printlnGreen("Регистрация прошла успешно!");
+        else Out.printlnRed("Регистрация не удалась :(");
+        ConsoleReader.waitInput();
     }
 }

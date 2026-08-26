@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
+import java.sql.SQLTimeoutException;
 import java.util.*;
 
 /**
@@ -76,8 +77,12 @@ public class ConsoleMenu {
             Out.printlnRed(e.getLocalizedMessage());
             logger.error("Ошибка консольного ввода.", e);
             ConsoleReader.waitInput();
-        } catch (SQLException e) {
-            Out.printlnRed("Ошибка с базой данных.");
+        } catch (SQLTimeoutException e) {
+            Out.printlnRed("Время выполнения превысило установленный лимит и запрос был прерван.");
+            logger.error(e.getMessage(), e);
+            ConsoleReader.waitInput();
+        }  catch (SQLException e) {
+            Out.printlnRed("Ошибка на уровне базы данных.");
             logger.error(e.getLocalizedMessage(), e);
             ConsoleReader.waitInput();
         } catch (SecurityException e) {

@@ -123,7 +123,7 @@ public class Out {
         System.out.print(YELLOW_BACKGROUND + WHITE + message + RESET);
     }
     public static void printBlueBack(String message) {
-        System.out.print(BLUE_BACKGROUND + WHITE + message + RESET);
+        System.out.print(BLUE_BACKGROUND + BLACK + message + RESET);
     }
     public static void printPurpleBack(String message) {
         System.out.print(PURPLE_BACKGROUND + WHITE + message + RESET);

@@ -4,6 +4,7 @@ import com.ddnik.exceptions.ConsoleUserInputException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.time.LocalDate;
@@ -46,8 +47,16 @@ public class ConsoleReader {
      * Кроссплатформенный способ очистки консоли.
      */
     public static void cls() {
-        System.out.print("\033[H\033[2J\033[3J");
-        System.out.flush();
+        try {
+            if (System.getProperty("os.name").contains("Windows")) {
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            } else {
+                System.out.print("\033[H\033[2J\033[3J");
+                System.out.flush();
+            }
+        } catch (IOException | InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**
@@ -99,7 +108,7 @@ public class ConsoleReader {
      */
     public static Optional<String> readEmail() {
         while (true) {
-            Optional<String> email = readString("Введите email");
+            Optional<String> email = readString("Email");
             if (email.isPresent())
                 if (validateEmail(email.get())) return email;
                 else Out.printlnRed("Email не соответствует шаблону example@mail.domen");
