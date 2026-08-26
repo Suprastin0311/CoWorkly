@@ -260,7 +260,7 @@ public interface IService {
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
-    ArrayList<BookingDto> getBookingsByUserId(Users user) throws SQLException, SecurityException;
+    ArrayList<BookingDto> getBookingsByUserId(UsersDto user) throws SQLException, SecurityException;
 
     /**
      * Получает список броней указанного рабочего пространства.
@@ -278,7 +278,17 @@ public interface IService {
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
-    ArrayList<BookingDto> getBookingsByStatus(BookingStatuses status) throws SQLException, SecurityException;
+    ArrayList<BookingDto> getBookingsByStatus(BookingStatusesDto status) throws SQLException, SecurityException;
+
+    /**
+     * Получает список броней пользователя с фильтром по времени бронирования.
+     * @param minDate левая граница диапазона.
+     * @param maxDate правая граница диапазона.
+     * @return список броней.
+     * @throws SQLException в случае возникновения ошибки на уровне базы данных.
+     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     */
+    List<BookingDto> getBookingsByCreatedAt(Date minDate, Date maxDate) throws SQLException, SecurityException;
 
     /**
      * Получает список броней пользователя с фильтром по времени.
@@ -305,5 +315,5 @@ public interface IService {
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
-    ArrayList<BookingStatuses> getBookingStatuses() throws SQLException, SecurityException;
+    List<BookingStatusesDto> getBookingStatuses() throws SQLException, SecurityException;
 }

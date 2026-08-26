@@ -321,7 +321,7 @@ public class Service implements IService {
         }
     }
 
-    public ArrayList<BookingDto> getBookingsByUserId(Users user) throws SQLException, SecurityException {
+    public ArrayList<BookingDto> getBookingsByUserId(UsersDto user) throws SQLException, SecurityException {
         try {
             ArrayList<BookingDto> bookings = repo.getBookingsByUserId(user.id());
             logger.debug("Получено {} броней пользователя по id {}", bookings.size(), user.id());
@@ -341,19 +341,25 @@ public class Service implements IService {
         }
     }
     
-    public ArrayList<BookingDto> getBookingsByStatus(BookingStatuses status) throws SQLException, SecurityException {
+    public ArrayList<BookingDto> getBookingsByStatus(BookingStatusesDto status) throws SQLException, SecurityException {
         try {
-            ArrayList<BookingDto> bookings = repo.getBookingsByStatus(status);
+            ArrayList<BookingDto> bookings = repo.getBookingsByStatus(status.id());
             logger.debug("Получено {} броней со статусом {}", bookings.size(), status.name());
             return bookings;
         } catch (SQLException | SecurityException e) {
             throw e;
         }
     }
-    
+
+    public List<BookingDto> getBookingsByCreatedAt(Date minDate, Date maxDate) throws SQLException, SecurityException {
+        List<BookingDto> bookings = repo.getBookingsByCreatedAt(minDate, maxDate);
+        logger.debug("Получено {} броней с датой создания в промежутке c {} по {}", bookings.size(), minDate, maxDate);
+        return bookings;
+    }
+
     public ArrayList<BookingDto> getUserBookingsByTime(long user_id, Date startTime, Date endTime) throws SQLException, SecurityException {
         try {
-            ArrayList<BookingDto> bookings = repo.getUserBookingsByTime(user_id, startTime, endTime);
+            ArrayList<BookingDto> bookings = repo.getUserBookingsByCreatedAt(user_id, startTime, endTime);
             logger.debug("Получено {} броней с датами бронирования в промежутке от {} до {}", bookings.size(), startTime, endTime);
             return bookings;
         } catch (SQLException | SecurityException e) {
@@ -371,9 +377,9 @@ public class Service implements IService {
         }
     }
     
-    public ArrayList<BookingStatuses> getBookingStatuses() throws SQLException, SecurityException {
+    public List<BookingStatusesDto> getBookingStatuses() throws SQLException, SecurityException {
         try {
-            ArrayList<BookingStatuses> bookingStatuses = repo.getBookingStatuses();
+            List<BookingStatusesDto> bookingStatuses = repo.getBookingStatuses();
             logger.debug("Получено {} статусов бронирования.", bookingStatuses.size());
             return bookingStatuses;
         } catch (SQLException | SecurityException e) {

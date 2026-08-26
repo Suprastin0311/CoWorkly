@@ -4,7 +4,6 @@ import com.ddnik.AuthorizedUser;
 import com.ddnik.db.Service;
 import com.ddnik.db.dto.*;
 import com.ddnik.db.entity.*;
-import com.ddnik.exceptions.ConsoleUserInputException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -200,9 +199,9 @@ public class AdminController {
 
         private List<UsersDto> selectByCreateDate() throws SQLException, SecurityException {
             ConsoleReader.cls();
-            Optional<Date> minDate = ConsoleReader.readDate("Введите нижнюю границу даты");
+            Optional<Date> minDate = ConsoleReader.readDate("Введите минимальную дату");
             if (minDate.isEmpty()) return new ArrayList<>();
-            Optional<Date> maxDate = ConsoleReader.readDate("Введите верхнюю границу даты");
+            Optional<Date> maxDate = ConsoleReader.readDate("Введите максимальную дату");
             if (maxDate.isEmpty()) return new ArrayList<>();
             return service.getUsersByCreatedAt(minDate.get(), maxDate.get());
         }
@@ -626,13 +625,18 @@ public class AdminController {
      */
     class BookingController {
 
+        // Контроллер для выбора пользователей
+        private final UsersController usersController = new UsersController();
+        // Контроллер для выбора рабочих пространств
+        private final WorkspaceController workspaceController = new WorkspaceController();
+
         public void start() {
             ConsoleMenu menu = new ConsoleMenu("Просмотр бронирований.");
-            menu.addItem("Все", this::viwAll);
-            menu.addItem("По пользователю", this::viewByUser);
-            menu.addItem("По рабочему пространству", this::viewByWorkspace);
-            menu.addItem("По дате", this::viewByDate);
-            menu.addItem("По статусу", this::viewByStatus);
+            menu.addItem("Все", this::viewAll);
+            menu.addItem("По пользователю", () -> view(selectByUser()));
+            menu.addItem("По рабочему пространству", () -> view(selectByWorkspace()));
+            menu.addItem("По дате", () -> view(selectByDate()));
+            menu.addItem("По статусу", () -> view(selectByStatus()));
 
             logger.info("Администратор перешёл в меню просмотра бронирований.");
             menu.start();
@@ -641,7 +645,7 @@ public class AdminController {
         /**
          * Посмотреть все брони.
          */
-        private void viwAll() throws SQLException, SecurityException {
+        private void viewAll() throws SQLException, SecurityException {
             List<BookingDto> bookings = service.getBookings();
             new ItemsListMenu<>(bookings, "Все бронирования", BookingDto.getMenuTableHeader()).display();
             ConsoleReader.waitInput();
@@ -650,49 +654,58 @@ public class AdminController {
         /**
          * Посмотреть брони с фильтром по пользователю.
          */
-        private void viewByUser() {
-            //List<BookingDto> bookings = service.getBookingsByUserId();
+        private List<BookingDto> selectByUser() throws SQLException, SecurityException {
+            Optional<UsersDto> user = usersController.select();
+            if (user.isPresent()) return service.getBookingsByUserId(user.get());
+            else return new ArrayList<>();
         }
 
         /**
          * Посмотреть брони с фильтром по рабочему пространству.
          */
-        private void viewByWorkspace() {
-            Out.printlnCyan("Фильтр по рабочему пространству");
+        private List<BookingDto> selectByWorkspace() throws SQLException, SecurityException {
+            Optional<WorkspaceDto> workspace = workspaceController.select();
+            if (workspace.isPresent()) return service.getBookingsByWorkspaceId(workspace.get());
+            else return new ArrayList<>();
         }
 
         /**
          * Посмотреть брони с фильртом по дате.
          */
-        private void viewByDate() {
-            Out.printlnCyan("Фильтр по дате");
+        private List<BookingDto> selectByDate() throws SQLException, SecurityException {
+            ConsoleReader.cls();
+            Optional<Date> minDate = ConsoleReader.readDate("Введите минимальную дату");
+            if (minDate.isEmpty()) new ArrayList<>();
+            Optional<Date> maxDate = ConsoleReader.readDate("Введите максимальную дату");
+            if (maxDate.isEmpty()) new ArrayList<>();
+
+            return service.getBookingsByCreatedAt(minDate.get(), maxDate.get());
         }
 
         /**
          * Посмотреть брони с фильтром по статусу.
          */
-        private void viewByStatus() {
-            Out.printlnCyan("Фильтр по статусу");
+        private List<BookingDto> selectByStatus() throws SQLException, SecurityException {
+            Optional<BookingStatusesDto> status = selectBookingStatus();
+            if (status.isPresent()) return service.getBookingsByStatus(status.get());
+            else return new ArrayList<>();
         }
 
         /**
          * Вывод списка броней в консоль.
          * @param bookings список броней
          */
-        private void view(ArrayList<Bookings> bookings) {
-
+        private void view(List<BookingDto> bookings) {
+            ConsoleReader.cls();
+            new ItemsListMenu<>(bookings, "Выбранные бронирования", BookingDto.getMenuTableHeader()).display();
+            ConsoleReader.waitInput();
         }
 
-        /**
-         * Выбрать статус брони из списка.
-         * @return выбранный статус
-         * @throws ConsoleUserInputException в случае ошибки ввода.
-         */
-        private BookingStatuses selectBookingStatus() throws ConsoleUserInputException {
+        private Optional<BookingStatusesDto> selectBookingStatus() throws SQLException, SecurityException {
             ConsoleReader.cls();
-            do {
-
-            } while (true);
+            return new ItemsListMenu<>(service.getBookingStatuses(),
+                    "Выберите статус бронирования",
+                    BookingStatusesDto.getMenuTableHeader()).start();
         }
     }
 }
