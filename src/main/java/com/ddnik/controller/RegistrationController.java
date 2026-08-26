@@ -23,13 +23,10 @@ public class RegistrationController {
 
     public boolean start() {
         ConsoleReader.cls();
-        Out.println("Регистрация (введите букву [q] для выхода.)\n");
-
-        boolean nextStep = false;
+        Out.println("Регистрация\n");
 
         // Ввод email
-        Optional<String> email;
-        email = ConsoleReader.readEmail();
+        Optional<String> email = ConsoleReader.readEmail();
         if (email.isEmpty()) return false;
         try {
             Optional<UsersDto> user = service.getUserByEmail(email.get());
@@ -37,23 +34,23 @@ public class RegistrationController {
                 Out.printlnRed("Пользователь с таким email уже существует.");
                 return false;
             }
-            else nextStep = true;
         } catch (SQLException e) {
+            logger.error(e.getMessage(), e);
             Out.printlnRed("Возникла ошибка с базой данных.");
         }
 
         // Ввод пароля
-        Optional<String> password;
-        do {
-            password = ConsoleReader.readString("Введите пароль");
-            if (password.isEmpty()) return false;
+        Optional<String> password = ConsoleReader.readString("Введите пароль");
+        if (password.isEmpty()) return false;
 
+        boolean next = false;
+        while (!next) {
             Optional<String> repeatPassword = ConsoleReader.readString("Повторите пароль");
             if (repeatPassword.isEmpty()) return false;
 
             if (!password.equals(repeatPassword)) Out.printlnRed("Пароль не совпадают.");
-            else nextStep = true;
-        } while (nextStep);
+            else next = true;
+        }
 
         // ФИО
         Optional<String>fullName = ConsoleReader.readString("Введите Фамилию Имя Отчество полностью");
