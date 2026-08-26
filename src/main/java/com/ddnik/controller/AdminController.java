@@ -420,6 +420,7 @@ public class AdminController {
             // Вместимость
             Optional<Integer> capacity;
             capacity = ConsoleReader.readIntInRange("Вместимсоть", type.get().minParticipantsCount(), type.get().maxParticipantsCount());
+            if (capacity.isEmpty()) return;
 
             // Часовая стоимость
             Optional<BigDecimal> hourlyRate = ConsoleReader.readPositiveBigDecimal("Часовая стоимость");
@@ -453,21 +454,24 @@ public class AdminController {
         private void delete() throws SQLException, SecurityException {
             Out.printlnCyan("Удаление рабочего пространства.");
             Optional<WorkspaceDto> workspace = select();
-            Out.printlnRed("Рабочее пространство будет БЕЗВОЗВРАТНО удалено.");
-            Out.println(WorkspaceDto.getMenuTableHeader());
-            Out.println("1 | " + workspace.get().toMenuTableRow());
-            Out.printlnRed("Подтвердить удаление? ");
-            Out.printlnGreen("1 - Да");
-            Out.printlnRed("2 - Нет");
-            if (ConsoleReader.chooseMenuItem(1, 2) == 1) {
-                Optional<Boolean> result = service.deleteWorkspace(workspace.get().id());
-                if (result.isPresent()) {
-                    if (result.get()) Out.printlnGreen("Рабочее пространство успешно безвозвратно удалено.");
-                    else Out.printlnRed("Не удалось удалить рабочее пространство.");
+            if (workspace.isPresent()) {
+                Out.printlnRed("Рабочее пространство будет БЕЗВОЗВРАТНО удалено.");
+                Out.println(WorkspaceDto.getMenuTableHeader());
+                Out.println("1 | " + workspace.get().toMenuTableRow());
+                Out.printlnRed("Подтвердить удаление? ");
+                Out.printlnGreen("1 - Да");
+                Out.printlnRed("2 - Нет");
+                if (ConsoleReader.chooseMenuItem(1, 2) == 1) {
+                    Optional<Boolean> result = service.deleteWorkspace(workspace.get().id());
+                    if (result.isPresent()) {
+                        if (result.get()) Out.printlnGreen("Рабочее пространство успешно безвозвратно удалено.");
+                        else Out.printlnRed("Не удалось удалить рабочее пространство.");
+                    }
+                    else Out.printlnRed("Не удалось выполнить операцию.");
+                    ConsoleReader.waitInput();
                 }
-                else Out.printlnRed("Не удалось выполнить операцию.");
-                ConsoleReader.waitInput();
             }
+            else Out.printlnYellow("Рабочее пространство не выбрано. Отмена операции.");
         }
 
         private Optional<WorkspaceDto> select() {
@@ -556,9 +560,7 @@ public class AdminController {
                 case 0 -> {
                     return new ArrayList<>();
                 }
-                case 2 -> {
-                    status = false;
-                }
+                case 2 -> status = false;
             }
 
             return service.getWorkspacesByStatus(status);
