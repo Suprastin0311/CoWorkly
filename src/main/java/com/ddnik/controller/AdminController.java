@@ -307,7 +307,7 @@ public class AdminController {
                 }
                 else {
                     Out.printlnRed("Не удалось выбрать тип.");
-                    logger.error("Не удалось выбрать тип рабочего пространства.");
+                    logger.debug("Не удалось выбрать тип рабочего пространства.");
                     return;
                 }
             }
@@ -419,7 +419,7 @@ public class AdminController {
 
             // Вместимость
             Optional<Integer> capacity;
-            capacity = ConsoleReader.readIntInRange("Вместимсоть", type.get().minParticipantsCount(), type.get().maxParticipantsCount());
+            capacity = ConsoleReader.readIntInRange("Вместимость", type.get().minParticipantsCount(), type.get().maxParticipantsCount());
             if (capacity.isEmpty()) return;
 
             // Часовая стоимость
