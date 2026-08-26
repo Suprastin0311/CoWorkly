@@ -43,3 +43,6 @@ build/
 /CoWorkly_Test_functionsonly.sql
 *.log
 /db.properties
+out/
+META-INF/
+status.txt
