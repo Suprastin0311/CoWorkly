@@ -675,9 +675,9 @@ public class AdminController {
         private List<BookingDto> selectByDate() throws SQLException, SecurityException {
             ConsoleReader.cls();
             Optional<Date> minDate = ConsoleReader.readDate("Введите минимальную дату");
-            if (minDate.isEmpty()) new ArrayList<>();
+            if (minDate.isEmpty()) return new ArrayList<>();
             Optional<Date> maxDate = ConsoleReader.readDate("Введите максимальную дату");
-            if (maxDate.isEmpty()) new ArrayList<>();
+            if (maxDate.isEmpty()) return new ArrayList<>();
 
             return service.getBookingsByCreatedAt(minDate.get(), maxDate.get());
         }
