@@ -38,8 +38,6 @@ public class Repository implements IRepository {
                     return Optional.empty(); // если execute() не выполнился
                 }
             }
-        } catch (SQLTimeoutException e) {
-            throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
         }
     }
 
@@ -69,8 +67,6 @@ public class Repository implements IRepository {
                     logger.debug("Из БД извлечено 0 записей");
                     return Optional.empty(); // если запрос не вернул результат
                 }
-            } catch (SQLTimeoutException e) {
-                throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
             }
         }
     }
@@ -176,12 +172,6 @@ public class Repository implements IRepository {
                 }
                 else return Optional.empty();
             }
-        } catch (SQLTimeoutException e) {
-            logger.error(e.getMessage(), e);
-            throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            throw new SQLException("Ошибка на уровне базы данных", e);
         }
     }
 
@@ -210,12 +200,6 @@ public class Repository implements IRepository {
             }
             logger.debug("Из таблицы users извлечено {} записей.", result.size());
             return result;
-        } catch (SQLTimeoutException e) {
-            logger.error(e.getMessage(), e);
-            throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            throw new SQLException("Ошибка на уровне базы данных", e);
         }
     }
 
@@ -297,12 +281,10 @@ public class Repository implements IRepository {
                 }
                 else return Optional.empty();
             }
-        } catch (SQLTimeoutException e) {
-            throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
         }
     }
 
-    public Optional<WorkspaceDto> getWorkspaceById(long id) throws SQLException, SQLException {
+    public Optional<WorkspaceDto> getWorkspaceById(long id) throws SQLException {
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces(?, ?, ?, ?, ?, ?, ?)")) {
             ps.setLong(1, id);
@@ -313,13 +295,13 @@ public class Repository implements IRepository {
             ps.setNull(6, Types.BOOLEAN);
             ps.setNull(7, Types.BIGINT);
 
-            ArrayList<WorkspaceDto> workspaces = executeQueryAndBuildWorkspaceDtoList(ps);
+            List<WorkspaceDto> workspaces = executeQueryAndBuildWorkspaceDtoList(ps);
             if (!workspaces.isEmpty()) return Optional.of(workspaces.getFirst());
             else return Optional.empty();
         }
     }
 
-    public ArrayList<WorkspaceDto> getWorkspacesByCapacity(int capacity) throws SQLException {
+    public List<WorkspaceDto> getWorkspacesByCapacity(int capacity) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces(?, ?, ?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -334,7 +316,7 @@ public class Repository implements IRepository {
         }
     }
 
-    public ArrayList<WorkspaceDto> getWorkspacesByHourlyRate(BigDecimal minRate, BigDecimal maxRate) throws SQLException {
+    public List<WorkspaceDto> getWorkspacesByHourlyRate(BigDecimal minRate, BigDecimal maxRate) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces(?, ?, ?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -349,7 +331,7 @@ public class Repository implements IRepository {
         }
     }
 
-    public ArrayList<WorkspaceDto> getWorkspacesByName(String name) throws SQLException {
+    public List<WorkspaceDto> getWorkspacesByName(String name) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces(?, ?, ?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -364,7 +346,7 @@ public class Repository implements IRepository {
         }
     }
 
-    public ArrayList<WorkspaceDto> getWorkspacesByStatus(boolean is_active) throws SQLException {
+    public List<WorkspaceDto> getWorkspacesByStatus(boolean is_active) throws SQLException {
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces(?, ?, ?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -376,12 +358,10 @@ public class Repository implements IRepository {
             ps.setNull(7, Types.BIGINT);
 
             return executeQueryAndBuildWorkspaceDtoList(ps);
-        } catch (SQLTimeoutException e) {
-            throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
         }
     }
 
-    public ArrayList<WorkspaceDto> getWorkspacesByType(long typeId) throws SQLException {
+    public List<WorkspaceDto> getWorkspacesByType(long typeId) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces(?, ?, ?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -393,12 +373,10 @@ public class Repository implements IRepository {
             ps.setLong(7, typeId);
 
             return executeQueryAndBuildWorkspaceDtoList(ps);
-        } catch (SQLTimeoutException e) {
-            throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
         }
     }
 
-    public ArrayList<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Date startTime, Date endTime, long workspaceTypeId, int participantsCount) throws SQLException {
+    public List<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Date startTime, Date endTime, long workspaceTypeId, int participantsCount) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces_available_for_booking(?, ?, ?, ?)")) {
             ps.setDate(1, startTime);
@@ -423,8 +401,6 @@ public class Repository implements IRepository {
 
                 logger.debug("Из БД извлечено {} записей.", result.size());
                 return result;
-            } catch (SQLTimeoutException e) {
-                throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
             }
         }
     }
@@ -436,7 +412,7 @@ public class Repository implements IRepository {
      * @return список рабочих пространств, удовлетворяющих условию.
      * @throws SQLException в случае возникновения ошибки на уровне баз данных.
      */
-    private ArrayList<WorkspaceDto> executeQueryAndBuildWorkspaceDtoList(PreparedStatement ps) throws SQLException {
+    private List<WorkspaceDto> executeQueryAndBuildWorkspaceDtoList(PreparedStatement ps) throws SQLException {
         try (ResultSet rs = ps.executeQuery()) {
             ArrayList<WorkspaceDto> result = new ArrayList<>();
             while (rs.next()) {
@@ -457,9 +433,6 @@ public class Repository implements IRepository {
             }
             logger.debug("Из таблицы workspaces извлечено {} записей.", result.size());
             return result;
-        } catch (SQLTimeoutException e) {
-            logger.error("Время выполнения превысило установленный лимит и запрос был прерван.", e);
-            throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
         }
     }
 
@@ -468,7 +441,7 @@ public class Repository implements IRepository {
     //region Bookings
 
 
-    public ArrayList<BookingDto> getBookings() throws SQLException {
+    public List<BookingDto> getBookings() throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -481,7 +454,7 @@ public class Repository implements IRepository {
         }
     }
 
-    public ArrayList<BookingDto> getBookingsByUserId(long id) throws SQLException {
+    public List<BookingDto> getBookingsByUserId(long id) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
             ps.setLong(1, id);
@@ -494,7 +467,7 @@ public class Repository implements IRepository {
         }
     }
 
-    public ArrayList<BookingDto> getBookingsByWorkspaceId(long id) throws SQLException {
+    public List<BookingDto> getBookingsByWorkspaceId(long id) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -507,7 +480,7 @@ public class Repository implements IRepository {
         }
     }
 
-    public ArrayList<BookingDto> getBookingsByStatus(long id) throws SQLException {
+    public List<BookingDto> getBookingsByStatus(long id) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -520,7 +493,7 @@ public class Repository implements IRepository {
         }
     }
 
-    public ArrayList<BookingDto> getBookingsByCreatedAt(Date minDate, Date maxDate) throws SQLException {
+    public List<BookingDto> getBookingsByCreatedAt(Date minDate, Date maxDate) throws SQLException {
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -533,7 +506,7 @@ public class Repository implements IRepository {
         }
     }
 
-    public ArrayList<BookingDto> getUserBookingsByCreatedAt(long userId, Date start, Date end) throws SQLException {
+    public List<BookingDto> getUserBookingsByCreatedAt(long userId, Date start, Date end) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
             ps.setLong(1, userId);
@@ -565,8 +538,6 @@ public class Repository implements IRepository {
                     return Optional.empty();
                 }
             }
-        } catch (SQLTimeoutException e) {
-            throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
         }
     }
 
@@ -585,8 +556,6 @@ public class Repository implements IRepository {
                     return Optional.empty();
                 }
             }
-        } catch (SQLTimeoutException e) {
-            throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
         }
     }
 
@@ -605,8 +574,6 @@ public class Repository implements IRepository {
                     return Optional.of(rs.getBoolean(1));
                 }
             }
-        } catch (SQLTimeoutException e) {
-            throw new SQLTimeoutException("Время выполнения превысило установленный лимит и запрос был прерван.", e);
         }
     }
 
@@ -617,7 +584,7 @@ public class Repository implements IRepository {
      * @return список броней, удовлетворяющих условию.
      * @throws SQLException в случае возникновения ошибки на уровне баз данных.
      */
-    private ArrayList<BookingDto> executeQueryAndBuildBookingDtoList(PreparedStatement ps) throws SQLException {
+    private List<BookingDto> executeQueryAndBuildBookingDtoList(PreparedStatement ps) throws SQLException {
         try (ResultSet rs = ps.executeQuery()) {
             ArrayList<BookingDto> result = new ArrayList<>();
             while (rs.next()) {
@@ -647,7 +614,7 @@ public class Repository implements IRepository {
 
     //region Справочники
 
-    public ArrayList<WorkspaceTypesDto> getWorkspaceTypes() throws SQLException {
+    public List<WorkspaceTypesDto> getWorkspaceTypes() throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM workspace_types")) {
 

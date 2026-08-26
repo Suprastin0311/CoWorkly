@@ -190,7 +190,7 @@ public interface IService {
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
-    ArrayList<WorkspaceDto> getWorkspacesByCapacity(int capacity) throws SQLException, SecurityException;
+    List<WorkspaceDto> getWorkspacesByCapacity(int capacity) throws SQLException, SecurityException;
 
     /**
      * Получает рабочие пространства по вместимости.
@@ -200,7 +200,7 @@ public interface IService {
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
-    ArrayList<WorkspaceDto> getWorkspacesByHourlyRate(BigDecimal minRate, BigDecimal maxRate) throws SQLException, SecurityException;
+    List<WorkspaceDto> getWorkspacesByHourlyRate(BigDecimal minRate, BigDecimal maxRate) throws SQLException, SecurityException;
 
     /**
      * Получает рабочие пространства по имени.
@@ -209,7 +209,7 @@ public interface IService {
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
-    ArrayList<WorkspaceDto> getWorkspacesByName(String name) throws SQLException, SecurityException;
+    List<WorkspaceDto> getWorkspacesByName(String name) throws SQLException, SecurityException;
 
     /**
      * Получает рабочие пространства статусу.
@@ -220,7 +220,7 @@ public interface IService {
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
-    ArrayList<WorkspaceDto> getWorkspacesByStatus(boolean is_active) throws SQLException, SecurityException;
+    List<WorkspaceDto> getWorkspacesByStatus(boolean is_active) throws SQLException, SecurityException;
 
     /**
      * Получает рабочие пространства типу.
@@ -229,7 +229,7 @@ public interface IService {
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
-    ArrayList<WorkspaceDto> getWorkspacesByType(long id) throws SQLException, SecurityException;
+    List<WorkspaceDto> getWorkspacesByType(long id) throws SQLException, SecurityException;
 
     /**
      * Получает рабочие пространства, доступные к бронированию согласно указанным параметрам.
@@ -241,7 +241,7 @@ public interface IService {
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
-    ArrayList<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Date startTime, Date endTime, long workspaceTypeId, int participantsCount) throws SQLException, SecurityException;
+    List<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Date startTime, Date endTime, long workspaceTypeId, int participantsCount) throws SQLException, SecurityException;
 
 
     /**
@@ -250,7 +250,7 @@ public interface IService {
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
-    ArrayList<BookingDto> getBookings() throws SQLException, SecurityException;
+    List<BookingDto> getBookings() throws SQLException, SecurityException;
 
 
     /**
@@ -260,7 +260,7 @@ public interface IService {
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
-    ArrayList<BookingDto> getBookingsByUserId(UsersDto user) throws SQLException, SecurityException;
+    List<BookingDto> getBookingsByUserId(UsersDto user) throws SQLException, SecurityException;
 
     /**
      * Получает список броней указанного рабочего пространства.
@@ -269,7 +269,7 @@ public interface IService {
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
-    ArrayList<BookingDto> getBookingsByWorkspaceId(WorkspaceDto workspace) throws SQLException, SecurityException;
+    List<BookingDto> getBookingsByWorkspaceId(WorkspaceDto workspace) throws SQLException, SecurityException;
 
     /**
      * Получает список броней с указанным статусом.
@@ -278,7 +278,7 @@ public interface IService {
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
-    ArrayList<BookingDto> getBookingsByStatus(BookingStatusesDto status) throws SQLException, SecurityException;
+    List<BookingDto> getBookingsByStatus(BookingStatusesDto status) throws SQLException, SecurityException;
 
     /**
      * Получает список броней пользователя с фильтром по времени бронирования.
@@ -299,7 +299,7 @@ public interface IService {
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
-    ArrayList<BookingDto> getUserBookingsByTime(long user_id, Date start, Date end) throws SQLException, SecurityException;
+    List<BookingDto> getUserBookingsByTime(long user_id, Date start, Date end) throws SQLException, SecurityException;
 
     /**
      * Получает справочник типов рабочего пространства.
@@ -307,7 +307,7 @@ public interface IService {
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
-    ArrayList<WorkspaceTypesDto> getWorkspaceTypes() throws SQLException, SecurityException;
+    List<WorkspaceTypesDto> getWorkspaceTypes() throws SQLException, SecurityException;
 
     /**
      * Получает справочник статусов броней.
