@@ -42,88 +42,6 @@ public class AdminController {
     }
 
     /**
-     * Поиск пользователя по данным учётной записи.
-     * @return модель данных пользователя
-     */
-    private Users findUser() throws Exception {
-        ConsoleReader.cls();
-        Scanner sc = new Scanner(System.in);
-
-        do {
-            ConsoleReader.printMenu("findUser");
-
-            int choice = sc.nextInt();
-            switch (choice) { // user = switch() -> yield
-                case 1: // Email
-                    ConsoleReader.cls();
-                    boolean isEmailValid;
-                    String email;
-                    do {
-                        System.out.print("Введите email (пример: exmaple@some.domen): ");
-                        email = sc.next().trim();
-                        isEmailValid = ConsoleReader.validateEmail(email);
-                        if (isEmailValid) {
-                            break;
-                            // return User
-                        }
-                        System.out.println("\nОшибка. Убедитесь, что вводимый email удовлетворяет маске.");
-                    } while (!isEmailValid);
-                    break;
-                case 2: // ФИО
-                    ConsoleReader.cls();
-                    System.out.print("Введите ФИО: ");
-                    String name = sc.next().trim();
-
-                    // return User;
-                    break;
-                case 3: // Роль
-                    ConsoleReader.cls();
-                    ConsoleReader.printMenu("findUserByRole");
-
-                    int roleChoice = sc.nextInt();
-                    switch (roleChoice) {
-                        case 1:
-                            System.out.println("Тут будут выбранные пользователи.");
-                            //TODO вывод админов
-                            //int usersCount =
-//                                do {
-//                                    TODO выбор админа
-//                                    userChoice =
-//                                    if (userChoice < 0 && userChoice > usersCount) {
-//                                        System.out.println("В списке нет пользователя с указанным номером!");
-//                                    }
-//                                    else {
-//                                        break;
-//                                    }
-//                                } while (true);
-                            break;
-                        case 2:
-                            System.out.println("Тут будут выбранные пользователи.");
-//                                TODO вывод пользователей
-//                                do {
-//                                    TODO выбор пользователя
-//                                    userChoice =
-//                                    if (userChoice < 0 && userChoice > usersCount) {
-//                                        System.out.println("В списке нет пользователя с указанным номером!");
-//                                    }
-//                                    else {
-//                                        break;
-//                                    }
-//                                } while (true);
-                            break;
-                        default: // Вернуться назад
-                            ConsoleReader.cls();
-                            break;
-                    }
-
-                    break;
-                case 4: // Назад
-                    throw new Exception("Отмена поиска.");
-            }
-        } while (true);
-    }
-
-    /**
      * Запуск меню работы с пользователями.
      */
     private void users() {
@@ -209,9 +127,9 @@ public class AdminController {
             if (user.isPresent()) {
                 Optional<Boolean> result = service.toggleUserActiveStatus(user.get().id());
                 if (result.isPresent())
-                    if (result.get()) System.out.println("Статус успешно изменён.");
-                    else System.out.println("Не удалось изменить статус.");
-                else System.out.println("Ответ об успешности операции не получен.");
+                    if (result.get()) Out.printlnGreen("Статус успешно изменён.");
+                    else Out.printlnRed("Не удалось изменить статус.");
+                else Out.printlnRed("Ответ об успешности операции не получен.");
             }
         }
 
@@ -291,10 +209,10 @@ public class AdminController {
 
         private List<UsersDto> selectByStatus() throws SQLException, SecurityException {
             ConsoleReader.cls();
-            System.out.println("Выберите статус:");
-            System.out.println("1 - Активен");
-            System.out.println("2 - Заблокирован");
-            System.out.println("0 - Назад");
+            Out.println("Выберите статус:");
+            Out.printlnGreen("1 - Активен");
+            Out.printlnRed("2 - Заблокирован");
+            Out.printlnYellow("0 - Назад");
             int choice = ConsoleReader.chooseMenuItem(0, 2);
             if (choice == 0) return new ArrayList<>();
             boolean is_blocked = choice == 2;
@@ -345,13 +263,13 @@ public class AdminController {
                 menu.start();
             }
             else {
-                System.out.println("Не удалось выбрать рабочее пространство.");
+                Out.printlnRed("Не удалось выбрать рабочее пространство.");
             }
         }
 
         private void editType(WorkspaceDto workspace) throws SQLException, SecurityException {
             if (!service.getBookingsByWorkspaceId(workspace).isEmpty()) {
-                System.out.println("Выбранное рабочее пространство забронировано в данный момент - редактирование недоступно.");
+                Out.printlnRed("Выбранное рабочее пространство забронировано в данный момент - редактирование недоступно.");
                 return;
             }
 
@@ -362,12 +280,12 @@ public class AdminController {
                         WorkspaceTypesDto.getMenuTableHeader()).start();
                 if (type.isPresent()) {
                     if (Objects.equals(type.get().id(), workspace.type().id()))
-                        System.out.println("Выбранный тип совпадает с текущим.");
+                        Out.printlnYellowBack("Выбранный тип совпадает с текущим.");
                     else {
                         int capacity = workspace.capacity();
                         if (workspace.capacity() < type.get().minParticipantsCount()
                                 || workspace.capacity() > type.get().maxParticipantsCount()) {
-                            System.out.println("Текущее значение вместимости нарушает ограничения нового типа.");
+                            Out.printlnYellowBack("Текущее значение вместимости нарушает ограничения нового типа.");
                             Optional<Integer> newCapacity = ConsoleReader.readIntInRange(
                                     "Введите новое значение вместимости",
                                     type.get().minParticipantsCount(),
@@ -389,8 +307,8 @@ public class AdminController {
                     }
                 }
                 else {
-                    System.out.println("Не удалось выбрать тип.");
-                    logger.debug("Не удалось выбрать тип рабочего пространства.");
+                    Out.printlnRed("Не удалось выбрать тип.");
+                    logger.error("Не удалось выбрать тип рабочего пространства.");
                     return;
                 }
             }
@@ -400,7 +318,7 @@ public class AdminController {
             while (true) {
                 Optional<String> name = ConsoleReader.readString("Введите новое название");
                 if (name.isEmpty()) return;
-                else if (workspace.name().equals(name.get())) System.out.println("Введённое название совпадает с текущим.");
+                else if (workspace.name().equals(name.get())) Out.printlnYellowBack("Введённое название совпадает с текущим.");
                 else {
                     Workspaces editedWorkspace = new Workspaces(
                             workspace.id(),
@@ -438,7 +356,7 @@ public class AdminController {
                 if (hourlyRate.isEmpty()) return;
 
                 if (workspace.hourlyRate().compareTo(hourlyRate.get()) == 0)
-                    System.out.println("Введённое значение совпадает с текущим.");
+                    Out.printlnYellowBack("Введённое значение совпадает с текущим.");
                 else {
                     Workspaces editedWorkspace = new Workspaces(
                             workspace.id(),
@@ -457,24 +375,24 @@ public class AdminController {
         private void changeVisibility(WorkspaceDto workspace) throws SQLException, SecurityException {
             Optional<Boolean> result = service.toggleWorkspaceActiveStatus(workspace.id());
             if (result.isPresent())
-                if (result.get()) System.out.println("Статус успешно изменён.");
-                else System.out.println("Не удалось изменить статус рабочего пространства.");
-            else System.out.println("Ответ об успешности операции не получен.");
+                if (result.get()) Out.printlnGreen("Статус успешно изменён.");
+                else Out.printlnRed("Не удалось изменить статус рабочего пространства.");
+            else Out.printlnRed("Ответ об успешности операции не получен.");
         }
 
         private void update(Workspaces workspace) throws SQLException, SecurityException {
             Optional<Boolean> updateStatus = service.updateWorkspace(workspace);
             if (updateStatus.isPresent()) {
                 if (updateStatus.get()) {
-                    System.out.println("Рабочее пространство успешно обновлено.");
+                    Out.printlnGreen("Рабочее пространство успешно обновлено.");
                     logger.debug("Обновлено рабочее пространство по id {}", workspace.id());
                 }
-                else System.out.println("Не удалось обновить рабочее пространство.");
+                else Out.printlnRed("Не удалось обновить рабочее пространство.");
                 logger.debug("Не удалось обновить рабочее пространство по id {}", workspace.id());
                 ConsoleReader.waitInput();
             }
             else {
-                System.out.println("База данных не вернула ответ.");
+                Out.printlnRed("База данных не вернула ответ.");
                 logger.debug("База данных не вернула ответ.");
             }
         }
@@ -484,7 +402,7 @@ public class AdminController {
             List<String> names = service.getWorkspacesByName("").stream()
                                         .map(WorkspaceDto::name)
                                         .filter(name -> name != null && !name.isBlank()).toList();
-            System.out.println("Создание рабочего пространства.");
+            Out.printlnCyan("Создание рабочего пространства.");
 
             // Тип
             Optional<WorkspaceTypesDto> type = selectWorkspaceType();
@@ -495,7 +413,7 @@ public class AdminController {
             while (true) {
                 name = ConsoleReader.readString("Название");
                 if (name.isEmpty()) return;
-                else if (names.contains(name.get())) System.out.println("Данное название уже используется.");
+                else if (names.contains(name.get())) Out.printlnYellowBack("Данное название уже используется.");
                 else break;
             }
 
@@ -508,10 +426,10 @@ public class AdminController {
             if (hourlyRate.isEmpty()) return;
 
             // Статус
-            System.out.println("Доступно для брони сразу после создания?");
-            System.out.println("1 - Да");
-            System.out.println("2 - Нет");
-            System.out.println("0 - Назад");
+            Out.println("Доступно для брони сразу после создания?");
+            Out.printlnGreen("1 - Да");
+            Out.printlnRed("2 - Нет");
+            Out.printlnYellow("0 - Назад");
             int choice = ConsoleReader.chooseMenuItem(1, 2);
             if (choice == 0) return;
             boolean isActive = choice == 1;
@@ -527,27 +445,27 @@ public class AdminController {
 
             // Создание
             Optional<Long> newWorkspaceId = service.insertWorkspace(newWorkspace);
-            if (newWorkspaceId.isPresent()) System.out.println("Рабочее пространство создано успешно.");
-            else System.out.println("Не удалось создать рабочее пространство.");
+            if (newWorkspaceId.isPresent()) Out.printlnGreen("Рабочее пространство создано успешно.");
+            else Out.printlnRed("Не удалось создать рабочее пространство.");
             ConsoleReader.waitInput();
         }
 
         private void delete() throws SQLException, SecurityException {
-            System.out.println("Удаление рабочего пространства.");
+            Out.printlnCyan("Удаление рабочего пространства.");
             Optional<WorkspaceDto> workspace = select();
-            System.out.println("Рабочее пространство будет БЕЗВОЗВРАТНО удалено.");
-            System.out.println(WorkspaceDto.getMenuTableHeader());
-            System.out.println("1 | " + workspace.get().toMenuTableRow());
-            System.out.println("Подтвердить удаление? ");
-            System.out.println("1 - да");
-            System.out.println("2 - нет");
+            Out.printlnRed("Рабочее пространство будет БЕЗВОЗВРАТНО удалено.");
+            Out.println(WorkspaceDto.getMenuTableHeader());
+            Out.println("1 | " + workspace.get().toMenuTableRow());
+            Out.printlnRed("Подтвердить удаление? ");
+            Out.printlnGreen("1 - Да");
+            Out.printlnRed("2 - Нет");
             if (ConsoleReader.chooseMenuItem(1, 2) == 1) {
                 Optional<Boolean> result = service.deleteWorkspace(workspace.get().id());
                 if (result.isPresent()) {
-                    if (result.get()) System.out.println("Рабочее пространство успешно безвозвратно удалено.");
-                    else System.out.println("Не удалось удалить рабочее пространство.");
+                    if (result.get()) Out.printlnGreen("Рабочее пространство успешно безвозвратно удалено.");
+                    else Out.printlnRed("Не удалось удалить рабочее пространство.");
                 }
-                else System.out.println("Не удалось выполнить операцию.");
+                else Out.printlnRed("Не удалось выполнить операцию.");
                 ConsoleReader.waitInput();
             }
         }
@@ -628,10 +546,10 @@ public class AdminController {
 
         private List<WorkspaceDto> selectByStatus() throws SQLException, SecurityException {
             ConsoleReader.cls();
-            System.out.println("Выберите статус рабочего пространства: ");
-            System.out.println("1 - Активно");
-            System.out.println("2 - Заблокировано");
-            System.out.println("0 - Назад");
+            Out.println("Выберите статус рабочего пространства: ");
+            Out.println("1 - Активно");
+            Out.println("2 - Заблокировано");
+            Out.printlnYellow("0 - Назад");
             int selectedItem = ConsoleReader.chooseMenuItem(0, 2);
             boolean status = true;
             switch (selectedItem) {
@@ -738,21 +656,21 @@ public class AdminController {
          * Посмотреть брони с фильтром по рабочему пространству.
          */
         private void viewByWorkspace() {
-            System.out.println("Фильтр по рабочему пространству");
+            Out.printlnCyan("Фильтр по рабочему пространству");
         }
 
         /**
          * Посмотреть брони с фильртом по дате.
          */
         private void viewByDate() {
-            System.out.println("Фильтр по дате");
+            Out.printlnCyan("Фильтр по дате");
         }
 
         /**
          * Посмотреть брони с фильтром по статусу.
          */
         private void viewByStatus() {
-            System.out.println("Фильтр по статусу");
+            Out.printlnCyan("Фильтр по статусу");
         }
 
         /**

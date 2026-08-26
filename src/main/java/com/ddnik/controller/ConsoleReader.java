@@ -4,14 +4,11 @@ import com.ddnik.exceptions.ConsoleUserInputException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.InputMismatchException;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Scanner;
@@ -23,6 +20,8 @@ import java.util.regex.Pattern;
  */
 public class ConsoleReader {
 
+
+
     /**
      * Константа с маской для ввода email
      */
@@ -32,31 +31,6 @@ public class ConsoleReader {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd");
 
     private static final Logger logger = LoggerFactory.getLogger(ConsoleReader.class);
-
-    /**
-     * Меню авторизации
-     * @param menuName название текстового файла с меню
-     */
-    public static void printMenu(String menuName) {
-        String resourcePath = "menu/" + menuName + ".txt";
-
-        try (InputStream is = ClassLoader.getSystemResourceAsStream(resourcePath)) {
-            if (is == null) {
-                System.out.println("Файл не найден: " + resourcePath);
-                return;
-            }
-
-            // Вывод файла построчно в консоль
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-                br.lines().forEach(System.out::println);
-
-                System.out.print("> ");
-            }
-
-        } catch (IOException e) {
-            System.out.println("Не удалось прочитать файл " + resourcePath + ": " + e.getLocalizedMessage());
-        }
-    }
 
     /**
      * Валидация Email
@@ -83,14 +57,14 @@ public class ConsoleReader {
      */
     public static void waitInput()  {
         try {
-            System.out.print("Нажмите любую клавишу чтобы продолжить...");
+            Out.println("Нажмите любую клавишу чтобы продолжить...");
             Scanner sc = new Scanner(System.in);
             sc.nextLine();
         } catch (NoSuchElementException e) {
-            System.out.println("Ошибка: нет данных для чтения.");
+            Out.printlnRed("Ошибка: нет данных для чтения.");
             logger.error("Ошибка ввода.", e);
         } catch (IllegalStateException e) {
-            System.out.println("Ошибка: консоль не отвечает.");
+            Out.printlnRed("Ошибка: консоль не отвечает.");
             logger.error("Ошибка ввода.", e);
         }
     }
@@ -105,7 +79,7 @@ public class ConsoleReader {
     public static int chooseMenuItem(int minItem, int maxItem) {
         while (true) {
             try {
-                System.out.print("> ");
+                Out.print("> ");
                 Optional<Integer> choice = inputInteger();
 
                 if (choice.isPresent()) {
@@ -113,9 +87,9 @@ public class ConsoleReader {
                         throw new ConsoleUserInputException("Ошибка: данного пункта не существует в меню.");
                     else return choice.get();
                 }
-                else System.out.println("Ошибка: не удалось прочитать введённое число.");
+                else Out.printlnRed("Ошибка: не удалось прочитать введённое число.");
             } catch (ConsoleUserInputException e) {
-                System.out.println(e.getMessage());
+                Out.printlnRed(e.getMessage());
             }
         }
     }
@@ -130,7 +104,7 @@ public class ConsoleReader {
             Optional<String> email = readString("Введите email");
             if (email.isPresent())
                 if (validateEmail(email.get())) return email;
-                else System.out.println("Email не соответствует шаблону example@mail.domen");
+                else Out.printlnRed("Email не соответствует шаблону example@mail.domen");
             else return Optional.empty();
         }
     }
@@ -145,12 +119,12 @@ public class ConsoleReader {
     public static Optional<String> readString(String message) {
         while (true) {
             try {
-                System.out.print(message + ": ");
+                Out.print(message + ": ");
                 String input = inputString();
                 if (input.equals("q")) return Optional.empty();
                 else return Optional.of(input);
             } catch (ConsoleUserInputException e) {
-                System.out.println(e.getLocalizedMessage());
+                Out.printlnRed(e.getLocalizedMessage());
             }
         }
     }
@@ -165,13 +139,13 @@ public class ConsoleReader {
     public static Optional<Integer> readPositiveInt(String message) {
         while (true) {
             try {
-                System.out.print(message + ": ");
+                Out.print(message + ": ");
                 Optional<Integer> number = inputInteger();
                 if (number.isEmpty()) return Optional.empty();
-                else if (number.get() < 0) System.out.println("Ошибка: число не должно быть отрицательным.");
+                else if (number.get() < 0) Out.printlnRed("Ошибка: число не должно быть отрицательным.");
                 else return number;
             } catch (ConsoleUserInputException e) {
-                System.out.println(e.getLocalizedMessage());
+                Out.printlnRed(e.getLocalizedMessage());
             }
         }
     }
@@ -188,14 +162,14 @@ public class ConsoleReader {
     public static Optional<Integer> readIntInRange(String message, int min, int max) {
         while(true) {
             try {
-                System.out.print(String.format("%s в пределах от %d до %d: ", message, min, max));
+                Out.print(String.format("%s в пределах от %d до %d: ", message, min, max));
                 Optional<Integer> number = inputInteger();
                 if (number.isEmpty()) return Optional.empty();
                 else if (number.get() < min || number.get() > max)
-                    System.out.println("Ошибка: введено число вне допустимых значений.");
+                    Out.printlnRed("Ошибка: введено число вне допустимых значений.");
                 else return number;
             } catch (ConsoleUserInputException e) {
-                System.out.println(e.getLocalizedMessage());
+                Out.printlnRed(e.getLocalizedMessage());
             }
         }
     }
@@ -210,13 +184,13 @@ public class ConsoleReader {
     public static Optional<Double> readPositiveDouble(String message) {
         while (true) {
             try {
-                System.out.print(message + ": ");
+                Out.print(message + ": ");
                 Optional<Double> number = inputDouble();
                 if (number.isEmpty()) return Optional.empty();
-                else if (number.get() < 0.0) System.out.println("Ошибка: число не должно быть отрицательным.");
+                else if (number.get() < 0.0) Out.printlnRed("Ошибка: число не должно быть отрицательным.");
                 else return number;
             } catch (ConsoleUserInputException e) {
-                System.out.println(e.getLocalizedMessage());
+                Out.printlnRed(e.getLocalizedMessage());
             }
         }
     }
@@ -235,10 +209,10 @@ public class ConsoleReader {
                 return number.map(BigDecimal::valueOf);
             } catch (NumberFormatException e) {
                 logger.error("Ошибка при вводе значения BigDecimal.", e);
-                System.out.println("Ошибка: введите вещественное значение.");
+                Out.printlnRed("Ошибка: введите вещественное значение.");
             } catch (NullPointerException e) {
                 logger.error("Ошибка при вводе значения BigDecimal.", e);
-                System.out.println("Ошибка: непредвиденная ошибка.");
+                Out.printlnRed("Ошибка: непредвиденная ошибка.");
             }
         }
     }
@@ -253,10 +227,10 @@ public class ConsoleReader {
     public static Optional<Date> readDate(String message) {
         while (true) {
             try {
-                System.out.print(message + ": ");
+                Out.print(message + ": ");
                 return inputDate();
             } catch (ConsoleUserInputException e) {
-                System.out.println(e.getLocalizedMessage());
+                Out.printlnRed(e.getLocalizedMessage());
             }
         }
     }

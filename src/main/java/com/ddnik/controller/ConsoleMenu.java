@@ -39,7 +39,7 @@ public class ConsoleMenu {
         isRunning = true;
         while (isRunning) {
             display();
-            System.out.println("0 - Назад");
+            Out.printlnYellow("0 - Назад");
             int choice = ConsoleReader.chooseMenuItem(0, items.size());
 
             if (choice == 0) isRunning = false; // Назад
@@ -58,9 +58,9 @@ public class ConsoleMenu {
      * Отображение меню.
      */
     private void display() {
-        System.out.println(title + "\n");
+        Out.printlnCyan(title + "\n");
         for (int i = 0; i < items.size(); i++) {
-            System.out.println((i + 1) + " - " + items.get(i).getTitle());
+            Out.println((i + 1) + " - " + items.get(i).getTitle());
         }
     }
 
@@ -72,19 +72,19 @@ public class ConsoleMenu {
         try {
             item.getAction().execute();
         } catch (ConsoleUserInputException e) {
-            System.out.println(e.getLocalizedMessage());
+            Out.printlnRed(e.getLocalizedMessage());
             logger.error("Ошибка консольного ввода.", e);
             ConsoleReader.waitInput();
         } catch (SQLException e) {
-            System.out.println("Ошибка с базой данных.");
+            Out.printlnRed("Ошибка с базой данных.");
             logger.error(e.getLocalizedMessage(), e);
             ConsoleReader.waitInput();
         } catch (SecurityException e) {
-            System.out.println(e.getLocalizedMessage());
-            logger.error("Ошибка доступа.", e);
+            Out.printlnRed(e.getLocalizedMessage());
+            logger.error("Недостаточно прав для выполнение данного действия.", e);
             ConsoleReader.waitInput();
         } catch (Exception e) {
-            System.out.println("Непредвиденная ошибка.");
+            Out.printlnRed("Непредвиденная ошибка.");
             logger.error(e.getLocalizedMessage(), e);
             ConsoleReader.waitInput();
         }

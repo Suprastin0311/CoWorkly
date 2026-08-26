@@ -23,10 +23,9 @@ public class RegistrationController {
 
     public boolean start() {
         ConsoleReader.cls();
-        System.out.println("Регистрация (введите букву [q] для выхода.)\n");
+        Out.println("Регистрация (введите букву [q] для выхода.)\n");
 
-        boolean isEmailValid = false,
-                nextStep = false;
+        boolean nextStep = false;
 
         // Ввод email
         Optional<String> email;
@@ -35,12 +34,12 @@ public class RegistrationController {
         try {
             Optional<UsersDto> user = service.getUserByEmail(email.get());
             if (user.isPresent()) {
-                System.out.println("Пользователь с таким email уже существует.");
+                Out.printlnRed("Пользователь с таким email уже существует.");
                 return false;
             }
             else nextStep = true;
         } catch (SQLException e) {
-            System.out.println("Возникла ошибка с базой данных.");
+            Out.printlnRed("Возникла ошибка с базой данных.");
         }
 
         // Ввод пароля
@@ -52,7 +51,7 @@ public class RegistrationController {
             Optional<String> repeatPassword = ConsoleReader.readString("Повторите пароль");
             if (repeatPassword.isEmpty()) return false;
 
-            if (!password.equals(repeatPassword)) System.out.println("Пароль не совпадают.");
+            if (!password.equals(repeatPassword)) Out.printlnRed("Пароль не совпадают.");
             else nextStep = true;
         } while (nextStep);
 

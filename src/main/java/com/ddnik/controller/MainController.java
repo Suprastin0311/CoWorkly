@@ -26,7 +26,7 @@ public class MainController {
 
             switch (user.getRole()) {
                 case UserRole.NoAuth -> {
-                    System.out.println("Не удалось авторизоваться.");
+                    Out.printlnRed("Не удалось авторизоваться.");
                 }
                 case UserRole.Admin -> {
                     AdminController ac = new AdminController(user);
@@ -39,7 +39,7 @@ public class MainController {
             }
 
         } catch (SQLException e) {
-            System.out.println("Возникла ошибка c базой данных.");
+            Out.printlnRed("Возникла ошибка c базой данных.");
             logger.error("Ошибка базы данных", e);
         }
     }

@@ -21,7 +21,6 @@ public class AuthController {
 
     public static AuthorizedUser auth() throws SQLException {
         Service service = new Service();
-        Scanner scanner = new Scanner(System.in);
         ConsoleReader.cls();
 
         do {
@@ -30,13 +29,13 @@ public class AuthController {
                 if (email.isEmpty()) return new AuthorizedUser("", "", UserRole.NoAuth, true);
 
                 Optional<UsersDto> user = service.getUserByEmail(email.get());
-                if (user.isEmpty()) System.out.println("Пользователь не найден.");
+                if (user.isEmpty()) Out.printlnRed("Пользователь не найден.");
                 else {
                     Optional<String> password = ConsoleReader.readString("Password");
                     if (password.isEmpty()) return new AuthorizedUser("", "", UserRole.NoAuth, true);
 
                     if (!PasswordHasher.checkPassword(password.get(), user.get().passwordHash()))
-                        System.out.println("Неверный пароль.");
+                        Out.printlnRed("Неверный пароль.");
                     else {
                         if (user.get().role().name().equals("Admin")) {
                             AuthorizedUser authorizedUser = new AuthorizedUser(user.get().email(), user.get().fullName(), UserRole.Admin, user.get().isBlocked());

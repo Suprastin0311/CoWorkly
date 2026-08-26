@@ -37,7 +37,7 @@ public class ItemsListMenu<T extends IDto> {
         int selectedItemIndex = 1;
         while (isRunning) {
             display();
-            System.out.println("0 - Назад");
+            Out.printlnYellow("0 - Назад");
             selectedItemIndex = ConsoleReader.chooseMenuItem(0, items.size());
 
             if (selectedItemIndex == 0) return Optional.empty();
@@ -50,11 +50,11 @@ public class ItemsListMenu<T extends IDto> {
      * Выводит таблицу элементов списка.
      */
     public void display() {
-        System.out.println(message);
-        System.out.println(tableHeader);
+        Out.println(message);
+        Out.println(tableHeader);
         int i = 1;
         for (IDto item : items) {
-            System.out.println(i + " | " + item.toMenuTableRow());
+            Out.println(i + " | " + item.toMenuTableRow());
             i++;
         }
     }
