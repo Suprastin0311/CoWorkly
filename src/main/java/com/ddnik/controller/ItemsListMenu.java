@@ -4,6 +4,7 @@ import com.ddnik.db.dto.IDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Console;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -49,6 +50,7 @@ public class ItemsListMenu<T extends IDto> {
      * Выводит таблицу элементов списка.
      */
     public void display() {
+        ConsoleReader.cls();
         Out.printlnCyan(message + "\n");
         Out.println(tableHeader);
         int i = 1;

@@ -401,6 +401,7 @@ public class AdminController {
             List<String> names = service.getWorkspacesByName("").stream()
                                         .map(WorkspaceDto::name)
                                         .filter(name -> name != null && !name.isBlank()).toList();
+            ConsoleReader.cls();
             Out.printlnCyan("Создание рабочего пространства.");
 
             // Тип
@@ -451,6 +452,7 @@ public class AdminController {
         }
 
         private void delete() throws SQLException, SecurityException {
+            ConsoleReader.cls();
             Out.printlnCyan("Удаление рабочего пространства.");
             Optional<WorkspaceDto> workspace = select();
             if (workspace.isPresent()) {

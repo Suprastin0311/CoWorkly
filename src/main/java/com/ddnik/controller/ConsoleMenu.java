@@ -58,6 +58,7 @@ public class ConsoleMenu {
      * Отображение меню.
      */
     private void display() {
+        ConsoleReader.cls();
         Out.printlnCyan(title + "\n");
         for (int i = 0; i < items.size(); i++) {
             Out.println((i + 1) + " - " + items.get(i).getTitle());
