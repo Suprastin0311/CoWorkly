@@ -7,7 +7,11 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.NoSuchElementException;
@@ -27,7 +31,11 @@ public class ConsoleReader {
     private static final Pattern VALID_EMAIL_ADDRESS_REGEX =
             Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
 
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH.mm");
+
+    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm");
 
     private static final Logger logger = LoggerFactory.getLogger(ConsoleReader.class);
 
@@ -81,7 +89,6 @@ public class ConsoleReader {
      * @param minItem минимальный номер пункта меню.
      * @param maxItem максимальный номер пункта меню.
      * @return номер выбранного пункта.
-     * @throws ConsoleUserInputException если произошла ошибка при вводе.
      */
     public static int chooseMenuItem(int minItem, int maxItem) {
         while (true) {
@@ -227,15 +234,52 @@ public class ConsoleReader {
     /**
      * Читает дату из консоли.
      * @param message сообщение, выводимое в строке ввода.<br>
-     *                Пример: Введите вместимость: [ввод]
-     * @return введённая дата
+     *                Пример: Введите дату: [ввод]
+     * @return введённая дата.
      * <br>Возвращает {@link Optional#empty()}, если пользователь ввёл символ <code>q</code> и хочет прекратить ввод
      */
     public static Optional<Date> readDate(String message) {
         while (true) {
             try {
-                Out.print(message + ": ");
+                Out.print(message + " [гггг.мм.дд]: ");
                 return inputDate();
+            } catch (ConsoleUserInputException e) {
+                Out.printlnRed(e.getLocalizedMessage());
+            }
+        }
+    }
+
+    /**
+     * Читает время из консоли.
+     * @param message сообщение, выводимое в строке ввода.<br>
+     *                Пример: Введите время: [ввод]
+     * @return введённое время.
+     * <br>Возвращает {@link Optional#empty()}, если пользователь ввёл символ <code>q</code> и хочет прекратить ввод
+     */
+    public static Optional<Time> readTime(String message) {
+        while (true) {
+            try {
+                Out.print(message + " [чч.мм]: ");
+                return inputTime();
+            } catch (ConsoleUserInputException e) {
+                Out.printlnRed(e.getLocalizedMessage());
+            }
+        }
+    }
+
+    /**
+     * Читает дату и время из консоли.
+     * @param message сообщение, выводимое в строке кода.<br>
+     *                Пример: Введите дату и время: [ввод]
+     *
+     * @return введённые дата и время.
+     * <br>Возвращает {@link Optional#empty()}, если пользователь ввёл символ <code>q</code> и хочет прекратить ввод
+     */
+    public static Optional<Timestamp> readTimestamp(String message) {
+        while (true) {
+            try {
+                Out.print(message + " [гггг.мм.дд чч.мм]: ");
+                return inputTimestamp();
             } catch (ConsoleUserInputException e) {
                 Out.printlnRed(e.getLocalizedMessage());
             }
@@ -287,13 +331,51 @@ public class ConsoleReader {
         try {
             String input = inputString();
             if (input.equals("q")) return Optional.empty();
-            return Optional.of(Date.valueOf(LocalDate.parse(input, DATE_TIME_FORMATTER)));
+            return Optional.of(Date.valueOf(LocalDate.parse(input, DATE_FORMATTER)));
         } catch (NullPointerException e) {
             logger.error("Ошибка при вводе даты", e);
             throw new ConsoleUserInputException("Ошибка: не удалось прочитать дату.", e);
         } catch (DateTimeParseException e) {
             logger.error("Ошибка при вводе даты", e);
             throw new ConsoleUserInputException("Ошибка: введённое значение не соответствует формату [гггг.мм.дд] или недопустимые значения.", e);
+        }
+    }
+
+    /**
+     * Считывает из консоли время и обрабатывает исключения.
+     * @return введённая из консоли дата.
+     * @throws ConsoleUserInputException в случае ошибки ввода.
+     */
+    private static Optional<Time> inputTime() throws ConsoleUserInputException {
+        try {
+            String input = inputString();
+            if (input.equals("q")) return Optional.empty();
+            return Optional.of(Time.valueOf(LocalTime.parse(input, TIME_FORMATTER)));
+        } catch (NullPointerException e) {
+            logger.error("Ошибка при вводе даты", e);
+            throw new ConsoleUserInputException("Ошибка: не удалось прочитать дату.", e);
+        } catch (DateTimeParseException e) {
+            logger.error("Ошибка при вводе даты", e);
+            throw new ConsoleUserInputException("Ошибка: введённое значение не соответствует формату [чч.мм] или недопустимые значения.", e);
+        }
+    }
+
+    /**
+     * Считывает из консоли дату и время и обрабатывает исключения.
+     * @return введённая из консоли дата и время.
+     * @throws ConsoleUserInputException в случае ошибки ввода.
+     */
+    private static Optional<Timestamp> inputTimestamp() throws ConsoleUserInputException {
+        try {
+            String input = inputString();
+            if (input.equals("q")) return Optional.empty();
+            return Optional.of(Timestamp.valueOf(LocalDateTime.parse(input, TIMESTAMP_FORMATTER)));
+        } catch (NullPointerException e) {
+            logger.error("Ошибка при вводе даты", e);
+            throw new ConsoleUserInputException("Ошибка: не удалось прочитать дату.", e);
+        } catch (DateTimeParseException e) {
+            logger.error("Ошибка при вводе даты", e);
+            throw new ConsoleUserInputException("Ошибка: введённое значение не соответствует формату [гггг.мм.дд чч.мм] или недопустимые значения.", e);
         }
     }
 
