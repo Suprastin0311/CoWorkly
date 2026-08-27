@@ -6,6 +6,7 @@ import com.ddnik.db.entity.*;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +29,22 @@ public interface IService {
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
     Optional<Long> insertBooking(Bookings booking) throws SQLException, SecurityException;
+
+    /**
+     * Создаёт бронь рабочего пространства.
+     * @param userId код регистрирующего бронь.
+     * @param workspaceId код рабочего пространства.
+     * @param startTime время начала.
+     * @param endTime время окончания.
+     * @param participantsCount количество людей.
+     * @return id созданной брони. Возвращает {@link Optional#empty()}, если запрос не вернул данные.
+     * @throws SQLException в случае возникновения ошибки на уровне базы данных.
+     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     */
+    Optional<Long> createBooking(long userId, long workspaceId, Timestamp startTime, Timestamp endTime,
+                                 int participantsCount) throws SQLException, SecurityException;
+
+
 
     /**
      * Создаёт рабочее пространств.
@@ -241,7 +258,7 @@ public interface IService {
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
-    List<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Date startTime, Date endTime, long workspaceTypeId, int participantsCount) throws SQLException, SecurityException;
+    List<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Timestamp startTime, Timestamp endTime, long workspaceTypeId, int participantsCount) throws SQLException, SecurityException;
 
 
     /**

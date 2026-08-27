@@ -9,8 +9,10 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class Service implements IService {
@@ -119,6 +121,10 @@ public class Service implements IService {
             logger.debug("Не удалось создать новую бронь с id {}", bookingId);
             return Optional.empty();
         }
+    }
+
+    public Optional<Long> createBooking(long userId, long workspaceId, Timestamp startTime, Timestamp endTime, int participantsCount) throws SQLException, SecurityException {
+        return Optional.empty();
     }
 
     public Optional<Long> insertWorkspace(Workspaces workspace) throws SQLException, SecurityException {
@@ -241,7 +247,7 @@ public class Service implements IService {
         return workspaces;
     }
     
-    public List<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Date startTime, Date endTime, long workspaceTypeId, int participantsCount) throws SQLException, SecurityException {
+    public List<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Timestamp startTime, Timestamp endTime, long workspaceTypeId, int participantsCount) throws SQLException, SecurityException {
         List<WorkspaceAvailableDto> workspaces = repo.getWorkspacesAvailableForBooking(startTime, endTime, workspaceTypeId, participantsCount);
         logger.debug("Получено {} доступных для бронирования рабочих пространств с параметрами: дата начала - {}, дата окончания - {}, код типа - {}, количество человек - {}", workspaces.size(), startTime, endTime, workspaceTypeId, participantsCount);
         return workspaces;

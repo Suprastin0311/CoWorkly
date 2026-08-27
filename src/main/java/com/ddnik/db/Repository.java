@@ -1,5 +1,6 @@
 package com.ddnik.db;
 
+import com.ddnik.AuthorizedUser;
 import com.ddnik.db.dto.*;
 import com.ddnik.db.entity.*;
 import org.slf4j.Logger;
@@ -376,11 +377,11 @@ public class Repository implements IRepository {
         }
     }
 
-    public List<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Date startTime, Date endTime, long workspaceTypeId, int participantsCount) throws SQLException {
+    public List<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Timestamp startTime, Timestamp endTime, long workspaceTypeId, int participantsCount) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces_available_for_booking(?, ?, ?, ?)")) {
-            ps.setDate(1, startTime);
-            ps.setDate(2, endTime);
+            ps.setTimestamp(1, startTime);
+            ps.setTimestamp(2, endTime);
             ps.setLong(3, workspaceTypeId);
             ps.setInt(4, participantsCount);
 
@@ -390,10 +391,14 @@ public class Repository implements IRepository {
                 while (rs.next()) {
                     result.add(new WorkspaceAvailableDto(
                             rs.getLong("id"),
-                            rs.getString("workspace_type"),
-                            rs.getString("workspace_name"),
-                            rs.getInt("min_participants_count"),
-                            rs.getInt("max_participants_count"),
+                            new WorkspaceTypesDto(
+                                    rs.getLong("type_id"),
+                                    rs.getString("type_name"),
+                                    rs.getInt("min_participants_count"),
+                                    rs.getInt("max_participants_count"),
+                                    rs.getString("type_name_rus")),
+                            rs.getString("name"),
+                            rs.getInt("capacity"),
                             rs.getBigDecimal("hourly_rate"),
                             rs.getBigDecimal("price")
                     ));
@@ -524,8 +529,8 @@ public class Repository implements IRepository {
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM insert_booking(?, ?, ?, ?, ?, ?, ?)")) {
             ps.setLong(1, booking.userId());
             ps.setLong(2, booking.workspaceId());
-            ps.setDate(3, booking.startTime());
-            ps.setDate(4, booking.endTime());
+            ps.setTimestamp(3, booking.startTime());
+            ps.setTimestamp(4, booking.endTime());
             ps.setInt(5, booking.participantsCount());
 
             try(ResultSet rs = ps.executeQuery()) {
@@ -534,7 +539,29 @@ public class Repository implements IRepository {
                     return Optional.of(rs.getLong(1));
                 }
                 else {
-                    logger.debug("В таблицу bookings не удалось добавить запись.", rs.getLong(1));
+                    logger.debug("В таблицу bookings не удалось добавить запись.");
+                    return Optional.empty();
+                }
+            }
+        }
+    }
+
+    public Optional<Long> createBooking(long userId, long workspaceId, Timestamp startTime, Timestamp endTime, int participantsCount) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT * FROM insert_booking(?, ?, ?, ?, ?, ?, ?)")) {
+            ps.setLong(1, userId);
+            ps.setLong(2, workspaceId);
+            ps.setTimestamp(3, startTime);
+            ps.setTimestamp(4, endTime);
+            ps.setInt(5, participantsCount);
+
+            try(ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    logger.debug("В таблицу bookings добавлена запись с id = {}.", rs.getLong(1));
+                    return Optional.of(rs.getLong(1));
+                }
+                else {
+                    logger.debug("В таблицу bookings не удалось добавить запись.");
                     return Optional.empty();
                 }
             }

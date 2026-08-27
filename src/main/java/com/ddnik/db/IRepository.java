@@ -15,6 +15,9 @@ public interface IRepository {
 
     Optional<Long> insertBooking(Bookings booking) throws SQLException;
 
+    Optional<Long> createBooking(long userId, long workspaceId, Timestamp startTime, Timestamp endTime,
+                                 int participantsCount) throws SQLException;
+
     Optional<Long> insertWorkspace(Workspaces workspace) throws SQLException;
 
     Optional<Boolean> setBookingCancelled(long id) throws SQLException;
@@ -57,7 +60,7 @@ public interface IRepository {
 
     List<WorkspaceDto> getWorkspacesByType(long typeId) throws SQLException;
 
-    List<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Date startTime, Date endTime, long workspaceTypeId, int participantsCount) throws SQLException;
+    List<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Timestamp startTime, Timestamp endTime, long workspaceTypeId, int participantsCount) throws SQLException;
 
     List<BookingDto> getBookings() throws SQLException;
 
