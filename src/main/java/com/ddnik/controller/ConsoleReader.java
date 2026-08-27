@@ -33,7 +33,7 @@ public class ConsoleReader {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd");
 
-    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH.mm");
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm");
 
@@ -259,7 +259,7 @@ public class ConsoleReader {
     public static Optional<Time> readTime(String message) {
         while (true) {
             try {
-                Out.print(message + " [чч.мм]: ");
+                Out.print(message + " [чч:мм]: ");
                 return inputTime();
             } catch (ConsoleUserInputException e) {
                 Out.printlnRed(e.getLocalizedMessage());
@@ -278,7 +278,7 @@ public class ConsoleReader {
     public static Optional<Timestamp> readTimestamp(String message) {
         while (true) {
             try {
-                Out.print(message + " [гггг.мм.дд чч.мм]: ");
+                Out.print(message + " [гггг.мм.дд чч:мм]: ");
                 return inputTimestamp();
             } catch (ConsoleUserInputException e) {
                 Out.printlnRed(e.getLocalizedMessage());
@@ -356,7 +356,7 @@ public class ConsoleReader {
             throw new ConsoleUserInputException("Ошибка: не удалось прочитать дату.", e);
         } catch (DateTimeParseException e) {
             logger.error("Ошибка при вводе даты", e);
-            throw new ConsoleUserInputException("Ошибка: введённое значение не соответствует формату [чч.мм] или недопустимые значения.", e);
+            throw new ConsoleUserInputException("Ошибка: введённое значение не соответствует формату [чч:мм] или недопустимые значения.", e);
         }
     }
 
@@ -375,7 +375,7 @@ public class ConsoleReader {
             throw new ConsoleUserInputException("Ошибка: не удалось прочитать дату.", e);
         } catch (DateTimeParseException e) {
             logger.error("Ошибка при вводе даты", e);
-            throw new ConsoleUserInputException("Ошибка: введённое значение не соответствует формату [гггг.мм.дд чч.мм] или недопустимые значения.", e);
+            throw new ConsoleUserInputException("Ошибка: введённое значение не соответствует формату [гггг.мм.дд чч:мм] или недопустимые значения.", e);
         }
     }
 
