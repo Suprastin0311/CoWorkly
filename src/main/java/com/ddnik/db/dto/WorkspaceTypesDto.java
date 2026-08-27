@@ -12,7 +12,7 @@ public record WorkspaceTypesDto (
 
     @Override
     public String toMenuTableRow() {
-        return String.format("%s | %d | %d", nameRus, minParticipantsCount, maxParticipantsCount);
+        return String.format("%s | %d | %s", nameRus, minParticipantsCount, maxParticipantsCount == 0 ? "<не указано>" : maxParticipantsCount);
     }
 
     public static String getMenuTableHeader() {
