@@ -110,8 +110,15 @@ public class UserController {
         Optional<Time> startTime = ConsoleReader.readTime("Введите время начала брони");
         if (startTime.isEmpty()) return Optional.empty();
 
-        Optional<Time> endTime = ConsoleReader.readTime("Введите время окончания брони");
-        if (endTime.isEmpty()) return Optional.empty();
+        boolean repeat = true;
+        Optional<Time> endTime = startTime;
+        while (repeat) {
+            endTime = ConsoleReader.readTime("Введите время окончания брони");
+            if (endTime.isEmpty()) return Optional.empty();
+            if (endTime.get().before(startTime.get()))
+                Out.printlnYellow("Дата окончания не может быть раньше даты начала.");
+            else repeat = false;
+        }
 
         return Optional.of(new Filters (
                 type.get(),
