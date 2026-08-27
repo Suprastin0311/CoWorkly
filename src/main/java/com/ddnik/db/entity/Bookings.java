@@ -2,18 +2,19 @@ package com.ddnik.db.entity;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.Objects;
 
 public record Bookings(
         Long id,
         long userId,
         long workspaceId,
-        Date startTime,
-        Date endTime,
+        Timestamp startTime,
+        Timestamp endTime,
         int participantsCount,
         long statusId,
         BigDecimal price,
-        Date createdAt
+        Timestamp createdAt
 ) {
 
     public Bookings {
@@ -27,7 +28,7 @@ public record Bookings(
         Objects.requireNonNull(createdAt);
     }
 
-    public Bookings (long userId, long workspaceId, Date startTime, Date endTime, int participantsCount, long statusId, BigDecimal price, Date createdAt) {
+    public Bookings (long userId, long workspaceId, Timestamp startTime, Timestamp endTime, int participantsCount, long statusId, BigDecimal price, Timestamp createdAt) {
         this(null, userId, workspaceId, startTime, endTime, participantsCount, statusId, price, createdAt);
     }
 }
