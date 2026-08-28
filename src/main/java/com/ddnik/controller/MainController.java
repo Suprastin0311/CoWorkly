@@ -25,7 +25,7 @@ public class MainController {
         try {
             AuthorizedUser user = AuthController.auth();
 
-            switch (user.getRole()) {
+            switch (user.role()) {
                 case UserRole.NoAuth -> {
                     Out.printlnRed("Не удалось авторизоваться.");
                 }

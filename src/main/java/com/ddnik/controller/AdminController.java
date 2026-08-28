@@ -658,7 +658,7 @@ public class AdminController {
          */
         private List<BookingDto> selectByUser() throws SQLException, SecurityException {
             Optional<UsersDto> user = usersController.select();
-            if (user.isPresent()) return service.getBookingsByUserId(user.get());
+            if (user.isPresent()) return service.getBookingsByUserId(user.get().id());
             else return new ArrayList<>();
         }
 
