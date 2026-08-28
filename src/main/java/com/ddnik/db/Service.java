@@ -267,9 +267,9 @@ public class Service implements IService {
         return bookings;
     }
 
-    public List<BookingDto> getBookingsByUserId(UsersDto user) throws SQLException, SecurityException {
-        List<BookingDto> bookings = repo.getBookingsByUserId(user.id());
-        logger.debug("Получено {} броней пользователя по id {}", bookings.size(), user.id());
+    public List<BookingDto> getBookingsByUserId(long id) throws SQLException, SecurityException {
+        List<BookingDto> bookings = repo.getBookingsByUserId(id);
+        logger.debug("Получено {} броней пользователя по id {}", bookings.size(), id);
         return bookings;
     }
 

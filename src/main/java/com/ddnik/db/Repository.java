@@ -622,7 +622,7 @@ public class Repository implements IRepository {
                         rs.getLong("user_id"),
                         rs.getString("user_email"),
                         rs.getString("user_full_name"),
-                        rs.getString("type"),
+                        rs.getString("workspace_type"),
                         rs.getString("workspace_name"),
                         rs.getDate("start_time"),
                         rs.getDate("end_time"),

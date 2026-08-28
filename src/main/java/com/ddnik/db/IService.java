@@ -269,15 +269,14 @@ public interface IService {
      */
     List<BookingDto> getBookings() throws SQLException, SecurityException;
 
-
     /**
      * Получает список броней указанного пользователя.
-     * @param user данные пользователя.
+     * @param id код пользователя.
      * @return список броней.
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
-    List<BookingDto> getBookingsByUserId(UsersDto user) throws SQLException, SecurityException;
+    List<BookingDto> getBookingsByUserId(long id) throws SQLException, SecurityException;
 
     /**
      * Получает список броней указанного рабочего пространства.
