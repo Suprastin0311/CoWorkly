@@ -2,10 +2,7 @@ package com.ddnik.controller;
 
 import com.ddnik.AuthorizedUser;
 import com.ddnik.db.Service;
-import com.ddnik.db.dto.UsersDto;
-import com.ddnik.db.dto.WorkspaceAvailableDto;
-import com.ddnik.db.dto.WorkspaceDto;
-import com.ddnik.db.dto.WorkspaceTypesDto;
+import com.ddnik.db.dto.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -141,7 +138,7 @@ public class UserController {
             return;
         }
 
-        Optional<UsersDto> currentUser = service.getUserByEmail(user.getEmail());
+        Optional<UsersDto> currentUser = service.getUserByEmail(user.email());
         if (currentUser.isEmpty()) {
             Out.printlnRed("Для бронирования рабочего пространства необходимо авторизоваться.");
             return;
@@ -168,8 +165,12 @@ public class UserController {
     /**
      * Просмотреть свои брони.
      */
-    private void viewBookings() {
-
+    private void viewBookings() throws SQLException {
+        new ItemsListMenu<>(
+                service.getBookingsByUserId(user.id()),
+                "Ваши бронирования",
+                BookingDto.getMenuTableHeader()).display();
+        ConsoleReader.waitInput();
     }
 
     /**
