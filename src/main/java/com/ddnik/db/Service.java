@@ -124,7 +124,15 @@ public class Service implements IService {
     }
 
     public Optional<Long> createBooking(long userId, long workspaceId, Timestamp startTime, Timestamp endTime, int participantsCount) throws SQLException, SecurityException {
-        return Optional.empty();
+        Optional<Long> bookingId = repo.createBooking(userId, workspaceId, startTime, endTime, participantsCount);
+        if (bookingId.isPresent()) {
+            logger.debug("Создана новая бронь с id {}", bookingId);
+            return bookingId;
+        }
+        else {
+            logger.debug("Не удалось создать новую бронь с id {}", bookingId);
+            return Optional.empty();
+        }
     }
 
     public Optional<Long> insertWorkspace(Workspaces workspace) throws SQLException, SecurityException {

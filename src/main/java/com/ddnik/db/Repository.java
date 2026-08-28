@@ -526,7 +526,7 @@ public class Repository implements IRepository {
 
     public Optional<Long> insertBooking(Bookings booking) throws SQLException {
         try (Connection conn = DataSource.getConnection();
-            PreparedStatement ps = conn.prepareStatement("SELECT * FROM insert_booking(?, ?, ?, ?, ?, ?, ?)")) {
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM insert_booking(?, ?, ?, ?, ?)")) {
             ps.setLong(1, booking.userId());
             ps.setLong(2, booking.workspaceId());
             ps.setTimestamp(3, booking.startTime());
@@ -548,7 +548,7 @@ public class Repository implements IRepository {
 
     public Optional<Long> createBooking(long userId, long workspaceId, Timestamp startTime, Timestamp endTime, int participantsCount) throws SQLException {
         try (Connection conn = DataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT * FROM insert_booking(?, ?, ?, ?, ?, ?, ?)")) {
+             PreparedStatement ps = conn.prepareStatement("SELECT * FROM insert_booking(?, ?, ?, ?, ?)")) {
             ps.setLong(1, userId);
             ps.setLong(2, workspaceId);
             ps.setTimestamp(3, startTime);
