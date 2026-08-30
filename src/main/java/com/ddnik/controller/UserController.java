@@ -3,9 +3,17 @@ package com.ddnik.controller;
 import com.ddnik.AuthorizedUser;
 import com.ddnik.db.Service;
 import com.ddnik.db.dto.*;
+import com.opencsv.CSVWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Time;
@@ -37,7 +45,7 @@ public class UserController {
         menu.addItem("Забронировать рабочее пространство", this::bookWorkspace);
         menu.addItem("Просмотреть свои брони", this::view);
         menu.addItem("Отменить бронирование", this::cancelBooking);
-        menu.addItem("Выгрузить список броней в файл", this::report);
+        menu.addItem("Выгрузить список броней в файл", () -> report(selectBookingsList()));
 
         logger.info("пользователь перешёл в меню.");
         menu.start();
@@ -161,7 +169,7 @@ public class UserController {
      * Отменить бронирование.
      */
     private void cancelBooking() throws SQLException {
-        Optional<BookingDto> booking = selectBooking();
+        Optional<BookingDto> booking = selectBooking(selectBookingsList());
         if (booking.isEmpty()) {
             Out.printlnYellow("Не удалось выбрать бронирование.");
             ConsoleReader.waitInput();
@@ -175,37 +183,6 @@ public class UserController {
         }
         else Out.printlnRed("Не удалось выполнить операцию.");
         ConsoleReader.waitInput();
-    }
-
-    /**
-     * Выбрать бронирование из списка собственных бронирований.
-     * @return выбранное бронирование.
-     */
-    public Optional<BookingDto> selectBooking() {
-        AtomicReference<BookingDto> result = new AtomicReference<>();
-
-        ConsoleMenu menu = new ConsoleMenu("Выберите параметр поиска бронирования.");
-        menu.addItem("Все", () -> getBooking(selectAllBookings()).ifPresent( w -> {
-                result.set(w);
-                menu.close();
-            }));
-        menu.addItem("По статусу", () -> getBooking(selectAllBookings()).ifPresent( w -> {
-            result.set(w);
-            menu.close();
-        }));
-        menu.addItem("По рабочему пространству", () -> getBooking(selectBookingsByWorkspace()).ifPresent( w -> {
-            result.set(w);
-            menu.close();
-        }));
-        menu.addItem("По датам", () -> getBooking(selectBookingsByWorkspace()).ifPresent( w -> {
-            result.set(w);
-            menu.close();
-        }));
-
-        logger.info("Пользователь перешёл в меню выбора бронирования.");
-        menu.start();
-
-        return Optional.ofNullable(result.get());
     }
 
     /**
@@ -239,14 +216,41 @@ public class UserController {
     }
 
     /**
-     * Выбрать бронирование из списка.
+     * Меню выбора бронирования из списка.
      * @param bookings список бронирований.
      * @return выбранное бронирование.
      */
-    private Optional<BookingDto> getBooking(List<BookingDto> bookings) {
+    private Optional<BookingDto> selectBooking(List<BookingDto> bookings) {
         return new ItemsListMenu<>(bookings,
                 "Выберите бронирование",
                 BookingDto.getMenuTableHeader()).start();
+    }
+
+    private List<BookingDto> selectBookingsList() {
+        AtomicReference<List<BookingDto>> result = new AtomicReference<>();
+
+        ConsoleMenu menu = new ConsoleMenu("Выберите параметр поиска бронирования.");
+        menu.addItem("Все", () -> {
+            result.set(selectAllBookings());
+            menu.close();
+        });
+        menu.addItem("По статусу", () -> {
+            result.set(selectBookingsByWorkspace());
+            menu.close();
+        });
+        menu.addItem("По рабочему пространству", () -> {
+            result.set(selectBookingsByCreatedAt());
+            menu.close();
+        });
+        menu.addItem("По датам", () -> {
+            result.set(selectBookingsByStatus());
+            menu.close();
+        });
+
+        logger.info("Пользователь перешёл в меню выбора бронирования.");
+        menu.start();
+
+        return result.get();
     }
 
     /**
@@ -302,8 +306,31 @@ public class UserController {
     /**
      * Выгрузить список своих броней в файл формата CSV.
      */
-    private void report() {
+    private void report(List<BookingDto> bookings) {
+        if (bookings.isEmpty()) return;
 
+        try {
+            File csvFile = new File(String.format("bookings_report_%tF_%<tk-%<tM.csv", LocalDateTime.now()));
+            CSVWriter writer = new CSVWriter(
+                    new FileWriter(csvFile, false),
+                    CSVWriter.DEFAULT_SEPARATOR,
+                    CSVWriter.DEFAULT_QUOTE_CHARACTER,
+                    CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                    CSVWriter.DEFAULT_LINE_END);
+
+            writer.writeNext(new String[]{"Тип", "Название", "Начало", "Окончание", "Email регистратора", "Количество человек", "Статус", "Сумма", "Дата бронирования"});
+
+            for(BookingDto booking : bookings) writer.writeNext(booking.toCSVRow());
+
+            writer.close();
+
+            Out.printlnCyan("Файл создан по пути: " + csvFile.getAbsolutePath());
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+            Out.printlnRed("Ошибка создания CSV-файла.");
+        } finally {
+            ConsoleReader.waitInput();
+        }
     }
 
     /**
