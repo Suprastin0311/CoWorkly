@@ -160,8 +160,21 @@ public class UserController {
     /**
      * Отменить бронирование.
      */
-    private void cancelBooking() {
+    private void cancelBooking() throws SQLException {
+        Optional<BookingDto> booking = selectBooking();
+        if (booking.isEmpty()) {
+            Out.printlnYellow("Не удалось выбрать бронирование.");
+            ConsoleReader.waitInput();
+            return;
+        }
 
+        Optional<Boolean> result = service.setBookingCancelled(booking.get().id());
+        if (result.isPresent()) {
+            if (result.get()) Out.printlnGreen("Удалось отменить бронирование.");
+            else Out.printlnRed("Не удалось отменить бронирование.");
+        }
+        else Out.printlnRed("Не удалось выполнить операцию.");
+        ConsoleReader.waitInput();
     }
 
     /**
