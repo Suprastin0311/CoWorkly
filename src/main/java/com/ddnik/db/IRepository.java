@@ -50,6 +50,8 @@ public interface IRepository {
 
     Optional<WorkspaceDto> getWorkspaceById(long id) throws SQLException;
 
+    List<WorkspaceDto> getWorkspaces() throws SQLException;
+
     List<WorkspaceDto> getWorkspacesByCapacity(int capacity) throws SQLException;
 
     List<WorkspaceDto> getWorkspacesByHourlyRate(BigDecimal minRate, BigDecimal maxRate) throws SQLException;
@@ -68,11 +70,15 @@ public interface IRepository {
 
     List<BookingDto> getBookingsByWorkspaceId(long id) throws SQLException;
 
+    List<BookingDto> getBookingsByWorkspaceId(long userId, long workspaceId) throws SQLException;
+
     List<BookingDto> getBookingsByStatus(long id) throws SQLException;
+
+    List<BookingDto> getBookingsByStatus(long userId, long statusId) throws SQLException;
 
     List<BookingDto> getBookingsByCreatedAt(Date minDate, Date maxDate) throws SQLException;
 
-    List<BookingDto> getUserBookingsByCreatedAt(long user_id, Date startTime, Date endTime) throws SQLException;
+    List<BookingDto> getBookingsByCreatedAt(long userId, Date minDate, Date maxDate) throws SQLException;
 
     List<WorkspaceTypesDto> getWorkspaceTypes() throws SQLException;
 

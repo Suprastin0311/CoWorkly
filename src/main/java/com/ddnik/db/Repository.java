@@ -302,6 +302,21 @@ public class Repository implements IRepository {
         }
     }
 
+    public List<WorkspaceDto> getWorkspaces() throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces(?, ?, ?, ?, ?, ?, ?)")) {
+            ps.setNull(1, Types.BIGINT);
+            ps.setNull(2, Types.INTEGER);
+            ps.setNull(3, Types.NUMERIC);
+            ps.setNull(4, Types.NUMERIC);
+            ps.setNull(5, Types.VARCHAR);
+            ps.setNull(6, Types.BOOLEAN);
+            ps.setNull(7, Types.BIGINT);
+
+            return executeQueryAndBuildWorkspaceDtoList(ps);
+        }
+    }
+
     public List<WorkspaceDto> getWorkspacesByCapacity(int capacity) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces(?, ?, ?, ?, ?, ?, ?)")) {
@@ -485,6 +500,19 @@ public class Repository implements IRepository {
         }
     }
 
+    public List<BookingDto> getBookingsByWorkspaceId(long userId, long workspaceId) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
+            ps.setLong(1, userId);
+            ps.setLong(2, workspaceId);
+            ps.setNull(3, Types.BIGINT);
+            ps.setNull(4, Types.TIMESTAMP);
+            ps.setNull(5, Types.TIMESTAMP);
+
+            return executeQueryAndBuildBookingDtoList(ps);
+        }
+    }
+
     public List<BookingDto> getBookingsByStatus(long id) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
@@ -498,10 +526,36 @@ public class Repository implements IRepository {
         }
     }
 
+    public List<BookingDto> getBookingsByStatus(long userId, long statusId) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
+            ps.setLong(1, userId);
+            ps.setNull(2, Types.BIGINT);
+            ps.setLong(3, statusId);
+            ps.setNull(4, Types.TIMESTAMP);
+            ps.setNull(5, Types.TIMESTAMP);
+
+            return executeQueryAndBuildBookingDtoList(ps);
+        }
+    }
+
     public List<BookingDto> getBookingsByCreatedAt(Date minDate, Date maxDate) throws SQLException {
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
+            ps.setNull(2, Types.BIGINT);
+            ps.setNull(3, Types.BIGINT);
+            ps.setDate(4, minDate);
+            ps.setDate(5, maxDate);
+
+            return executeQueryAndBuildBookingDtoList(ps);
+        }
+    }
+
+    public List<BookingDto> getBookingsByCreatedAt(long userId, Date minDate, Date maxDate) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
+            ps.setLong(1, userId);
             ps.setNull(2, Types.BIGINT);
             ps.setNull(3, Types.BIGINT);
             ps.setDate(4, minDate);

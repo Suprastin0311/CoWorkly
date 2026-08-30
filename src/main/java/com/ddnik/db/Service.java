@@ -224,7 +224,13 @@ public class Service implements IService {
             return Optional.empty();
         }
     }
-    
+
+    public List<WorkspaceDto> getWorkspaces() throws SQLException, SecurityException {
+        List<WorkspaceDto> workspaces = repo.getWorkspaces();
+        logger.debug("Получено {} рабочих пространств", workspaces.size());
+        return workspaces;
+    }
+
     public List<WorkspaceDto> getWorkspacesByCapacity(int capacity) throws SQLException, SecurityException {
         List<WorkspaceDto> workspaces = repo.getWorkspacesByCapacity(capacity);
         logger.debug("Получено {} рабочих пространств с вместимостью {} человек", workspaces.size(), capacity);
@@ -278,10 +284,22 @@ public class Service implements IService {
         logger.debug("Получено {} броней рабочего пространства по id {}", bookings.size(), workspace.id());
         return bookings;
     }
-    
+
+    public List<BookingDto> getBookingsByWorkspaceId(long userId, WorkspaceDto workspace) throws SQLException, SecurityException {
+        List<BookingDto> bookings = repo.getBookingsByWorkspaceId(userId, workspace.id());
+        logger.debug("Получено {} броней рабочего пространства по id пользователя {} и id рабочего пространства {} ", bookings.size(), userId, workspace.id());
+        return bookings;
+    }
+
     public List<BookingDto> getBookingsByStatus(BookingStatusesDto status) throws SQLException, SecurityException {
         List<BookingDto> bookings = repo.getBookingsByStatus(status.id());
         logger.debug("Получено {} броней со статусом {}", bookings.size(), status.name());
+        return bookings;
+    }
+
+    public List<BookingDto> getBookingsByStatus(long userId, BookingStatusesDto status) throws SQLException, SecurityException {
+        List<BookingDto> bookings = repo.getBookingsByStatus(userId, status.id());
+        logger.debug("Получено {} бронирований c параметрами с id пользователя = {} и статусом = {}", bookings.size(), userId, status.name());
         return bookings;
     }
 
@@ -291,8 +309,14 @@ public class Service implements IService {
         return bookings;
     }
 
-    public List<BookingDto> getUserBookingsByTime(long user_id, Date startTime, Date endTime) throws SQLException, SecurityException {
-        List<BookingDto> bookings = repo.getUserBookingsByCreatedAt(user_id, startTime, endTime);
+    public List<BookingDto> getBookingsByCreatedAt(long userId, Date minDate, Date maxDate) throws SQLException, SecurityException {
+        List<BookingDto> bookings = repo.getBookingsByCreatedAt(userId, minDate, maxDate);
+        logger.debug("Получено {} броней c id пользователя {} с датой создания в промежутке c {} по {}", bookings.size(), userId, minDate, maxDate);
+        return bookings;
+    }
+
+    public List<BookingDto> getUserBookingsByTime(long userId, Date startTime, Date endTime) throws SQLException, SecurityException {
+        List<BookingDto> bookings = repo.getBookingsByCreatedAt(userId, startTime, endTime);
         logger.debug("Получено {} броней с датами бронирования в промежутке от {} до {}", bookings.size(), startTime, endTime);
         return bookings;
     }

@@ -11,9 +11,11 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Управляет консольным меню пользователя.
@@ -33,7 +35,7 @@ public class UserController {
         ConsoleMenu menu = new ConsoleMenu("Вы вошли как Пользователь");
         menu.addItem("Посмотреть свободные рабочие пространства", this::viewFreeWorkspaces);
         menu.addItem("Забронировать рабочее пространство", this::bookWorkspace);
-        menu.addItem("Просмотреть свои брони", this::viewBookings);
+        menu.addItem("Просмотреть свои брони", this::view);
         menu.addItem("Отменить бронирование", this::cancelBooking);
         menu.addItem("Выгрузить список броней в файл", this::report);
 
@@ -163,14 +165,125 @@ public class UserController {
     }
 
     /**
-     * Просмотреть свои брони.
+     * Выбрать бронирование из списка собственных бронирований.
+     * @return выбранное бронирование.
      */
-    private void viewBookings() throws SQLException {
-        new ItemsListMenu<>(
-                service.getBookingsByUserId(user.id()),
-                "Ваши бронирования",
-                BookingDto.getMenuTableHeader()).display();
-        ConsoleReader.waitInput();
+    public Optional<BookingDto> selectBooking() {
+        AtomicReference<BookingDto> result = new AtomicReference<>();
+
+        ConsoleMenu menu = new ConsoleMenu("Выберите параметр поиска бронирования.");
+        menu.addItem("Все", () -> getBooking(selectAllBookings()).ifPresent( w -> {
+                result.set(w);
+                menu.close();
+            }));
+        menu.addItem("По статусу", () -> getBooking(selectAllBookings()).ifPresent( w -> {
+            result.set(w);
+            menu.close();
+        }));
+        menu.addItem("По рабочему пространству", () -> getBooking(selectBookingsByWorkspace()).ifPresent( w -> {
+            result.set(w);
+            menu.close();
+        }));
+        menu.addItem("По датам", () -> getBooking(selectBookingsByWorkspace()).ifPresent( w -> {
+            result.set(w);
+            menu.close();
+        }));
+
+        logger.info("Пользователь перешёл в меню выбора бронирования.");
+        menu.start();
+
+        return Optional.ofNullable(result.get());
+    }
+
+    /**
+     * Меню просмотра бронирований текущего пользователя.
+     */
+    private void view() {
+        ConsoleMenu menu = new ConsoleMenu("Просмотреть бронирования.");
+        menu.addItem("Все", () -> {
+            new ItemsListMenu<>(selectAllBookings(), "Выбранные бронирования",
+                    BookingDto.getMenuTableHeader()).display();
+            ConsoleReader.waitInput();
+        });
+        menu.addItem("По статусу", () -> {
+            new ItemsListMenu<>(selectBookingsByStatus(), "Выбранные бронирования",
+                    BookingDto.getMenuTableHeader()).display();
+            ConsoleReader.waitInput();
+        });
+        menu.addItem("По рабочему пространству", () -> {
+            new ItemsListMenu<>(selectBookingsByWorkspace(), "Выбранные бронирования",
+                    BookingDto.getMenuTableHeader()).display();
+            ConsoleReader.waitInput();
+        });
+        menu.addItem("По датам", () -> {
+            new ItemsListMenu<>(selectBookingsByCreatedAt(), "Выбранные бронирования",
+                    BookingDto.getMenuTableHeader()).display();
+            ConsoleReader.waitInput();
+        });
+
+        logger.info("Пользователь перешёл в меню просмотра бронирований.");
+        menu.start();
+    }
+
+    /**
+     * Выбрать бронирование из списка.
+     * @param bookings список бронирований.
+     * @return выбранное бронирование.
+     */
+    private Optional<BookingDto> getBooking(List<BookingDto> bookings) {
+        return new ItemsListMenu<>(bookings,
+                "Выберите бронирование",
+                BookingDto.getMenuTableHeader()).start();
+    }
+
+    /**
+     * Просмотреть все бронирования.
+     * @return список бронирований.
+     */
+    private List<BookingDto> selectAllBookings() throws SQLException {
+        return service.getBookingsByUserId(user.id());
+    }
+
+    /**
+     * Просмотреть бронирования с фильтром по статусу.
+     * @return список бронирований.
+     */
+    private List<BookingDto> selectBookingsByStatus() throws SQLException {
+        Optional<BookingStatusesDto> status = new ItemsListMenu<>(
+                service.getBookingStatuses(),
+                "Выберите статус",
+                BookingStatusesDto.getMenuTableHeader()).start();
+        if (status.isEmpty()) new ArrayList<>();
+
+        return service.getBookingsByStatus(user.id(), status.get());
+    }
+
+    /**
+     * Просмотреть бронирования с фильтром по рабочему пространству.
+     * @return список бронирований.
+     */
+    private List<BookingDto> selectBookingsByWorkspace() throws SQLException {
+        Optional<WorkspaceDto> workspace = new ItemsListMenu<>(
+                service.getWorkspaces(),
+                "Выберите рабочее пространство",
+                WorkspaceDto.getMenuTableHeader()).start();
+        if (workspace.isEmpty()) return new ArrayList<>();
+
+        return service.getBookingsByWorkspaceId(user.id(), workspace.get());
+    }
+
+    /**
+     * Получить бронирования с фильтром по датам
+     * @return список бронирований.
+     */
+    private List<BookingDto> selectBookingsByCreatedAt() throws SQLException {
+        Optional<Date> min = ConsoleReader.readDate("Введите минимальную дату");
+        if (min.isEmpty()) return new ArrayList<>();
+
+        Optional<Date> max = ConsoleReader.readDate("Введите максимальную дату");
+        if (max.isEmpty()) return new ArrayList<>();
+
+        return service.getBookingsByCreatedAt(user.id(), min.get(), max.get());
     }
 
     /**

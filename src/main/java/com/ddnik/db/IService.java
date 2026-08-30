@@ -201,6 +201,14 @@ public interface IService {
     Optional<WorkspaceDto> getWorkspaceById(long id) throws SQLException, SecurityException;
 
     /**
+     * Получает рабочие пространства.
+     * @return список рабочих пространств.
+     * @throws SQLException в случае возникновения ошибки на уровне базы данных.
+     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     */
+    List<WorkspaceDto> getWorkspaces() throws SQLException, SecurityException;
+
+    /**
      * Получает рабочие пространства по вместимости.
      * @param capacity вместимость рабочего пространства.
      * @return список рабочих пространств.
@@ -288,6 +296,15 @@ public interface IService {
     List<BookingDto> getBookingsByWorkspaceId(WorkspaceDto workspace) throws SQLException, SecurityException;
 
     /**
+     * Получает список броней указанного рабочего пространства.
+     * @param workspace рабочее пространство
+     * @return список броней.
+     * @throws SQLException в случае возникновения ошибки на уровне базы данных.
+     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     */
+    List<BookingDto> getBookingsByWorkspaceId(long userId, WorkspaceDto workspace) throws SQLException, SecurityException;
+
+    /**
      * Получает список броней с указанным статусом.
      * @param status статус брони.
      * @return список броней.
@@ -295,6 +312,16 @@ public interface IService {
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
     List<BookingDto> getBookingsByStatus(BookingStatusesDto status) throws SQLException, SecurityException;
+
+    /**
+     * Получает список броней с фильтром по статусу и коду пользователя.
+     * @param userId код пользователя.
+     * @param status статус.
+     * @return список бронирований.
+     * @throws SQLException в случае возникновения ошибки на уровне базы данных.
+     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     */
+    public List<BookingDto> getBookingsByStatus(long userId, BookingStatusesDto status) throws SQLException, SecurityException;
 
     /**
      * Получает список броней пользователя с фильтром по времени бронирования.
@@ -307,15 +334,26 @@ public interface IService {
     List<BookingDto> getBookingsByCreatedAt(Date minDate, Date maxDate) throws SQLException, SecurityException;
 
     /**
+     * Получает список броней пользователя с фильтром по времени бронирования и коду пользователя.
+     * @param userId код пользователя.
+     * @param minDate левая граница диапазона.
+     * @param maxDate правая граница диапазона.
+     * @return список броней.
+     * @throws SQLException в случае возникновения ошибки на уровне базы данных.
+     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     */
+    List<BookingDto> getBookingsByCreatedAt(long userId, Date minDate, Date maxDate) throws SQLException, SecurityException;
+
+    /**
      * Получает список броней пользователя с фильтром по времени.
-     * @param user_id код пользователя.
+     * @param userId код пользователя.
      * @param start время начала брони.
      * @param end время окончания брони.
      * @return список броней.
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
-    List<BookingDto> getUserBookingsByTime(long user_id, Date start, Date end) throws SQLException, SecurityException;
+    List<BookingDto> getUserBookingsByTime(long userId, Date start, Date end) throws SQLException, SecurityException;
 
     /**
      * Получает справочник типов рабочего пространства.
