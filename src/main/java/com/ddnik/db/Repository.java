@@ -718,7 +718,7 @@ public class Repository implements IRepository {
 
     public List<BookingStatusesDto> getBookingStatuses() throws SQLException {
         try (Connection conn = DataSource.getConnection();
-            PreparedStatement ps = conn.prepareStatement("SELECT * FROM booking_statuses")) {
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM booking_statuses ORDER BY sort_order")) {
 
             try (ResultSet rs = ps.executeQuery()) {
                 List<BookingStatusesDto> result = new ArrayList<>();
