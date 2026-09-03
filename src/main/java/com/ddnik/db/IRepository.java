@@ -13,10 +13,7 @@ public interface IRepository {
 
     Optional<Long> insertUser(Users user) throws SQLException;
 
-    Optional<Long> insertBooking(Bookings booking) throws SQLException;
-
-    Optional<Long> createBooking(long userId, long workspaceId, Timestamp startTime, Timestamp endTime,
-                                 int participantsCount) throws SQLException;
+    Optional<Long> insertBooking(long userId, long workspaceId, Timestamp start, Timestamp end, int participantsCount, int price) throws SQLException;
 
     Optional<Long> insertWorkspace(Workspaces workspace) throws SQLException;
 
@@ -83,4 +80,6 @@ public interface IRepository {
     List<WorkspaceTypesDto> getWorkspaceTypes() throws SQLException;
 
     List<BookingStatusesDto> getBookingStatuses() throws SQLException;
+
+    Optional<Tariffs> getTariffByWorkspaceTypeId(long id) throws SQLException;
 }

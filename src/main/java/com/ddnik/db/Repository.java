@@ -578,36 +578,15 @@ public class Repository implements IRepository {
         }
     }
 
-    public Optional<Long> insertBooking(Bookings booking) throws SQLException {
+    public Optional<Long> insertBooking(long userId, long workspaceId, Timestamp start, Timestamp end, int participantsCount, int price) throws SQLException {
         try (Connection conn = DataSource.getConnection();
-            PreparedStatement ps = conn.prepareStatement("SELECT * FROM insert_booking(?, ?, ?, ?, ?)")) {
-            ps.setLong(1, booking.userId());
-            ps.setLong(2, booking.workspaceId());
-            ps.setTimestamp(3, booking.startTime());
-            ps.setTimestamp(4, booking.endTime());
-            ps.setInt(5, booking.participantsCount());
-
-            try(ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    logger.debug("В таблицу bookings добавлена запись с id = {}.", rs.getLong(1));
-                    return Optional.of(rs.getLong(1));
-                }
-                else {
-                    logger.debug("В таблицу bookings не удалось добавить запись.");
-                    return Optional.empty();
-                }
-            }
-        }
-    }
-
-    public Optional<Long> createBooking(long userId, long workspaceId, Timestamp startTime, Timestamp endTime, int participantsCount) throws SQLException {
-        try (Connection conn = DataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT * FROM insert_booking(?, ?, ?, ?, ?)")) {
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM insert_booking(?, ?, ?, ?, ?, ?)")) {
             ps.setLong(1, userId);
             ps.setLong(2, workspaceId);
-            ps.setTimestamp(3, startTime);
-            ps.setTimestamp(4, endTime);
+            ps.setTimestamp(3, start);
+            ps.setTimestamp(4, end);
             ps.setInt(5, participantsCount);
+            ps.setInt(6, price);
 
             try(ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -747,6 +726,23 @@ public class Repository implements IRepository {
                 }
                 logger.debug("Из таблицы user_roles извлечено {} записей.", result.size());
                 return result;
+            }
+        }
+    }
+
+    public Optional<Tariffs> getTariffByWorkspaceTypeId(long id) throws SQLException {
+        try (Connection conn = DataSource.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM tariffs WHERE workspace_type = ?")) {
+            ps.setLong(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(new Tariffs(
+                            rs.getLong("id"),
+                            rs.getLong("workspace_type"),
+                            rs.getLong("day_type"),
+                            rs.getBigDecimal("multiplier")));
+                }
+                else return Optional.empty();
             }
         }
     }

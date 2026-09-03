@@ -3,6 +3,7 @@ package com.ddnik.controller;
 import com.ddnik.AuthorizedUser;
 import com.ddnik.db.Service;
 import com.ddnik.db.dto.*;
+import com.ddnik.model.*;
 import com.opencsv.CSVWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,10 +11,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Time;
@@ -21,7 +18,6 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -154,11 +150,7 @@ public class UserController {
             return;
         }
 
-        Optional<Long> newBookingId = service.createBooking(currentUser.get().id(),
-                workspace.get().id(),
-                filters.get().startTime(),
-                filters.get().endTime(),
-                filters.get().participantsCount());
+        Optional<Long> newBookingId = service.createBooking(currentUser.get().id(), workspace.get(), filters.get());
 
         if (newBookingId.isPresent()) Out.printlnGreen("Бронь создана успешно!");
         else Out.printlnRed("Не удалось забронировать рабочее пространство.");
@@ -343,21 +335,5 @@ public class UserController {
                 service.getWorkspaceTypes(),
                 "Выберите тип рабочего пространства",
                 WorkspaceTypesDto.getMenuTableHeader()).start();
-    }
-
-    /**
-     * Хранит данные для фильтрации рабочих пространств.
-     */
-    record Filters(
-            WorkspaceTypesDto type,
-            int participantsCount,
-            Timestamp startTime,
-            Timestamp endTime
-    ) {
-        Filters {
-            Objects.requireNonNull(type);
-            Objects.requireNonNull(startTime);
-            Objects.requireNonNull(endTime);
-        }
     }
 }

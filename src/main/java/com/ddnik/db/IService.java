@@ -2,12 +2,12 @@ package com.ddnik.db;
 
 import com.ddnik.db.dto.*;
 import com.ddnik.db.entity.*;
+import com.ddnik.model.Filters;
 
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,28 +23,14 @@ public interface IService {
 
     /**
      * Создаёт бронь рабочего пространства.
-     * @param booking данные брони.
+     * @param userId код пользователя.
+     * @param workspace данные рабочего пространства.
+     * @param filters данные бронирования.
      * @return id созданной брони. Возвращает {@link Optional#empty()}, если запрос не вернул данные.
      * @throws SQLException в случае возникновения ошибки на уровне базы данных.
      * @throws SecurityException если у пользователя недостаточно прав доступа.
      */
-    Optional<Long> insertBooking(Bookings booking) throws SQLException, SecurityException;
-
-    /**
-     * Создаёт бронь рабочего пространства.
-     * @param userId код регистрирующего бронь.
-     * @param workspaceId код рабочего пространства.
-     * @param startTime время начала.
-     * @param endTime время окончания.
-     * @param participantsCount количество людей.
-     * @return id созданной брони. Возвращает {@link Optional#empty()}, если запрос не вернул данные.
-     * @throws SQLException в случае возникновения ошибки на уровне базы данных.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
-     */
-    Optional<Long> createBooking(long userId, long workspaceId, Timestamp startTime, Timestamp endTime,
-                                 int participantsCount) throws SQLException, SecurityException;
-
-
+    Optional<Long> createBooking(long userId, WorkspaceDto workspace, Filters filters) throws SQLException, SecurityException;
 
     /**
      * Создаёт рабочее пространств.

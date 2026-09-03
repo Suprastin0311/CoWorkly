@@ -3,10 +3,12 @@ package com.ddnik.db;
 import com.ddnik.PasswordHasher;
 import com.ddnik.db.dto.*;
 import com.ddnik.db.entity.*;
+import com.ddnik.model.Filters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -14,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class Service implements IService {
 
@@ -111,20 +114,23 @@ public class Service implements IService {
         }
     }
 
-    public Optional<Long> insertBooking(Bookings booking) throws SQLException, SecurityException {
-        Optional<Long> bookingId = repo.insertBooking(booking);
-        if (bookingId.isPresent()) {
-            logger.debug("Создана новая бронь с id {}", bookingId);
-            return bookingId;
-        }
-        else {
-            logger.debug("Не удалось создать новую бронь с id {}", bookingId);
-            return Optional.empty();
-        }
-    }
+    public Optional<Long> createBooking(long userId, WorkspaceDto workspace, Filters filters) throws SQLException, SecurityException {
+        Optional<Tariffs> tariff = repo.getTariffByWorkspaceTypeId(workspace.id());
+        if (tariff.isEmpty()) return Optional.empty();
 
-    public Optional<Long> createBooking(long userId, long workspaceId, Timestamp startTime, Timestamp endTime, int participantsCount) throws SQLException, SecurityException {
-        Optional<Long> bookingId = repo.createBooking(userId, workspaceId, startTime, endTime, participantsCount);
+        // проверка на то, что бронируемое рабочее пространство доступно
+        if (!isWorkspaceAvailableForBooking(workspace, filters)) return Optional.empty();
+
+        Optional<Long> bookingId = repo.insertBooking(
+                userId,
+                workspace.id(),
+                filters.startTime(),
+                filters.endTime(),
+                filters.participantsCount(),
+                calculatePrice(workspace.hourlyRate(),
+                        tariff.get().multiplier(),
+                        filters.startTime(),
+                        filters.endTime()));
         if (bookingId.isPresent()) {
             logger.debug("Создана новая бронь с id {}", bookingId);
             return bookingId;
@@ -331,5 +337,20 @@ public class Service implements IService {
         List<BookingStatusesDto> bookingStatuses = repo.getBookingStatuses();
         logger.debug("Получено {} статусов бронирования.", bookingStatuses.size());
         return bookingStatuses;
+    }
+
+    private int calculatePrice(BigDecimal hourlyRate, BigDecimal multiplier,Timestamp start, Timestamp end) {
+        // рассчитать количество часов
+        BigDecimal hours = BigDecimal.valueOf((start.getTime() - end.getTime()) / (1000 * 60 * 60) % 24);
+
+        return hours.multiply(hourlyRate).multiply(multiplier).intValue();
+    }
+
+    private boolean isWorkspaceAvailableForBooking(WorkspaceDto workspace, Filters filters) throws SQLException {
+        List<WorkspaceAvailableDto> workspaces = getWorkspacesAvailableForBooking(filters.startTime(),
+                filters.endTime(), workspace.type().id(), filters.participantsCount());
+        List<Long> ids = workspaces.stream().map(WorkspaceAvailableDto::id).toList();
+        if (ids.contains(workspace.id())) return true;
+        else return false;
     }
 }
