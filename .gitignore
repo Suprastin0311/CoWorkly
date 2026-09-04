@@ -40,7 +40,6 @@ build/
 
 ### Custom ###
 /TZ-CoWorkly-formal.md
-/CoWorkly_Test_functionsonly.sql
 *.log
 *.csv
 /db.properties
