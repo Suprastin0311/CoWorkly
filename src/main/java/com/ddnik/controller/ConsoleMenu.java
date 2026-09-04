@@ -79,15 +79,15 @@ public class ConsoleMenu {
             ConsoleReader.waitInput();
         } catch (SQLTimeoutException e) {
             Out.printlnRed("Время выполнения превысило установленный лимит и запрос был прерван.");
-            logger.error(e.getMessage(), e);
+            logger.error(e.getLocalizedMessage(), e);
             ConsoleReader.waitInput();
         }  catch (SQLException e) {
             Out.printlnRed("Ошибка на уровне базы данных.");
             logger.error(e.getLocalizedMessage(), e);
             ConsoleReader.waitInput();
-        } catch (SecurityException e) {
+        } catch (RuntimeException e) {
             Out.printlnRed(e.getLocalizedMessage());
-            logger.error("Недостаточно прав для выполнение данного действия.", e);
+            logger.error(e.getLocalizedMessage(), e);
             ConsoleReader.waitInput();
         } catch (Exception e) {
             Out.printlnRed("Непредвиденная ошибка.");

@@ -459,7 +459,6 @@ public class Repository implements IRepository {
 
     //region Bookings
 
-
     public List<BookingDto> getBookings() throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
@@ -577,7 +576,7 @@ public class Repository implements IRepository {
         }
     }
 
-    public Optional<Long> insertBooking(long userId, long workspaceId, Timestamp start, Timestamp end, int participantsCount, int price) throws SQLException {
+    public Optional<Long> insertBooking(long userId, long workspaceId, Timestamp start, Timestamp end, int participantsCount, BigDecimal price) throws SQLException {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM insert_booking(?, ?, ?, ?, ?, ?)")) {
             ps.setLong(1, userId);
@@ -585,7 +584,7 @@ public class Repository implements IRepository {
             ps.setTimestamp(3, start);
             ps.setTimestamp(4, end);
             ps.setInt(5, participantsCount);
-            ps.setInt(6, price);
+            ps.setBigDecimal(6, price);
 
             try(ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {

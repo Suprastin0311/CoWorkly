@@ -12,7 +12,7 @@ public interface IRepository {
 
     Optional<Long> insertUser(Users user) throws SQLException;
 
-    Optional<Long> insertBooking(long userId, long workspaceId, Timestamp start, Timestamp end, int participantsCount, int price) throws SQLException;
+    Optional<Long> insertBooking(long userId, long workspaceId, Timestamp start, Timestamp end, int participantsCount, BigDecimal price) throws SQLException;
 
     Optional<Long> insertWorkspace(Workspaces workspace) throws SQLException;
 
