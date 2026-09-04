@@ -23,7 +23,7 @@ public class AuthController {
         Service service = new Service();
         ConsoleReader.cls();
 
-        do {
+        while (true) {
             try {
                 Optional<String> email = ConsoleReader.readEmail();
                 if (email.isEmpty()) return new AuthorizedUser(-1L, "", "",  UserRole.NoAuth, true);
@@ -55,6 +55,6 @@ public class AuthController {
             } catch (SQLException e) {
                 throw e;
             }
-        } while (true);
+        }
     }
 }

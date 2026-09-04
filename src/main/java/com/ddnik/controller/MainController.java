@@ -25,6 +25,13 @@ public class MainController {
         try {
             AuthorizedUser user = AuthController.auth();
 
+            if (user.isBlocked()) {
+                Out.printlnYellow("Не удалось войти: Ваш профиль заблокирован.");
+                ConsoleReader.waitInput();
+                logger.info("Пользователь с email {} не  смог войти в систему: пользователь заблокирован.", user.email());
+                return;
+            }
+
             switch (user.role()) {
                 case UserRole.NoAuth -> {
                     Out.printlnRed("Не удалось авторизоваться.");
