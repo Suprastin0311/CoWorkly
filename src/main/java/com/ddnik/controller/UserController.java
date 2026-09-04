@@ -16,6 +16,8 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.chrono.ChronoLocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -96,16 +98,22 @@ public class UserController {
 
     /**
      * Составить фильтры для отбора доступных рабочих пространств с целью последующего бронирования.
-     * @return объект с введёнными фильтрами
+     * @return введённые фильтры.
+     * @throws SQLException в случае ошибки на уровне базы данных.
      */
     private Optional<Filters> getFilters() throws SQLException {
         ConsoleReader.cls();
         Optional<WorkspaceTypesDto> type = selectWorkspaceType();
         if (type.isEmpty()) return Optional.empty();
 
-        Optional<Integer> participantsCount = ConsoleReader.readIntInRange("Укажите количество человек",
-                type.get().minParticipantsCount(), type.get().maxParticipantsCount());
-        if (participantsCount.isEmpty()) return Optional.empty();
+        Optional<Integer> participantsCount;
+        if (type.get().minParticipantsCount() == type.get().maxParticipantsCount())
+            participantsCount = Optional.of(type.get().maxParticipantsCount());
+        else {
+            participantsCount = ConsoleReader.readIntInRange("Укажите количество человек",
+                    type.get().minParticipantsCount(), type.get().maxParticipantsCount());
+            if (participantsCount.isEmpty()) return Optional.empty();
+        }
 
         Optional<Date> date = ConsoleReader.readDate("Введите дату бронирования");
         if (date.isEmpty()) return Optional.empty();
@@ -132,10 +140,46 @@ public class UserController {
     }
 
     /**
+     * Составить параметры бронирования.
+     * @return параметры бронирования.
+     * @throws SQLException в случае ошибки на уровне базы данных.
+     */
+    private Optional<Filters> getBookingCommandFilters() throws SQLException {
+        ConsoleReader.cls();
+        Optional<WorkspaceTypesDto> type = selectWorkspaceType();
+        if (type.isEmpty()) return Optional.empty();
+
+        Optional<Integer> participantsCount;
+        if (type.get().minParticipantsCount() == type.get().maxParticipantsCount())
+            participantsCount = Optional.of(type.get().maxParticipantsCount());
+        else {
+            participantsCount = ConsoleReader.readIntInRange("Укажите количество человек",
+                    type.get().minParticipantsCount(), type.get().maxParticipantsCount());
+            if (participantsCount.isEmpty()) return Optional.empty();
+        }
+
+        Optional<Date> date = inputBookingDate();
+        if (date.isEmpty()) return Optional.empty();
+
+        Optional<Time> startTime = inputBookingStartTime();
+        if (startTime.isEmpty()) return Optional.empty();
+
+        Optional<Time> endTime = inputBookingEndTime(startTime.get());
+        if (endTime.isEmpty()) return Optional.empty();
+
+        return Optional.of(new Filters (
+                type.get(),
+                participantsCount.get(),
+                Timestamp.valueOf(LocalDateTime.of(date.get().toLocalDate(), startTime.get().toLocalTime())),
+                Timestamp.valueOf(LocalDateTime.of(date.get().toLocalDate(), endTime.get().toLocalTime()))
+        ));
+    }
+
+    /**
      * Забронировать.
      */
     private void bookWorkspace() throws SQLException {
-        Optional<Filters> filters = getFilters();
+        Optional<Filters> filters = getBookingCommandFilters();
         if (filters.isEmpty()) return;
 
         Optional<WorkspaceDto> workspace = selectWorkspace(filters.get());
@@ -335,5 +379,51 @@ public class UserController {
                 service.getWorkspaceTypes(),
                 "Выберите тип рабочего пространства",
                 WorkspaceTypesDto.getMenuTableHeader()).start();
+    }
+
+    /**
+     * Ввод даты бронирования.
+     * @return дата бронирования [гггг.мм.дд]
+     */
+    private Optional<Date> inputBookingDate() {
+        Optional<Date> date;
+        while (true) {
+            date = ConsoleReader.readDate("Введите дату бронирования");
+            if (date.isEmpty()) return Optional.empty();
+            if (date.get().toLocalDate().isBefore(ChronoLocalDate.from(LocalDateTime.now())))
+                Out.printlnYellow("Дата бронирования не может быть раньше текущей.");
+            else return date;
+        }
+    }
+
+    /**
+     * Ввод времени начала бронирования.
+     * @return время начала бронирования [чч:мм].
+     */
+    private Optional<Time> inputBookingStartTime() {
+        Optional<Time> startTime;
+        while (true) {
+            startTime = ConsoleReader.readTime("Введите время начала брони");
+            if (startTime.isEmpty()) return Optional.empty();
+            if (!startTime.get().after(Time.valueOf(LocalTime.now())))
+                Out.printlnYellow("Время начала должно быть позже текущего времени.");
+            else return startTime;
+        }
+    }
+
+    /**
+     * Ввод времени окончания бронирования.
+     * @param start время начала бронирования.
+     * @return время окончания бронирования [чч:мм].
+     */
+    private Optional<Time> inputBookingEndTime(Time start) {
+        Optional<Time> endTime;
+        while (true) {
+            endTime = ConsoleReader.readTime("Введите время окончания брони");
+            if (endTime.isEmpty()) return Optional.empty();
+            if (!endTime.get().after(start))
+                Out.printlnYellow("Время окончания должно быть позже времени начала.");
+            else return endTime;
+        }
     }
 }
