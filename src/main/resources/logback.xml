@@ -2,44 +2,56 @@
     <statusListener class="ch.qos.logback.core.status.OnFileStatusListener">
         <fileName>CoWorkly_Debug_Logback.log</fileName>
     </statusListener>
+    
+    <appender name="Flyway" class="ch.qos.logback.core.FileAppender">
+        <file>CoWorkly_Debug_Flyway.log</file>
+        <encoder>
+            <pattern>%d{yyyy.MM.dd HH:mm:ss.SSS} [%thread] %-5level %logger{60} - %msg%n</pattern>
+        </encoder>
+    </appender>
 
-    <appender name="FILE-debug" class="ch.qos.logback.core.FileAppender">
+    <appender name="Debug" class="ch.qos.logback.core.FileAppender">
         <file>CoWorkly_Debug.log</file>
         <append>true</append>
         <encoder>
-            <pattern>%d{yyyy.MM.dd HH:mm:ss.SSS HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy.MM.dd HH:mm:ss.SSS} [%thread] %-5level %logger{60} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <appender name="FILE-debug-HikariCP" class="ch.qos.logback.core.FileAppender">
+    <appender name="Debug-HikariCP" class="ch.qos.logback.core.FileAppender">
         <file>CoWorkly_Debug_HikariCP.log</file>
         <append>true</append>
         <encoder>
-            <pattern>%d{yyyy.MM.dd HH:mm:ss.SSS HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy.MM.dd HH:mm:ss.SSS} [%thread] %-5level %logger{60} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <appender name="FILE-compile" class="ch.qos.logback.core.FileAppender">
+    <appender name="Compile" class="ch.qos.logback.core.FileAppender">
         <file>CoWorkly.log</file>
         <append>true</append>
         <encoder>
-            <pattern>%d{yyyy.MM.dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy.MM.dd HH:mm:ss.SSS} [%thread] %-5level %logger{60} - %msg%n</pattern>
         </encoder>
     </appender>
 
     <logger name="com.ddnik" level="DEBUG" />
-<!--        <appender-ref ref="FILE-debug" />-->
+<!--        <appender-ref ref="Debug" />-->
 
     <!-- Оставить только важное от HikariCP -->
     <logger name="com.zaxxer.hikari" level="INFO" additivity="false">
-        <appender-ref ref="FILE-debug-HikariCP"/>
+        <appender-ref ref="Debug-HikariCP"/>
+    </logger>
+
+    <!-- Вынести логи для миграций в отдельный файл -->
+    <logger name="org.flywaydb.core" level="DEBUG" additivity="false">
+        <appender-ref ref="Flyway"/>
     </logger>
 
     <!-- <logger name="com.ddnik.tests" level="WARN" -->
     <root level="INFO">
-        <appender-ref ref="FILE-debug" />
+        <appender-ref ref="Debug" />
 
 <!--        Для релиза заменить на-->
-<!--        <appender-ref ref="FILE-compile"/>-->
+<!--        <appender-ref ref="Compile"/>-->
     </root>
 </configuration>
