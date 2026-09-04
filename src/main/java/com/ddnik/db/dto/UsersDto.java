@@ -25,9 +25,12 @@ public record UsersDto (
 
     public UsersDto {
         Objects.requireNonNull(email);
-        Objects.requireNonNull(passwordHash);
         Objects.requireNonNull(fullName);
         Objects.requireNonNull(role);
         Objects.requireNonNull(createdAt);
+    }
+
+    public UsersDto(long id, String email, String fullName, UserRolesDto role, boolean isBlocked, Date createdAt) {
+        this(id, email, "", fullName, role, isBlocked, createdAt);
     }
 }

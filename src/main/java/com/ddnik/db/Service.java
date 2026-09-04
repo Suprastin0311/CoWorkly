@@ -8,15 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class Service implements IService {
 
@@ -53,7 +49,7 @@ public class Service implements IService {
     }
 
     public Optional<UsersDto> getUserByEmail(String email) throws SQLException {
-        Optional<UsersDto> user = repo.getUserByEmail(email);
+        Optional<UsersDto> user = repo.getUserAuth(email);
         if (user.isPresent()) {
             logger.debug("Получены данные пользователя по email: {}", email);
             return user;

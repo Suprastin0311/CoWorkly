@@ -42,9 +42,9 @@ public class Repository implements IRepository {
         }
     }
 
-    public Optional<UsersDto> getUserByEmail(String email) throws SQLException {
+    public Optional<UsersDto> getUserAuth(String email) throws SQLException {
         try (Connection conn = DataSource.getConnection();
-            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_user_by_email(?)")) {
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_user_by_email_for_auth(?)")) {
 
             ps.setString(1, email);
 
@@ -190,7 +190,6 @@ public class Repository implements IRepository {
                 result.add(new UsersDto(
                         rs.getLong("id"),
                         rs.getString("email"),
-                        rs.getString("password_hash"),
                         rs.getString("full_name"),
                         new UserRolesDto(
                                 rs.getLong("role_id"),

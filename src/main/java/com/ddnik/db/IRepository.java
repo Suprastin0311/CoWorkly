@@ -6,7 +6,6 @@ import com.ddnik.db.entity.*;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.List;
-import java.util.List;
 import java.util.Optional;
 
 public interface IRepository {
@@ -27,7 +26,7 @@ public interface IRepository {
 
     Optional<Boolean> deleteWorkspace(long id) throws SQLException;
 
-    Optional<UsersDto> getUserByEmail(String email) throws SQLException;
+    Optional<UsersDto> getUserAuth(String email) throws SQLException;
 
     List<UsersDto> getUsersById(long id) throws SQLException;
 
