@@ -5,6 +5,7 @@ import com.ddnik.db.dto.*;
 import com.ddnik.db.entity.*;
 import com.ddnik.exceptions.PriceCalculateException;
 import com.ddnik.model.Filters;
+import com.ddnik.model.PriceCalculation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,9 +22,11 @@ public class Service implements IService {
 
     private static final Logger logger = LoggerFactory.getLogger(Service.class);
     private IRepository repo;
+    private PriceCalculation calc;
 
     public Service() {
         repo = new Repository();
+        calc = new PriceCalculation();
     }
 
     public Optional<Long> createUser(Users newUser) throws SQLException {
@@ -126,7 +129,7 @@ public class Service implements IService {
                 filters.startTime(),
                 filters.endTime(),
                 filters.participantsCount(),
-                calculatePrice(workspace.hourlyRate(),
+                calc.calculatePrice(workspace.hourlyRate(),
                         tariff.get().multiplier(),
                         filters.startTime(),
                         filters.endTime()));
@@ -336,32 +339,6 @@ public class Service implements IService {
         List<BookingStatusesDto> bookingStatuses = repo.getBookingStatuses();
         logger.debug("Получено {} статусов бронирования.", bookingStatuses.size());
         return bookingStatuses;
-    }
-
-    private BigDecimal calculatePrice(BigDecimal hourlyRate, BigDecimal multiplier, Timestamp start, Timestamp end) throws SQLException, PriceCalculateException {
-        // Проверка на то, что параметры не null
-        try {
-            Objects.requireNonNull(hourlyRate);
-            Objects.requireNonNull(multiplier);
-            Objects.requireNonNull(start);
-            Objects.requireNonNull(end);
-        } catch (NullPointerException e) {
-            throw new PriceCalculateException("Ошибка во время расчёта стоимости.", e);
-        }
-
-        // Расчёт продолжительности в миллисекундах
-        long duration = end.getTime() - start.getTime();
-        if (duration <= 0) {
-            throw new PriceCalculateException("Время окончания должно быть позже времени начала.");
-        }
-
-        // Расчёт количества минут
-        long minutes = Math.ceilDiv(duration, 60_000L);
-
-        return hourlyRate
-                .multiply(multiplier)
-                .multiply(BigDecimal.valueOf(minutes))
-                .divide(BigDecimal.valueOf(60), RoundingMode.HALF_UP);
     }
 
     private boolean isWorkspaceAvailableForBooking(WorkspaceDto workspace, Filters filters) throws SQLException {
