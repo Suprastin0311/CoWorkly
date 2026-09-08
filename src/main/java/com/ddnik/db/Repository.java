@@ -3,6 +3,7 @@ package com.ddnik.db;
 import com.ddnik.AuthorizedUser;
 import com.ddnik.db.dto.*;
 import com.ddnik.db.entity.*;
+import com.ddnik.exceptions.DatabaseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +18,7 @@ public class Repository implements IRepository {
     private static final Logger logger = LoggerFactory.getLogger(Repository.class);
 
     //region Users
-    public Optional<Long> insertUser(Users user) throws SQLException {
+    public Optional<Long> insertUser(Users user) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT insert_user(?, ?, ?, ?, ?, ?)")) {
 
@@ -39,10 +40,12 @@ public class Repository implements IRepository {
                     return Optional.empty(); // если execute() не выполнился
                 }
             }
+        } catch (SQLException e) {
+            throw new DatabaseException("Не удалось зарегистрироваться.", e);
         }
     }
 
-    public Optional<UsersDto> getUserAuth(String email) throws SQLException {
+    public Optional<UsersDto> getUserAuth(String email) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_user_by_email_for_auth(?)")) {
 
@@ -69,10 +72,12 @@ public class Repository implements IRepository {
                     return Optional.empty(); // если запрос не вернул результат
                 }
             }
+        } catch (SQLException e) {
+            throw new DatabaseException("Пользователь не найден.", e);
         }
     }
 
-    public List<UsersDto> getUsersById(long id) throws SQLException {
+    public List<UsersDto> getUsersById(long id) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_users(?, ?, ?, ?, ?, ?, ?)")) {
             ps.setLong(1, id);
@@ -84,10 +89,12 @@ public class Repository implements IRepository {
             ps.setNull(7, Types.TIMESTAMP);
 
             return executeQueryAndBuildUsersDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Пользователь не найден.", e);
         }
     }
 
-    public List<UsersDto> getUsersByEmail(String email) throws SQLException {
+    public List<UsersDto> getUsersByEmail(String email) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_users(?, ?, ?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -99,10 +106,12 @@ public class Repository implements IRepository {
             ps.setNull(7, Types.TIMESTAMP);
 
             return executeQueryAndBuildUsersDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Пользователь не найден.", e);
         }
     }
 
-    public List<UsersDto> getUsersByRole(long id) throws SQLException {
+    public List<UsersDto> getUsersByRole(long id) {
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_users(?, ?, ?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -114,10 +123,12 @@ public class Repository implements IRepository {
             ps.setNull(7, Types.TIMESTAMP);
 
             return executeQueryAndBuildUsersDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Пользователь не найден.", e);
         }
     }
 
-    public List<UsersDto> getUsersByCreatedAt(Date minDate, Date maxDate) throws SQLException {
+    public List<UsersDto> getUsersByCreatedAt(Date minDate, Date maxDate) {
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_users(?, ?, ?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -129,10 +140,12 @@ public class Repository implements IRepository {
             ps.setDate(7, maxDate);
 
             return executeQueryAndBuildUsersDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Пользователь не найден.", e);
         }
     }
 
-    public List<UsersDto> getUsersByStatus(boolean is_active) throws SQLException {
+    public List<UsersDto> getUsersByStatus(boolean is_active) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_users(?, ?, ?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -144,10 +157,12 @@ public class Repository implements IRepository {
             ps.setNull(7, Types.TIMESTAMP);
 
             return executeQueryAndBuildUsersDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Пользователь не найден.", e);
         }
     }
 
-    public List<UsersDto> getUsersByName(String name) throws SQLException {
+    public List<UsersDto> getUsersByName(String name) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_users(?, ?, ?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -159,10 +174,12 @@ public class Repository implements IRepository {
             ps.setNull(7, Types.TIMESTAMP);
 
             return executeQueryAndBuildUsersDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Пользователь не найден.", e);
         }
     }
 
-    public Optional<Boolean> toggleUserActiveStatus(long id) throws SQLException {
+    public Optional<Boolean> toggleUserActiveStatus(long id) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM toggle_user_active_status(?)")) {
             ps.setLong(1, id);
@@ -173,6 +190,8 @@ public class Repository implements IRepository {
                 }
                 else return Optional.empty();
             }
+        } catch (SQLException e) {
+            throw new DatabaseException("Не удалось активировать/деактивировать пользователя.", e);
         }
     }
 
@@ -183,7 +202,7 @@ public class Repository implements IRepository {
      * @return список пользователей, удовлетворяющих условию.
      * @throws SQLException в случае возникновения ошибки на уровне баз данных.
      */
-    private List<UsersDto> executeQueryAndBuildUsersDtoList(PreparedStatement ps) throws SQLException {
+    private List<UsersDto> executeQueryAndBuildUsersDtoList(PreparedStatement ps) {
         try (ResultSet rs = ps.executeQuery()) {
             List<UsersDto> result = new ArrayList<>();
             while(rs.next()) {
@@ -200,6 +219,8 @@ public class Repository implements IRepository {
             }
             logger.debug("Из таблицы users извлечено {} записей.", result.size());
             return result;
+        } catch (SQLException e) {
+            throw new DatabaseException("Не удалось получить список пользователей.", e);
         }
     }
 
@@ -207,7 +228,7 @@ public class Repository implements IRepository {
 
     //region Workspaces
 
-    public Optional<Long> insertWorkspace(Workspaces workspace) throws SQLException {
+    public Optional<Long> insertWorkspace(Workspaces workspace) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT insert_workspace(?, ?, ?, ?, ?)")) {
             ps.setLong(1, workspace.type());
@@ -226,10 +247,12 @@ public class Repository implements IRepository {
                     return Optional.empty();
                 }
             }
+        } catch (SQLException e) {
+            throw new DatabaseException("Не удалось создать рабочее пространство.", e);
         }
     }
 
-    public Optional<Boolean> toggleWorkspaceActiveStatus(long id) throws SQLException {
+    public Optional<Boolean> toggleWorkspaceActiveStatus(long id) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM toggle_workspace_active_status(?)")) {
             ps.setLong(1, id);
@@ -244,10 +267,12 @@ public class Repository implements IRepository {
                     return Optional.empty();
                 }
             }
+        } catch (SQLException e) {
+            throw new DatabaseException("Не удалось активировать/деактивировать рабочее пространство.", e);
         }
     }
 
-    public Optional<Boolean> updateWorkspace(Workspaces workspace) throws SQLException {
+    public Optional<Boolean> updateWorkspace(Workspaces workspace) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM update_workspace(?, ?, ?, ?, ?, ?)")) {
             ps.setLong(1, workspace.id());
@@ -267,10 +292,12 @@ public class Repository implements IRepository {
                     return Optional.empty();
                 }
             }
+        } catch (SQLException e) {
+            throw new DatabaseException("Не удалось обновить рабочее пространство.", e);
         }
     }
 
-    public Optional<Boolean> deleteWorkspace(long id) throws SQLException {
+    public Optional<Boolean> deleteWorkspace(long id) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM delete_workspace(?)")) {
             ps.setLong(1, id);
@@ -281,10 +308,12 @@ public class Repository implements IRepository {
                 }
                 else return Optional.empty();
             }
+        } catch (SQLException e) {
+            throw new DatabaseException("Не удалось удалить рабочее пространство.", e);
         }
     }
 
-    public Optional<WorkspaceDto> getWorkspaceById(long id) throws SQLException {
+    public Optional<WorkspaceDto> getWorkspaceById(long id) {
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces(?, ?, ?, ?, ?, ?, ?)")) {
             ps.setLong(1, id);
@@ -298,10 +327,12 @@ public class Repository implements IRepository {
             List<WorkspaceDto> workspaces = executeQueryAndBuildWorkspaceDtoList(ps);
             if (!workspaces.isEmpty()) return Optional.of(workspaces.getFirst());
             else return Optional.empty();
+        } catch (SQLException e) {
+            throw new DatabaseException("Рабочее пространство не найдено.", e);
         }
     }
 
-    public List<WorkspaceDto> getWorkspaces() throws SQLException {
+    public List<WorkspaceDto> getWorkspaces() {
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces(?, ?, ?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -313,10 +344,12 @@ public class Repository implements IRepository {
             ps.setNull(7, Types.BIGINT);
 
             return executeQueryAndBuildWorkspaceDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Рабочие пространства не найдены.", e);
         }
     }
 
-    public List<WorkspaceDto> getWorkspacesByCapacity(int capacity) throws SQLException {
+    public List<WorkspaceDto> getWorkspacesByCapacity(int capacity) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces(?, ?, ?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -328,10 +361,12 @@ public class Repository implements IRepository {
             ps.setNull(7, Types.BIGINT);
 
             return executeQueryAndBuildWorkspaceDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Рабочие пространства не найдены.", e);
         }
     }
 
-    public List<WorkspaceDto> getWorkspacesByHourlyRate(BigDecimal minRate, BigDecimal maxRate) throws SQLException {
+    public List<WorkspaceDto> getWorkspacesByHourlyRate(BigDecimal minRate, BigDecimal maxRate) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces(?, ?, ?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -343,10 +378,12 @@ public class Repository implements IRepository {
             ps.setNull(7, Types.BIGINT);
 
             return executeQueryAndBuildWorkspaceDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Рабочие пространства не найдены.", e);
         }
     }
 
-    public List<WorkspaceDto> getWorkspacesByName(String name) throws SQLException {
+    public List<WorkspaceDto> getWorkspacesByName(String name) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces(?, ?, ?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -358,10 +395,12 @@ public class Repository implements IRepository {
             ps.setNull(7, Types.BIGINT);
 
             return executeQueryAndBuildWorkspaceDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Рабочие пространства не найдены.", e);
         }
     }
 
-    public List<WorkspaceDto> getWorkspacesByStatus(boolean is_active) throws SQLException {
+    public List<WorkspaceDto> getWorkspacesByStatus(boolean is_active) {
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces(?, ?, ?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -373,10 +412,12 @@ public class Repository implements IRepository {
             ps.setNull(7, Types.BIGINT);
 
             return executeQueryAndBuildWorkspaceDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Рабочие пространства не найдены.", e);
         }
     }
 
-    public List<WorkspaceDto> getWorkspacesByType(long typeId) throws SQLException {
+    public List<WorkspaceDto> getWorkspacesByType(long typeId) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces(?, ?, ?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -388,10 +429,12 @@ public class Repository implements IRepository {
             ps.setLong(7, typeId);
 
             return executeQueryAndBuildWorkspaceDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Рабочие пространства не найдены.", e);
         }
     }
 
-    public List<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Timestamp startTime, Timestamp endTime, long workspaceTypeId, int participantsCount) throws SQLException {
+    public List<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Timestamp startTime, Timestamp endTime, long workspaceTypeId, int participantsCount) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_workspaces_available_for_booking(?, ?, ?, ?)")) {
             ps.setTimestamp(1, startTime);
@@ -421,6 +464,8 @@ public class Repository implements IRepository {
                 logger.debug("Из БД извлечено {} записей.", result.size());
                 return result;
             }
+        } catch (SQLException e) {
+            throw new DatabaseException("Рабочие пространства не найдены.", e);
         }
     }
 
@@ -431,7 +476,7 @@ public class Repository implements IRepository {
      * @return список рабочих пространств, удовлетворяющих условию.
      * @throws SQLException в случае возникновения ошибки на уровне баз данных.
      */
-    private List<WorkspaceDto> executeQueryAndBuildWorkspaceDtoList(PreparedStatement ps) throws SQLException {
+    private List<WorkspaceDto> executeQueryAndBuildWorkspaceDtoList(PreparedStatement ps) {
         try (ResultSet rs = ps.executeQuery()) {
             ArrayList<WorkspaceDto> result = new ArrayList<>();
             while (rs.next()) {
@@ -452,6 +497,8 @@ public class Repository implements IRepository {
             }
             logger.debug("Из таблицы workspaces извлечено {} записей.", result.size());
             return result;
+        } catch (SQLException e) {
+            throw new DatabaseException("Не удалось создать список рабочих пространств.", e);
         }
     }
 
@@ -459,7 +506,7 @@ public class Repository implements IRepository {
 
     //region Bookings
 
-    public List<BookingDto> getBookings() throws SQLException {
+    public List<BookingDto> getBookings() {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -469,10 +516,12 @@ public class Repository implements IRepository {
             ps.setNull(5, Types.TIMESTAMP);
 
             return executeQueryAndBuildBookingDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Бронирования не найдены.", e);
         }
     }
 
-    public List<BookingDto> getBookingsByUserId(long id) throws SQLException {
+    public List<BookingDto> getBookingsByUserId(long id) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
             ps.setLong(1, id);
@@ -482,10 +531,12 @@ public class Repository implements IRepository {
             ps.setNull(5, Types.TIMESTAMP);
 
             return executeQueryAndBuildBookingDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Бронирования не найдены.", e);
         }
     }
 
-    public List<BookingDto> getBookingsByWorkspaceId(long id) throws SQLException {
+    public List<BookingDto> getBookingsByWorkspaceId(long id) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -495,10 +546,12 @@ public class Repository implements IRepository {
             ps.setNull(5, Types.TIMESTAMP);
 
             return executeQueryAndBuildBookingDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Бронирования не найдены.", e);
         }
     }
 
-    public List<BookingDto> getBookingsByWorkspaceId(long userId, long workspaceId) throws SQLException {
+    public List<BookingDto> getBookingsByWorkspaceId(long userId, long workspaceId) {
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
             ps.setLong(1, userId);
@@ -508,10 +561,12 @@ public class Repository implements IRepository {
             ps.setNull(5, Types.TIMESTAMP);
 
             return executeQueryAndBuildBookingDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Бронирования не найдены.", e);
         }
     }
 
-    public List<BookingDto> getBookingsByStatus(long id) throws SQLException {
+    public List<BookingDto> getBookingsByStatus(long id) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -521,10 +576,12 @@ public class Repository implements IRepository {
             ps.setNull(5, Types.TIMESTAMP);
 
             return executeQueryAndBuildBookingDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Бронирования не найдены.", e);
         }
     }
 
-    public List<BookingDto> getBookingsByStatus(long userId, long statusId) throws SQLException {
+    public List<BookingDto> getBookingsByStatus(long userId, long statusId) {
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
             ps.setLong(1, userId);
@@ -534,10 +591,12 @@ public class Repository implements IRepository {
             ps.setNull(5, Types.TIMESTAMP);
 
             return executeQueryAndBuildBookingDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Бронирования не найдены.", e);
         }
     }
 
-    public List<BookingDto> getBookingsByCreatedAt(Date minDate, Date maxDate) throws SQLException {
+    public List<BookingDto> getBookingsByCreatedAt(Date minDate, Date maxDate) {
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
             ps.setNull(1, Types.BIGINT);
@@ -547,10 +606,12 @@ public class Repository implements IRepository {
             ps.setDate(5, maxDate);
 
             return executeQueryAndBuildBookingDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Бронирования не найдены.", e);
         }
     }
 
-    public List<BookingDto> getBookingsByCreatedAt(long userId, Date minDate, Date maxDate) throws SQLException {
+    public List<BookingDto> getBookingsByCreatedAt(long userId, Date minDate, Date maxDate) {
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
             ps.setLong(1, userId);
@@ -560,10 +621,12 @@ public class Repository implements IRepository {
             ps.setDate(5, maxDate);
 
             return executeQueryAndBuildBookingDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Бронирования не найдены.", e);
         }
     }
 
-    public List<BookingDto> getUserBookingsByCreatedAt(long userId, Date start, Date end) throws SQLException {
+    public List<BookingDto> getUserBookingsByCreatedAt(long userId, Date start, Date end) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
             ps.setLong(1, userId);
@@ -573,10 +636,12 @@ public class Repository implements IRepository {
             ps.setDate(5, end);
 
             return executeQueryAndBuildBookingDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Бронирования не найдены.", e);
         }
     }
 
-    public Optional<Long> insertBooking(long userId, long workspaceId, Timestamp start, Timestamp end, int participantsCount, BigDecimal price) throws SQLException {
+    public Optional<Long> insertBooking(long userId, long workspaceId, Timestamp start, Timestamp end, int participantsCount, BigDecimal price) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM insert_booking(?, ?, ?, ?, ?, ?)")) {
             ps.setLong(1, userId);
@@ -596,10 +661,12 @@ public class Repository implements IRepository {
                     return Optional.empty();
                 }
             }
+        } catch (SQLException e) {
+            throw new DatabaseException("Не удалось создать бронирование.", e);
         }
     }
 
-    public Optional<Boolean> setBookingCancelled(long id) throws SQLException {
+    public Optional<Boolean> setBookingCancelled(long id) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT set_booking_cancelled(?)")) {
             ps.setLong(1, id);
@@ -614,10 +681,12 @@ public class Repository implements IRepository {
                     return Optional.empty();
                 }
             }
+        } catch (SQLException e) {
+            throw new DatabaseException("Не удалось отменить бронирование.", e);
         }
     }
 
-    public Optional<Boolean> confirmBooking(long id) throws SQLException {
+    public Optional<Boolean> confirmBooking(long id) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT confirm_booking(?)")) {
             ps.setLong(1, id);
@@ -632,6 +701,8 @@ public class Repository implements IRepository {
                     return Optional.of(rs.getBoolean(1));
                 }
             }
+        } catch (SQLException e) {
+            throw new DatabaseException("Не удалось подтвердить бронирование.", e);
         }
     }
 
@@ -642,7 +713,7 @@ public class Repository implements IRepository {
      * @return список броней, удовлетворяющих условию.
      * @throws SQLException в случае возникновения ошибки на уровне баз данных.
      */
-    private List<BookingDto> executeQueryAndBuildBookingDtoList(PreparedStatement ps) throws SQLException {
+    private List<BookingDto> executeQueryAndBuildBookingDtoList(PreparedStatement ps) {
         try (ResultSet rs = ps.executeQuery()) {
             ArrayList<BookingDto> result = new ArrayList<>();
             while (rs.next()) {
@@ -665,6 +736,8 @@ public class Repository implements IRepository {
             }
             logger.debug("Из таблицы bookings извлечено {} записей.", result.size());
             return result;
+        } catch (SQLException e) {
+            throw new DatabaseException("Не удалось составить список бронирований.", e);
         }
     }
 
@@ -672,7 +745,7 @@ public class Repository implements IRepository {
 
     //region Справочники
 
-    public List<WorkspaceTypesDto> getWorkspaceTypes() throws SQLException {
+    public List<WorkspaceTypesDto> getWorkspaceTypes() {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM workspace_types")) {
 
@@ -690,10 +763,12 @@ public class Repository implements IRepository {
                 logger.debug("Из таблицы workspace_types извлечено {} записей.", result.size());
                 return result;
             }
+        } catch (SQLException e) {
+            throw new DatabaseException("Типы рабочих пространств не найдены.", e);
         }
     }
 
-    public List<BookingStatusesDto> getBookingStatuses() throws SQLException {
+    public List<BookingStatusesDto> getBookingStatuses() {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM booking_statuses ORDER BY sort_order")) {
 
@@ -708,10 +783,12 @@ public class Repository implements IRepository {
                 logger.debug("Из таблицы booking_statuses извлечено {} записей.", result.size());
                 return result;
             }
+        } catch (SQLException e) {
+            throw new DatabaseException("Статусы бронирования не найдены", e);
         }
     }
 
-    public List<UserRolesDto> getUserRoles() throws SQLException {
+    public List<UserRolesDto> getUserRoles() {
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM user_roles")) {
 
@@ -725,10 +802,12 @@ public class Repository implements IRepository {
                 logger.debug("Из таблицы user_roles извлечено {} записей.", result.size());
                 return result;
             }
+        } catch (SQLException e) {
+            throw new DatabaseException("Роли пользователей не найдены.", e);
         }
     }
 
-    public Optional<Tariffs> getTariffByWorkspaceTypeId(long id) throws SQLException {
+    public Optional<Tariffs> getTariffByWorkspaceTypeId(long id) {
         try (Connection conn = DataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM tariffs WHERE workspace_type = ?")) {
             ps.setLong(1, id);
@@ -742,6 +821,8 @@ public class Repository implements IRepository {
                 }
                 else return Optional.empty();
             }
+        } catch (SQLException e) {
+            throw new DatabaseException("Не удалось получить тариф рабочего пространства.", e);
         }
     }
 
