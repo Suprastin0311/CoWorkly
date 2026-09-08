@@ -17,8 +17,6 @@ public record Users (
         Objects.requireNonNull(email);
         Objects.requireNonNull(password);
         Objects.requireNonNull(fullName);
-        Objects.requireNonNull(role);
-        Objects.requireNonNull(isBlocked);
         Objects.requireNonNull(createdAt);
     }
 

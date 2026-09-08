@@ -17,11 +17,8 @@ public record Bookings(
 ) {
 
     public Bookings {
-        Objects.requireNonNull(userId);
-        Objects.requireNonNull(workspaceId);
         Objects.requireNonNull(startTime);
         Objects.requireNonNull(endTime);
-        Objects.requireNonNull(participantsCount);
         Objects.requireNonNull(price);
     }
 

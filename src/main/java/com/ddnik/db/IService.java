@@ -277,7 +277,7 @@ public interface IService {
      * @return список бронирований.
      * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    public List<BookingDto> getBookingsByStatus(long userId, BookingStatusesDto status) throws UserRoleSecurityException;
+    List<BookingDto> getBookingsByStatus(long userId, BookingStatusesDto status) throws UserRoleSecurityException;
 
     /**
      * Получает список броней пользователя с фильтром по времени бронирования.

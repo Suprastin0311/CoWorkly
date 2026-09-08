@@ -14,7 +14,6 @@ public class ConsoleMenu {
 
     public final String title;
     private final List<MenuItem> items = new ArrayList<>();
-    private final Scanner scanner = new Scanner(System.in);
     private boolean isRunning = true;
 
     private final Logger logger = LoggerFactory.getLogger(ConsoleMenu.class);

@@ -66,7 +66,6 @@ public class UserController {
     /**
      * Выбрать список доступных рабочих пространств.
      * @return список доступных рабочих пространств.
-     * @throws SQLException в случае ошибки с базой данных.
      */
     private List<WorkspaceAvailableDto> getAvailableWorkspaces(Filters filters) {
         return service.getWorkspacesAvailableForBooking(
@@ -79,7 +78,6 @@ public class UserController {
     /**
      * Выбрать рабочее пространство из списка доступных.
      * @return рабочее пространство.
-     * @throws SQLException в случае ошибки с базой данных.
      */
     private Optional<WorkspaceDto> selectWorkspace(Filters filters) {
         return selectAvailableWorkspace(filters).map(WorkspaceAvailableDto::toWorkspaceDto);
@@ -88,7 +86,6 @@ public class UserController {
     /**
      * Выбрать доступное рабочее пространство из списка.
      * @return доступное рабочее пространство.
-     * @throws SQLException в случае ошибки с базой данных.
      */
     private Optional<WorkspaceAvailableDto> selectAvailableWorkspace(Filters filters) {
         return new ItemsListMenu<>(

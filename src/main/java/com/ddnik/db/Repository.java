@@ -199,7 +199,6 @@ public class Repository implements IRepository {
      * Предназначен для выполнения хранимых функций, возвращающих таблицу пользователей со структурой {@link UsersDto}.
      * @param ps подготовленный запрос к хранимой процедуре.
      * @return список пользователей, удовлетворяющих условию.
-     * @throws SQLException в случае возникновения ошибки на уровне баз данных.
      */
     private List<UsersDto> executeQueryAndBuildUsersDtoList(PreparedStatement ps) {
         try (ResultSet rs = ps.executeQuery()) {
@@ -473,7 +472,6 @@ public class Repository implements IRepository {
      * Предназначен для выполнения хранимых функций, возвращающих таблицу рабочих пространств со структурой {@link WorkspaceDto}.
      * @param ps подготовленный запрос к хранимой процедуре.
      * @return список рабочих пространств, удовлетворяющих условию.
-     * @throws SQLException в случае возникновения ошибки на уровне баз данных.
      */
     private List<WorkspaceDto> executeQueryAndBuildWorkspaceDtoList(PreparedStatement ps) {
         try (ResultSet rs = ps.executeQuery()) {
@@ -717,7 +715,6 @@ public class Repository implements IRepository {
      * Предназначен для выполнения хранимых функций, возвращающих рабочие пространства в формате {@link BookingDto}.
      * @param ps подготовленный запрос к хранимой процедуре.
      * @return список броней, удовлетворяющих условию.
-     * @throws SQLException в случае возникновения ошибки на уровне баз данных.
      */
     private List<BookingDto> executeQueryAndBuildBookingDtoList(PreparedStatement ps) {
         try (ResultSet rs = ps.executeQuery()) {
