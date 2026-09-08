@@ -1,22 +1,19 @@
 package com.ddnik.db;
 
-import com.ddnik.AuthorizedUser;
 import com.ddnik.PasswordHasher;
 import com.ddnik.db.dto.*;
 import com.ddnik.db.entity.*;
 import com.ddnik.enums.UserRole;
-import com.ddnik.exceptions.PriceCalculateException;
+import com.ddnik.exceptions.UserRoleSecurityException;
 import com.ddnik.model.Filters;
 import com.ddnik.model.PriceCalculation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public class Service implements IService {
@@ -69,49 +66,52 @@ public class Service implements IService {
         }
     }
 
-    public List<UsersDto> getUsersByEmail(String email) throws SecurityException {
-        if (role.equals(UserRole.Admin)) {
-            List<UsersDto> users = repo.getUsersByEmail(email);
-            logger.debug("Получено {} пользователей с входящей в email подстрокой {}.", users.size(), email);
-            return users;
-        }
-        else throw new SecurityException("Недостаточно прав.");
+    public List<UsersDto> getUsersByEmail(String email) throws UserRoleSecurityException {
+        if (!role.equals(UserRole.Admin)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin);
+        List<UsersDto> users = repo.getUsersByEmail(email);
+        logger.debug("Получено {} пользователей с входящей в email подстрокой {}.", users.size(), email);
+        return users;
     }
 
-    public List<UsersDto> getUsersByRole(UserRolesDto role) throws SecurityException {
-        if
+    public List<UsersDto> getUsersByRole(UserRolesDto role) throws UserRoleSecurityException {
+        if (!this.role.equals(UserRole.Admin)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin);
         List<UsersDto> users = repo.getUsersByRole(role.id());
         logger.debug("Получено {} пользователей с ролью {}.", users.size(), role.name());
         return users;
     }
 
-    public List<UsersDto> getUsersByCreatedAt(Date minDate, Date maxDate) throws SecurityException {
+    public List<UsersDto> getUsersByCreatedAt(Date minDate, Date maxDate) throws UserRoleSecurityException {
+        if (!role.equals(UserRole.Admin)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin);
         List<UsersDto> users = repo.getUsersByCreatedAt(minDate, maxDate);
         logger.debug("Получено {} пользователей, зарегистрированных во временном промежутке с {} по {}.",
                 users.size(), minDate, maxDate);
         return users;
     }
 
-    public List<UsersDto> getUsersByStatus(boolean is_active) throws SecurityException {
+    public List<UsersDto> getUsersByStatus(boolean is_active) throws UserRoleSecurityException {
+        if (!role.equals(UserRole.Admin)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin);
         List<UsersDto> users = repo.getUsersByStatus(is_active);
         logger.debug("Получено {} {} пользователей.",
                 users.size(), is_active ? "активированных" : "заблокированных");
         return users;
     }
 
-    public List<UsersDto> getUsersByName(String name) throws SecurityException {
+    public List<UsersDto> getUsersByName(String name) throws UserRoleSecurityException {
+        if (!role.equals(UserRole.Admin)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin);
         List<UsersDto> users = repo.getUsersByName(name);
         logger.debug("Получено {} пользователей с входящей в ФИО подстрокой {}.", users.size(), name);
         return users;
     }
 
-    public List<UserRolesDto> getUserRoles() throws SecurityException {
+    public List<UserRolesDto> getUserRoles() throws UserRoleSecurityException {
+        if (!role.equals(UserRole.Admin)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin);
         List<UserRolesDto> userRoles = repo.getUserRoles();
         logger.debug("Получено {} статусов пользователей", userRoles.size());
         return userRoles;
     }
 
-    public Optional<WorkspaceDto> getWorkspaceById(long id) throws SecurityException {
+    public Optional<WorkspaceDto> getWorkspaceById(long id) throws UserRoleSecurityException {
+        if (role.equals(UserRole.NoAuth)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin, UserRole.NoAuth);
         Optional<WorkspaceDto> workspace = repo.getWorkspaceById(id);
         if (workspace.isPresent()) {
             logger.debug("Получено рабочее пространство по id {}", id);
@@ -123,7 +123,8 @@ public class Service implements IService {
         }
     }
 
-    public Optional<Long> createBooking(long userId, WorkspaceDto workspace, Filters filters) throws SecurityException {
+    public Optional<Long> createBooking(long userId, WorkspaceDto workspace, Filters filters) throws UserRoleSecurityException {
+        if (role.equals(UserRole.NoAuth)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin, UserRole.NoAuth);
         Optional<Tariffs> tariff = repo.getTariffByWorkspaceTypeId(workspace.type().id());
         if (tariff.isEmpty()) return Optional.empty();
 
@@ -150,7 +151,8 @@ public class Service implements IService {
         }
     }
 
-    public Optional<Long> insertWorkspace(Workspaces workspace) throws SecurityException {
+    public Optional<Long> insertWorkspace(Workspaces workspace) throws UserRoleSecurityException {
+        if (!role.equals(UserRole.Admin)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin);
         Optional<Long> workspaceId = repo.insertWorkspace(workspace);
         if (workspaceId.isPresent()) {
             logger.debug("Создано новое рабочее пространство с id {}", workspaceId);
@@ -162,7 +164,8 @@ public class Service implements IService {
         }
     }
 
-    public Optional<Boolean> deleteWorkspace(long id) throws SecurityException {
+    public Optional<Boolean> deleteWorkspace(long id) throws UserRoleSecurityException {
+        if (!role.equals(UserRole.Admin)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin);
         Optional<Boolean> result = repo.deleteWorkspace(id);
         if (result.isPresent()) {
             if (result.get()) logger.debug("Удалено рабочее пространство с id {}", id);
@@ -175,7 +178,8 @@ public class Service implements IService {
         }
     }
 
-    public Optional<Boolean> setBookingCancelled(long id) throws SecurityException {
+    public Optional<Boolean> setBookingCancelled(long id) throws UserRoleSecurityException {
+        if (role.equals(UserRole.NoAuth)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin, UserRole.NoAuth);
         Optional<Boolean> result = repo.setBookingCancelled(id);
         if (result.isPresent()) {
             if (result.get()) logger.debug("Отменена бронь по id {}", id);
@@ -188,7 +192,8 @@ public class Service implements IService {
         }
     }
     
-    public Optional<Boolean> confirmBooking(long id) throws SecurityException {
+    public Optional<Boolean> confirmBooking(long id) throws UserRoleSecurityException {
+        if (role.equals(UserRole.NoAuth)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin, UserRole.NoAuth);
         Optional<Boolean> result = repo.confirmBooking(id);
         if (result.isPresent()) {
             if (result.get()) logger.debug("Подтверждена бронь по id {}", id);
@@ -201,7 +206,8 @@ public class Service implements IService {
         }
     }
     
-    public Optional<Boolean> toggleWorkspaceActiveStatus(long id) throws SecurityException {
+    public Optional<Boolean> toggleWorkspaceActiveStatus(long id) throws UserRoleSecurityException {
+        if (!role.equals(UserRole.Admin)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin);
         Optional<Boolean> result = repo.toggleWorkspaceActiveStatus(id);
         if (result.isPresent()) {
             if (result.get()) logger.debug("Изменён статус активности рабочего пространства по id {}", id);
@@ -214,7 +220,8 @@ public class Service implements IService {
         }
     }
 
-    public Optional<Boolean> toggleUserActiveStatus(long id) throws SecurityException {
+    public Optional<Boolean> toggleUserActiveStatus(long id) throws UserRoleSecurityException {
+        if (!role.equals(UserRole.Admin)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin);
         Optional<Boolean> result = repo.toggleUserActiveStatus(id);
         if (result.isPresent()) {
             if (result.get()) logger.debug("Изменён статус пользователя по id {}", id);
@@ -227,7 +234,8 @@ public class Service implements IService {
         }
     }
 
-    public Optional<Boolean> updateWorkspace(Workspaces workspace) throws SecurityException {
+    public Optional<Boolean> updateWorkspace(Workspaces workspace) throws UserRoleSecurityException {
+        if (!role.equals(UserRole.Admin)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin);
         Optional<Boolean> result = repo.updateWorkspace(workspace);
         if (result.isPresent()) {
             if (result.get()) logger.debug("Обновлено рабочее пространство по id {}", workspace.id());
@@ -240,119 +248,137 @@ public class Service implements IService {
         }
     }
 
-    public List<WorkspaceDto> getWorkspaces() throws SecurityException {
+    public List<WorkspaceDto> getWorkspaces() throws UserRoleSecurityException {
+        if (role.equals(UserRole.NoAuth)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin, UserRole.User);
         List<WorkspaceDto> workspaces = repo.getWorkspaces();
         logger.debug("Получено {} рабочих пространств", workspaces.size());
         return workspaces;
     }
 
-    public List<WorkspaceDto> getWorkspacesByCapacity(int capacity) throws SecurityException {
+    public List<WorkspaceDto> getWorkspacesByCapacity(int capacity) throws UserRoleSecurityException {
+        if (role.equals(UserRole.NoAuth)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin, UserRole.User);
         List<WorkspaceDto> workspaces = repo.getWorkspacesByCapacity(capacity);
         logger.debug("Получено {} рабочих пространств с вместимостью {} человек", workspaces.size(), capacity);
         return workspaces;
     }
     
-    public List<WorkspaceDto> getWorkspacesByHourlyRate(BigDecimal minRate, BigDecimal maxRate) throws SecurityException {
+    public List<WorkspaceDto> getWorkspacesByHourlyRate(BigDecimal minRate, BigDecimal maxRate) throws UserRoleSecurityException {
+        if (role.equals(UserRole.NoAuth)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin, UserRole.User);
         List<WorkspaceDto> workspaces = repo.getWorkspacesByHourlyRate(minRate, maxRate);
         logger.debug("Получено {} рабочих пространств с почасовой стоимостью в пределах от {} до {}", workspaces.size(), minRate, maxRate);
         return workspaces;
     }
     
-    public List<WorkspaceDto> getWorkspacesByName(String name) throws SecurityException {
+    public List<WorkspaceDto> getWorkspacesByName(String name) throws UserRoleSecurityException {
+        if (role.equals(UserRole.NoAuth)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin, UserRole.User);
         List<WorkspaceDto> workspaces = repo.getWorkspacesByName(name);
         logger.debug("Получено {} рабочих пространств с почасовой стоимостью по названию {}", workspaces.size(), name);
         return workspaces;
     }
     
-    public List<WorkspaceDto> getWorkspacesByStatus(boolean is_active) throws SecurityException {
+    public List<WorkspaceDto> getWorkspacesByStatus(boolean is_active) throws UserRoleSecurityException {
+        if (role.equals(UserRole.NoAuth)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin, UserRole.User);
         List<WorkspaceDto> workspaces = repo.getWorkspacesByStatus(is_active);
         logger.debug("Получено {} {} рабочих пространств", workspaces.size(), is_active ? "активных" : "деактивированных");
         return workspaces;
     }
     
-    public List<WorkspaceDto> getWorkspacesByType(long id) throws SecurityException {
+    public List<WorkspaceDto> getWorkspacesByType(long id) throws UserRoleSecurityException {
+        if (role.equals(UserRole.NoAuth)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin, UserRole.User);
         List<WorkspaceDto> workspaces = repo.getWorkspacesByType(id);
         logger.debug("Получено {} рабочих пространств с типом {}", workspaces.size(), id);
         return workspaces;
     }
     
-    public List<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Timestamp startTime, Timestamp endTime, long workspaceTypeId, int participantsCount) throws SecurityException {
+    public List<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Timestamp startTime, Timestamp endTime, long workspaceTypeId, int participantsCount) throws UserRoleSecurityException {
+        if (role.equals(UserRole.NoAuth)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin, UserRole.User);
         List<WorkspaceAvailableDto> workspaces = repo.getWorkspacesAvailableForBooking(startTime, endTime, workspaceTypeId, participantsCount);
         logger.debug("Получено {} доступных для бронирования рабочих пространств с параметрами: дата начала - {}, дата окончания - {}, код типа - {}, количество человек - {}", workspaces.size(), startTime, endTime, workspaceTypeId, participantsCount);
         return workspaces;
     }
 
-    public List<BookingDto> getBookings() throws SecurityException {
+    public List<BookingDto> getBookings() throws UserRoleSecurityException {
+        if (role.equals(UserRole.NoAuth)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin, UserRole.User);
         List<BookingDto> bookings = repo.getBookings();
         logger.debug("Получено {} броней", bookings.size());
         return bookings;
     }
 
-    public List<BookingDto> getBookingsByUserId(long id) throws SecurityException {
+    public List<BookingDto> getBookingsByUserId(long id) throws UserRoleSecurityException {
+        if (role.equals(UserRole.NoAuth)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin, UserRole.User);
         List<BookingDto> bookings = repo.getBookingsByUserId(id);
         logger.debug("Получено {} броней пользователя по id {}", bookings.size(), id);
         return bookings;
     }
 
-    public List<BookingDto> getBookingsByWorkspaceId(WorkspaceDto workspace) throws SecurityException {
+    public List<BookingDto> getBookingsByWorkspaceId(WorkspaceDto workspace) throws UserRoleSecurityException {
+        if (!role.equals(UserRole.Admin)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin);
         List<BookingDto> bookings = repo.getBookingsByWorkspaceId(workspace.id());
         logger.debug("Получено {} броней рабочего пространства по id {}", bookings.size(), workspace.id());
         return bookings;
     }
 
-    public List<BookingDto> getBookingsByWorkspaceId(long userId, WorkspaceDto workspace) throws SecurityException {
+    public List<BookingDto> getBookingsByWorkspaceId(long userId, WorkspaceDto workspace) throws UserRoleSecurityException {
+        if (!role.equals(UserRole.User)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.User);
         List<BookingDto> bookings = repo.getBookingsByWorkspaceId(userId, workspace.id());
         logger.debug("Получено {} броней рабочего пространства по id пользователя {} и id рабочего пространства {} ", bookings.size(), userId, workspace.id());
         return bookings;
     }
 
-    public List<BookingDto> getBookingsByStatus(BookingStatusesDto status) throws SecurityException {
+    public List<BookingDto> getBookingsByStatus(BookingStatusesDto status) throws UserRoleSecurityException {
+        if (!role.equals(UserRole.Admin)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin);
         List<BookingDto> bookings = repo.getBookingsByStatus(status.id());
         logger.debug("Получено {} броней со статусом {}", bookings.size(), status.name());
         return bookings;
     }
 
-    public List<BookingDto> getBookingsByStatus(long userId, BookingStatusesDto status) throws SecurityException {
+    public List<BookingDto> getBookingsByStatus(long userId, BookingStatusesDto status) throws UserRoleSecurityException {
+        if (!role.equals(UserRole.User)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.User);
         List<BookingDto> bookings = repo.getBookingsByStatus(userId, status.id());
         logger.debug("Получено {} бронирований c параметрами с id пользователя = {} и статусом = {}", bookings.size(), userId, status.name());
         return bookings;
     }
 
-    public List<BookingDto> getBookingsByCreatedAt(Date minDate, Date maxDate) throws SecurityException {
+    public List<BookingDto> getBookingsByCreatedAt(Date minDate, Date maxDate) throws UserRoleSecurityException {
+        if (!role.equals(UserRole.Admin)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin);
         List<BookingDto> bookings = repo.getBookingsByCreatedAt(minDate, maxDate);
         logger.debug("Получено {} броней с датой создания в промежутке c {} по {}", bookings.size(), minDate, maxDate);
         return bookings;
     }
 
-    public List<BookingDto> getBookingsByCreatedAt(long userId, Date minDate, Date maxDate) throws SecurityException {
+    public List<BookingDto> getBookingsByCreatedAt(long userId, Date minDate, Date maxDate) throws UserRoleSecurityException {
+        if (!role.equals(UserRole.User)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.User);
         List<BookingDto> bookings = repo.getBookingsByCreatedAt(userId, minDate, maxDate);
         logger.debug("Получено {} броней c id пользователя {} с датой создания в промежутке c {} по {}", bookings.size(), userId, minDate, maxDate);
         return bookings;
     }
 
-    public List<BookingDto> getUserBookingsByTime(long userId, Date startTime, Date endTime) throws SecurityException {
+    public List<BookingDto> getUserBookingsByTime(long userId, Date startTime, Date endTime) throws UserRoleSecurityException {
+        if (!role.equals(UserRole.User)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.User);
         List<BookingDto> bookings = repo.getBookingsByCreatedAt(userId, startTime, endTime);
         logger.debug("Получено {} броней с датами бронирования в промежутке от {} до {}", bookings.size(), startTime, endTime);
         return bookings;
     }
     
-    public List<WorkspaceTypesDto> getWorkspaceTypes() throws SecurityException {
+    public List<WorkspaceTypesDto> getWorkspaceTypes() throws UserRoleSecurityException {
+        if (role.equals(UserRole.NoAuth)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin, UserRole.User);
         List<WorkspaceTypesDto> workspaceTypes = repo.getWorkspaceTypes();
         logger.debug("Получено {} типов рабочих пространств.", workspaceTypes.size());
         return workspaceTypes;
     }
     
-    public List<BookingStatusesDto> getBookingStatuses() throws SecurityException {
+    public List<BookingStatusesDto> getBookingStatuses() throws UserRoleSecurityException {
+        if (role.equals(UserRole.NoAuth)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin, UserRole.User);
         List<BookingStatusesDto> bookingStatuses = repo.getBookingStatuses();
         logger.debug("Получено {} статусов бронирования.", bookingStatuses.size());
         return bookingStatuses;
     }
 
     private boolean isWorkspaceAvailableForBooking(WorkspaceDto workspace, Filters filters) {
+        if (role.equals(UserRole.NoAuth)) throw new UserRoleSecurityException("Недостаточно прав, операция прервана.", this.role, UserRole.Admin, UserRole.User);
         List<WorkspaceAvailableDto> workspaces = getWorkspacesAvailableForBooking(filters.startTime(),
                 filters.endTime(), workspace.type().id(), filters.participantsCount());
         List<Long> ids = workspaces.stream().map(WorkspaceAvailableDto::id).toList();
-        if (ids.contains(workspace.id())) return true;
-        else return false;
+        return ids.contains(workspace.id());
     }
 }

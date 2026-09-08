@@ -2,6 +2,7 @@ package com.ddnik.db;
 
 import com.ddnik.db.dto.*;
 import com.ddnik.db.entity.*;
+import com.ddnik.exceptions.UserRoleSecurityException;
 import com.ddnik.model.Filters;
 
 import java.math.BigDecimal;
@@ -25,17 +26,17 @@ public interface IService {
      * @param workspace данные рабочего пространства.
      * @param filters данные бронирования.
      * @return id созданной брони. Возвращает {@link Optional#empty()}, если запрос не вернул данные.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    Optional<Long> createBooking(long userId, WorkspaceDto workspace, Filters filters) throws SecurityException;
+    Optional<Long> createBooking(long userId, WorkspaceDto workspace, Filters filters) throws UserRoleSecurityException;
 
     /**
      * Создаёт рабочее пространств.
      * @param workspace данные рабочего пространства.
      * @return id созданного рабочего пространства. Возвращает {@link Optional#empty()}, если запрос не вернул данные.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    Optional<Long> insertWorkspace(Workspaces workspace) throws SecurityException;
+    Optional<Long> insertWorkspace(Workspaces workspace) throws UserRoleSecurityException;
 
     /**
      * Безвозвратно удаляет рабочее пространство.
@@ -44,9 +45,9 @@ public interface IService {
      *      <code>true</code> - рабочее пространство удалено успешно<br>
      *      <code>false</code> - не получилось удалить рабочее пространство<br>
      *      Возвращает {@link Optional#empty()}, если запрос не вернул данные.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    Optional<Boolean> deleteWorkspace(long id) throws SecurityException;
+    Optional<Boolean> deleteWorkspace(long id) throws UserRoleSecurityException;
 
     /**
      * Отменяет бронь.
@@ -55,9 +56,9 @@ public interface IService {
      *     <code>true</code> - бронь отменена успешно<br>
      *     <code>false</code> - не получилось отменить бронь<br>
      *     Возвращает {@link Optional#empty()}, если запрос не вернул данные.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    Optional<Boolean> setBookingCancelled(long id) throws SecurityException;
+    Optional<Boolean> setBookingCancelled(long id) throws UserRoleSecurityException;
 
     /**
      * Подтверждает бронь.
@@ -66,9 +67,9 @@ public interface IService {
      *     <code>true</code> - бронь подтверждена успешно<br>
      *     <code>false</code> - не получилось подтвердить бронь<br>
      *     Возвращает {@link Optional#empty()}, если запрос не вернул данные.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    Optional<Boolean> confirmBooking(long id) throws SecurityException;
+    Optional<Boolean> confirmBooking(long id) throws UserRoleSecurityException;
 
     /**
      * Переключает статус активности рабочего пространства.
@@ -77,9 +78,9 @@ public interface IService {
      *     <code>true</code> - статус рабочего пространства изменён успешно<br>
      *     <code>false</code> - не получилось сменить статус рабочего пространства<br>
      *     Возвращает {@link Optional#empty()}, если запрос не вернул данные.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    Optional<Boolean> toggleWorkspaceActiveStatus(long id) throws SecurityException;
+    Optional<Boolean> toggleWorkspaceActiveStatus(long id) throws UserRoleSecurityException;
 
     /**
      * Переключает статус активности пользователя (разблокировать, заблокировать).
@@ -88,9 +89,9 @@ public interface IService {
      *     <code>true</code> - статус пользователя изменён успешно<br>
      *     <code>false</code> - не получилось сменить статус пользователя<br>
      *     Возвращает {@link Optional#empty()}, если запрос не вернул данные.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    Optional<Boolean> toggleUserActiveStatus(long id) throws SecurityException;
+    Optional<Boolean> toggleUserActiveStatus(long id) throws UserRoleSecurityException;
 
      /**
      * Обновляет рабочее пространство.
@@ -98,42 +99,42 @@ public interface IService {
      * @return признак успеха выполнения операции:<br>
      *      *     <code>true</code> - рабочее пространство обновлено<br>
      *      *     <code>false</code> - не удалось обновить рабочее пространство
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    Optional<Boolean> updateWorkspace(Workspaces workspace) throws SecurityException;
+    Optional<Boolean> updateWorkspace(Workspaces workspace) throws UserRoleSecurityException;
 
     /**
      * Извлекает данные пользователя по email
      * @param email строка, содержащая email пользователя
      * @return данные пользователя. Возвращает <c>Optional.empty()</c>, если пользователь не найден.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    Optional<UsersDto> getUserByEmail(String email) throws SecurityException;
+    Optional<UsersDto> getUserByEmail(String email) throws UserRoleSecurityException;
 
     /**
      * Извлекает список пользователей по email. В качестве email можно использовать подстроку.
      * @param email предполагаемый email пользователя.
      * @return список пользователей.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<UsersDto> getUsersByEmail(String email) throws SecurityException;
+    List<UsersDto> getUsersByEmail(String email) throws UserRoleSecurityException;
 
     /**
      * Извлекает список пользователей по роли.
      * @param role роль пользователя.
      * @return список пользователей.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<UsersDto> getUsersByRole(UserRolesDto role) throws SecurityException;
+    List<UsersDto> getUsersByRole(UserRolesDto role) throws UserRoleSecurityException;
 
     /**
      * Извлекает список пользователей по роли.
      * @param minDate левая граница диапазона.
      * @param maxDate правая граница диапазона.
      * @return список пользователей.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<UsersDto> getUsersByCreatedAt(Date minDate, Date maxDate) throws SecurityException;
+    List<UsersDto> getUsersByCreatedAt(Date minDate, Date maxDate) throws UserRoleSecurityException;
 
     /**
      * Извлекает список пользователей по статусу.
@@ -141,64 +142,64 @@ public interface IService {
      *                  <code>true</code> - активен<br>
      *                  <code>false</code> - заблокирован
      * @return список пользователей.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<UsersDto> getUsersByStatus(boolean is_active) throws SecurityException;
+    List<UsersDto> getUsersByStatus(boolean is_active) throws UserRoleSecurityException;
 
     /**
      * Извлекает список пользователей по ФИО.
      * @param name подстрока, входящая в ФИО.
      * @return список пользователей.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<UsersDto> getUsersByName(String name) throws SecurityException;
+    List<UsersDto> getUsersByName(String name) throws UserRoleSecurityException;
 
     /**
      * Извлекает список всех статусов пользователей.
      * @return все статусы пользователей.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<UserRolesDto> getUserRoles() throws SecurityException;
+    List<UserRolesDto> getUserRoles() throws UserRoleSecurityException;
 
     /**
      * Получает данные рабочего пространства по id.
      * @param id код рабочего пространства.
      * @return данные рабочего пространства. Возвращает {@link Optional#empty()}, если запрос не вернул данные.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    Optional<WorkspaceDto> getWorkspaceById(long id) throws SecurityException;
+    Optional<WorkspaceDto> getWorkspaceById(long id) throws UserRoleSecurityException;
 
     /**
      * Получает рабочие пространства.
      * @return список рабочих пространств.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<WorkspaceDto> getWorkspaces() throws SecurityException;
+    List<WorkspaceDto> getWorkspaces() throws UserRoleSecurityException;
 
     /**
      * Получает рабочие пространства по вместимости.
      * @param capacity вместимость рабочего пространства.
      * @return список рабочих пространств.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<WorkspaceDto> getWorkspacesByCapacity(int capacity) throws SecurityException;
+    List<WorkspaceDto> getWorkspacesByCapacity(int capacity) throws UserRoleSecurityException;
 
     /**
      * Получает рабочие пространства по вместимости.
      * @param minRate минимальное значение часовой стоимости.
      * @param maxRate максимальное значение часовой стоимости.
      * @return список рабочих пространств.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<WorkspaceDto> getWorkspacesByHourlyRate(BigDecimal minRate, BigDecimal maxRate) throws SecurityException;
+    List<WorkspaceDto> getWorkspacesByHourlyRate(BigDecimal minRate, BigDecimal maxRate) throws UserRoleSecurityException;
 
     /**
      * Получает рабочие пространства по имени.
      * @param name имя рабочего пространства.
      * @return список рабочих пространств.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<WorkspaceDto> getWorkspacesByName(String name) throws SecurityException;
+    List<WorkspaceDto> getWorkspacesByName(String name) throws UserRoleSecurityException;
 
     /**
      * Получает рабочие пространства статусу.
@@ -206,17 +207,17 @@ public interface IService {
      *              <code>true</code> - активно<br>
      *              <code>false</code> - неактивно
      * @return список рабочих пространств.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<WorkspaceDto> getWorkspacesByStatus(boolean is_active) throws SecurityException;
+    List<WorkspaceDto> getWorkspacesByStatus(boolean is_active) throws UserRoleSecurityException;
 
     /**
      * Получает рабочие пространства типу.
      * @param id код типа рабочего пространства.
      * @return список рабочих пространств.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<WorkspaceDto> getWorkspacesByType(long id) throws SecurityException;
+    List<WorkspaceDto> getWorkspacesByType(long id) throws UserRoleSecurityException;
 
     /**
      * Получает рабочие пространства, доступные к бронированию согласно указанным параметрам.
@@ -225,67 +226,67 @@ public interface IService {
      * @param workspaceTypeId код типа рабочего пространства
      * @param participantsCount количество людей
      * @return список доступных для бронирования рабочих пространств.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Timestamp startTime, Timestamp endTime, long workspaceTypeId, int participantsCount) throws SecurityException;
+    List<WorkspaceAvailableDto> getWorkspacesAvailableForBooking(Timestamp startTime, Timestamp endTime, long workspaceTypeId, int participantsCount) throws UserRoleSecurityException;
 
 
     /**
      * Получает список всех броней.
      * @return список броней.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<BookingDto> getBookings() throws SecurityException;
+    List<BookingDto> getBookings() throws UserRoleSecurityException;
 
     /**
      * Получает список броней указанного пользователя.
      * @param id код пользователя.
      * @return список броней.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<BookingDto> getBookingsByUserId(long id) throws SecurityException;
+    List<BookingDto> getBookingsByUserId(long id) throws UserRoleSecurityException;
 
     /**
      * Получает список броней указанного рабочего пространства.
      * @param workspace рабочее пространство
      * @return список броней.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<BookingDto> getBookingsByWorkspaceId(WorkspaceDto workspace) throws SecurityException;
+    List<BookingDto> getBookingsByWorkspaceId(WorkspaceDto workspace) throws UserRoleSecurityException;
 
     /**
      * Получает список броней указанного рабочего пространства.
      * @param workspace рабочее пространство
      * @return список броней.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<BookingDto> getBookingsByWorkspaceId(long userId, WorkspaceDto workspace) throws SecurityException;
+    List<BookingDto> getBookingsByWorkspaceId(long userId, WorkspaceDto workspace) throws UserRoleSecurityException;
 
     /**
      * Получает список броней с указанным статусом.
      * @param status статус брони.
      * @return список броней.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<BookingDto> getBookingsByStatus(BookingStatusesDto status) throws SecurityException;
+    List<BookingDto> getBookingsByStatus(BookingStatusesDto status) throws UserRoleSecurityException;
 
     /**
      * Получает список броней с фильтром по статусу и коду пользователя.
      * @param userId код пользователя.
      * @param status статус.
      * @return список бронирований.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    public List<BookingDto> getBookingsByStatus(long userId, BookingStatusesDto status) throws SecurityException;
+    public List<BookingDto> getBookingsByStatus(long userId, BookingStatusesDto status) throws UserRoleSecurityException;
 
     /**
      * Получает список броней пользователя с фильтром по времени бронирования.
      * @param minDate левая граница диапазона.
      * @param maxDate правая граница диапазона.
      * @return список броней.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<BookingDto> getBookingsByCreatedAt(Date minDate, Date maxDate) throws SecurityException;
+    List<BookingDto> getBookingsByCreatedAt(Date minDate, Date maxDate) throws UserRoleSecurityException;
 
     /**
      * Получает список броней пользователя с фильтром по времени бронирования и коду пользователя.
@@ -293,9 +294,9 @@ public interface IService {
      * @param minDate левая граница диапазона.
      * @param maxDate правая граница диапазона.
      * @return список броней.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<BookingDto> getBookingsByCreatedAt(long userId, Date minDate, Date maxDate) throws SecurityException;
+    List<BookingDto> getBookingsByCreatedAt(long userId, Date minDate, Date maxDate) throws UserRoleSecurityException;
 
     /**
      * Получает список броней пользователя с фильтром по времени.
@@ -303,21 +304,21 @@ public interface IService {
      * @param start время начала брони.
      * @param end время окончания брони.
      * @return список броней.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<BookingDto> getUserBookingsByTime(long userId, Date start, Date end) throws SecurityException;
+    List<BookingDto> getUserBookingsByTime(long userId, Date start, Date end) throws UserRoleSecurityException;
 
     /**
      * Получает справочник типов рабочего пространства.
      * @return список типов рабочего пространства.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<WorkspaceTypesDto> getWorkspaceTypes() throws SecurityException;
+    List<WorkspaceTypesDto> getWorkspaceTypes() throws UserRoleSecurityException;
 
     /**
      * Получает справочник статусов броней.
      * @return список статусов броней.
-     * @throws SecurityException если у пользователя недостаточно прав доступа.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<BookingStatusesDto> getBookingStatuses() throws SecurityException;
+    List<BookingStatusesDto> getBookingStatuses() throws UserRoleSecurityException;
 }

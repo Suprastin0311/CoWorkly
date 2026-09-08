@@ -1,6 +1,7 @@
 package com.ddnik.controller;
 
 import com.ddnik.exceptions.ConsoleUserInputException;
+import com.ddnik.exceptions.UserRoleSecurityException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,12 +78,8 @@ public class ConsoleMenu {
             Out.printlnRed(e.getLocalizedMessage());
             logger.error("Ошибка консольного ввода.", e);
             ConsoleReader.waitInput();
-        } catch (SQLTimeoutException e) {
-            Out.printlnRed("Время выполнения превысило установленный лимит и запрос был прерван.");
-            logger.error(e.getLocalizedMessage(), e);
-            ConsoleReader.waitInput();
-        }  catch (SQLException e) {
-            Out.printlnRed("Ошибка на уровне базы данных.");
+        } catch (UserRoleSecurityException e) {
+            Out.printlnYellow(e.getLocalizedMessage());
             logger.error(e.getLocalizedMessage(), e);
             ConsoleReader.waitInput();
         } catch (RuntimeException e) {
