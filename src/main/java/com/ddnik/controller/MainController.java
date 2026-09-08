@@ -2,10 +2,9 @@ package com.ddnik.controller;
 
 import com.ddnik.AuthorizedUser;
 import com.ddnik.enums.UserRole;
+import com.ddnik.exceptions.DatabaseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.sql.SQLException;
 
 public class MainController {
 
@@ -46,8 +45,8 @@ public class MainController {
                 }
             }
 
-        } catch (SQLException e) {
-            Out.printlnRed("Возникла ошибка c базой данных.");
+        } catch (DatabaseException e) {
+            Out.printlnRed("Не удалось войти - возникла ошибка c базой данных.");
             logger.error("Ошибка базы данных", e);
         }
     }
