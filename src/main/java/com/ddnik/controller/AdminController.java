@@ -177,27 +177,27 @@ public class AdminController {
             }
         }
 
-        private List<UsersDto> selectByEmail() throws SQLException, SecurityException {
+        private List<UsersDto> selectByEmail() throws SecurityException {
             ConsoleReader.cls();
             Optional<String> email = ConsoleReader.readEmail();
             if (email.isEmpty()) return new ArrayList<>();
             else return service.getUsersByEmail(email.get());
         }
 
-        private List<UsersDto> selectByRole() throws SQLException, SecurityException {
+        private List<UsersDto> selectByRole() throws SecurityException {
             Optional<UserRolesDto> role = selectUserRole();
             if (role.isEmpty()) return new ArrayList<>();
             else return service.getUsersByRole(role.get());
         }
 
-        private List<UsersDto> selectByName() throws SQLException, SecurityException {
+        private List<UsersDto> selectByName() throws SecurityException {
             ConsoleReader.cls();
             Optional<String> name = ConsoleReader.readString("Введите ФИО (фамилию, имя, отчество или полное ФИО, или предполагаемую часть ФИО)");
             if (name.isEmpty()) return new ArrayList<>();
             else return service.getUsersByName(name.get());
         }
 
-        private List<UsersDto> selectByCreateDate() throws SQLException, SecurityException {
+        private List<UsersDto> selectByCreateDate() throws SecurityException {
             ConsoleReader.cls();
             Optional<Date> minDate = ConsoleReader.readDate("Введите минимальную дату");
             if (minDate.isEmpty()) return new ArrayList<>();
@@ -206,7 +206,7 @@ public class AdminController {
             return service.getUsersByCreatedAt(minDate.get(), maxDate.get());
         }
 
-        private List<UsersDto> selectByStatus() throws SQLException, SecurityException {
+        private List<UsersDto> selectByStatus() throws SecurityException {
             ConsoleReader.cls();
             Out.println("Выберите статус:");
             Out.printlnGreen("1 - Активен");
@@ -218,7 +218,7 @@ public class AdminController {
             return service.getUsersByStatus(is_blocked);
         }
 
-        private Optional<UserRolesDto> selectUserRole() throws SQLException, SecurityException {
+        private Optional<UserRolesDto> selectUserRole() throws SecurityException {
             ConsoleReader.cls();
             return new ItemsListMenu<>(
                     service.getUserRoles(),
@@ -266,7 +266,7 @@ public class AdminController {
             }
         }
 
-        private void editType(WorkspaceDto workspace) throws SQLException, SecurityException {
+        private void editType(WorkspaceDto workspace) throws SecurityException {
             if (!service.getBookingsByWorkspaceId(workspace).isEmpty()) {
                 Out.printlnRed("Выбранное рабочее пространство забронировано в данный момент - редактирование недоступно.");
                 return;
@@ -313,7 +313,7 @@ public class AdminController {
             }
         }
 
-        private void editName(WorkspaceDto workspace) throws SQLException, SecurityException {
+        private void editName(WorkspaceDto workspace) throws SecurityException {
             while (true) {
                 Optional<String> name = ConsoleReader.readString("Введите новое название");
                 if (name.isEmpty()) return;
@@ -333,7 +333,7 @@ public class AdminController {
             }
         }
 
-        private void editCapacity(WorkspaceDto workspace) throws SQLException, SecurityException {
+        private void editCapacity(WorkspaceDto workspace) throws SecurityException {
             Optional<Integer> capacity = ConsoleReader.readIntInRange("Введите новое значение вместимости",
                     workspace.type().minParticipantsCount(), workspace.type().maxParticipantsCount());
             if (capacity.isPresent()) {
@@ -349,7 +349,7 @@ public class AdminController {
             }
         }
 
-        private void editHourlyRate(WorkspaceDto workspace) throws SQLException, SecurityException {
+        private void editHourlyRate(WorkspaceDto workspace) throws SecurityException {
             while (true) {
                 Optional<BigDecimal> hourlyRate = ConsoleReader.readPositiveBigDecimal("Введите новое значение часовой стоимости");
                 if (hourlyRate.isEmpty()) return;
@@ -371,7 +371,7 @@ public class AdminController {
             }
         }
 
-        private void changeVisibility(WorkspaceDto workspace) throws SQLException, SecurityException {
+        private void changeVisibility(WorkspaceDto workspace) throws SecurityException {
             Optional<Boolean> result = service.toggleWorkspaceActiveStatus(workspace.id());
             if (result.isPresent())
                 if (result.get()) Out.printlnGreen("Статус успешно изменён.");
@@ -379,7 +379,7 @@ public class AdminController {
             else Out.printlnRed("Ответ об успешности операции не получен.");
         }
 
-        private void update(Workspaces workspace) throws SQLException, SecurityException {
+        private void update(Workspaces workspace) throws SecurityException {
             Optional<Boolean> updateStatus = service.updateWorkspace(workspace);
             if (updateStatus.isPresent()) {
                 if (updateStatus.get()) {
@@ -396,7 +396,7 @@ public class AdminController {
             }
         }
 
-        private void create() throws SQLException, SecurityException {
+        private void create() throws SecurityException {
             // имена существующих рабочих пространств
             List<String> names = service.getWorkspacesByName("").stream()
                                         .map(WorkspaceDto::name)
@@ -451,7 +451,7 @@ public class AdminController {
             ConsoleReader.waitInput();
         }
 
-        private void delete() throws SQLException, SecurityException {
+        private void delete() throws SecurityException {
             ConsoleReader.cls();
             Out.printlnCyan("Удаление рабочего пространства.");
             Optional<WorkspaceDto> workspace = select();
@@ -518,27 +518,27 @@ public class AdminController {
             }
         }
 
-        private List<WorkspaceDto> selectByType() throws SQLException, SecurityException {
+        private List<WorkspaceDto> selectByType() throws SecurityException {
             Optional<WorkspaceTypesDto> type = selectWorkspaceType();
             if (type.isPresent()) return service.getWorkspacesByType(type.get().id());
             else return new ArrayList<>();
         }
 
-        private List<WorkspaceDto> selectByName() throws SQLException, SecurityException {
+        private List<WorkspaceDto> selectByName() throws SecurityException {
             ConsoleReader.cls();
             Optional<String> name = ConsoleReader.readString("Введите название рабочего пространства");
             if (name.isEmpty()) return new ArrayList<>();
             else return service.getWorkspacesByName(name.get());
         }
 
-        private List<WorkspaceDto> selectByCapacity() throws SQLException, SecurityException {
+        private List<WorkspaceDto> selectByCapacity() throws SecurityException {
             ConsoleReader.cls();
             Optional<Integer> capacity = ConsoleReader.readPositiveInt("Введите вместимость рабочего пространства");
             if (capacity.isEmpty()) return new ArrayList<>();
             else return service.getWorkspacesByCapacity(capacity.get());
         }
 
-        private List<WorkspaceDto> selectByHourlyRate() throws SQLException, SecurityException {
+        private List<WorkspaceDto> selectByHourlyRate() throws SecurityException {
             ConsoleReader.cls();
             Optional<BigDecimal> minRate = ConsoleReader.readPositiveBigDecimal("Введите минимальную часовую стоимость рабочего пространства");
             if (minRate.isEmpty()) return new ArrayList<>();
@@ -549,7 +549,7 @@ public class AdminController {
             return service.getWorkspacesByHourlyRate(minRate.get(), maxRate.get());
         }
 
-        private List<WorkspaceDto> selectByStatus() throws SQLException, SecurityException {
+        private List<WorkspaceDto> selectByStatus() throws SecurityException {
             ConsoleReader.cls();
             Out.println("Выберите статус рабочего пространства: ");
             Out.println("1 - Активно");
@@ -571,7 +571,7 @@ public class AdminController {
          * Выбрать тип рабочего пространства из списка.
          * @return тип рабочего пространства.
          */
-        private Optional<WorkspaceTypesDto> selectWorkspaceType() throws SQLException {
+        private Optional<WorkspaceTypesDto> selectWorkspaceType() {
             ConsoleReader.cls();
             return new ItemsListMenu<>(
                     service.getWorkspaceTypes(),
@@ -582,7 +582,7 @@ public class AdminController {
         /**
          * Просмотреть рабочие пространства.
          */
-        private void viwAll() throws SQLException, SecurityException {
+        private void viwAll() throws SecurityException {
             new ItemsListMenu<>(
                     service.getWorkspacesByName(""),
                     "Все рабочие пространства",
@@ -647,7 +647,7 @@ public class AdminController {
         /**
          * Посмотреть все брони.
          */
-        private void viewAll() throws SQLException, SecurityException {
+        private void viewAll() throws SecurityException {
             List<BookingDto> bookings = service.getBookings();
             new ItemsListMenu<>(bookings, "Все бронирования", BookingDto.getMenuTableHeader()).display();
             ConsoleReader.waitInput();
@@ -656,7 +656,7 @@ public class AdminController {
         /**
          * Посмотреть брони с фильтром по пользователю.
          */
-        private List<BookingDto> selectByUser() throws SQLException, SecurityException {
+        private List<BookingDto> selectByUser() throws SecurityException {
             Optional<UsersDto> user = usersController.select();
             if (user.isPresent()) return service.getBookingsByUserId(user.get().id());
             else return new ArrayList<>();
@@ -665,7 +665,7 @@ public class AdminController {
         /**
          * Посмотреть брони с фильтром по рабочему пространству.
          */
-        private List<BookingDto> selectByWorkspace() throws SQLException, SecurityException {
+        private List<BookingDto> selectByWorkspace() throws SecurityException {
             Optional<WorkspaceDto> workspace = workspaceController.select();
             if (workspace.isPresent()) return service.getBookingsByWorkspaceId(workspace.get());
             else return new ArrayList<>();
@@ -674,7 +674,7 @@ public class AdminController {
         /**
          * Посмотреть брони с фильртом по дате.
          */
-        private List<BookingDto> selectByDate() throws SQLException, SecurityException {
+        private List<BookingDto> selectByDate() throws SecurityException {
             ConsoleReader.cls();
             Optional<Date> minDate = ConsoleReader.readDate("Введите минимальную дату");
             if (minDate.isEmpty()) return new ArrayList<>();
@@ -687,7 +687,7 @@ public class AdminController {
         /**
          * Посмотреть брони с фильтром по статусу.
          */
-        private List<BookingDto> selectByStatus() throws SQLException, SecurityException {
+        private List<BookingDto> selectByStatus() throws SecurityException {
             Optional<BookingStatusesDto> status = selectBookingStatus();
             if (status.isPresent()) return service.getBookingsByStatus(status.get());
             else return new ArrayList<>();
@@ -703,7 +703,7 @@ public class AdminController {
             ConsoleReader.waitInput();
         }
 
-        private Optional<BookingStatusesDto> selectBookingStatus() throws SQLException, SecurityException {
+        private Optional<BookingStatusesDto> selectBookingStatus() throws SecurityException {
             ConsoleReader.cls();
             return new ItemsListMenu<>(service.getBookingStatuses(),
                     "Выберите статус бронирования",
