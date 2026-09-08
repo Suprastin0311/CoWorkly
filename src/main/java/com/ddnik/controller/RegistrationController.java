@@ -1,9 +1,12 @@
 package com.ddnik.controller;
 
+import com.ddnik.AuthorizedUser;
 import com.ddnik.db.Service;
 import com.ddnik.db.dto.UsersDto;
 import com.ddnik.db.entity.Users;
+import com.ddnik.enums.UserRole;
 import com.ddnik.exceptions.ConsoleUserInputException;
+import com.ddnik.exceptions.DatabaseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +21,7 @@ public class RegistrationController {
     private Service service;
 
     RegistrationController() {
-        service = new Service();
+        service = new Service(UserRole.NoAuth);
     }
 
     public boolean start() {
@@ -34,9 +37,9 @@ public class RegistrationController {
                 Out.printlnRed("Пользователь с таким email уже существует.");
                 return false;
             }
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            Out.printlnRed("Возникла ошибка с базой данных.");
+        } catch (DatabaseException e) {
+            logger.error(e.getLocalizedMessage(), e);
+            Out.printlnRed("Ошибка: " + e.getLocalizedMessage());
         }
 
         // Ввод пароля
@@ -61,8 +64,8 @@ public class RegistrationController {
             service.createUser(newUser);
             logger.info("Создан новый пользователь: email - {}, fullName - {}", email, fullName);
             return true;
-        } catch (SQLException e) {
-            logger.error("Ошибка создания пользователя", e);
+        } catch (DatabaseException e) {
+            logger.error(e.getLocalizedMessage(), e);
             return false;
         }
     }

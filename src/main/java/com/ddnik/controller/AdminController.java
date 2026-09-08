@@ -26,7 +26,7 @@ public class AdminController {
     private final Service service;
 
     public AdminController(AuthorizedUser admin) {
-        this.service = new Service();
+        this.service = new Service(admin.role());
         this.admin = admin;
     }
 

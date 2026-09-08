@@ -23,12 +23,14 @@ import java.util.Optional;
 public class Service implements IService {
 
     private static final Logger logger = LoggerFactory.getLogger(Service.class);
-    private IRepository repo;
-    private PriceCalculation calc;
+    private final IRepository repo;
+    private final PriceCalculation calc;
+    private final UserRole role;
 
-    public Service() {
+    public Service(UserRole role) {
         repo = new Repository();
         calc = new PriceCalculation();
+        this.role = role;
     }
 
     public Optional<Long> createUser(Users newUser) {
@@ -68,14 +70,17 @@ public class Service implements IService {
         }
     }
 
-    public List<UsersDto> getUsersByEmail(String email) throws SQLException, SecurityException {
-        List<UsersDto> users = repo.getUsersByEmail(email);
-        logger.debug("Получено {} пользователей с входящей в email подстрокой {}.", users.size(), email);
-        return users;
     public List<UsersDto> getUsersByEmail(String email) throws SecurityException {
+        if (role.equals(UserRole.Admin)) {
+            List<UsersDto> users = repo.getUsersByEmail(email);
+            logger.debug("Получено {} пользователей с входящей в email подстрокой {}.", users.size(), email);
+            return users;
+        }
+        else throw new SecurityException("Недостаточно прав.");
     }
 
-    public List<UsersDto> getUsersByRole(UserRolesDto role) throws SQLException, SecurityException {
+    public List<UsersDto> getUsersByRole(UserRolesDto role) throws SecurityException {
+        if
         List<UsersDto> users = repo.getUsersByRole(role.id());
         logger.debug("Получено {} пользователей с ролью {}.", users.size(), role.name());
         return users;

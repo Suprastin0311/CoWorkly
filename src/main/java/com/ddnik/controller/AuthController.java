@@ -6,6 +6,7 @@ import com.ddnik.SecurityContextHolder;
 import com.ddnik.db.Service;
 import com.ddnik.db.dto.UsersDto;
 import com.ddnik.enums.UserRole;
+import com.ddnik.exceptions.DatabaseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,8 +20,8 @@ public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
-    public static AuthorizedUser auth() throws SQLException {
-        Service service = new Service();
+    public static AuthorizedUser auth() throws DatabaseException {
+        Service service = new Service(UserRole.NoAuth);
         ConsoleReader.cls();
 
         while (true) {
@@ -51,8 +52,7 @@ public class AuthController {
                         }
                     }
                 }
-
-            } catch (SQLException e) {
+            } catch (DatabaseException e) {
                 throw e;
             }
         }

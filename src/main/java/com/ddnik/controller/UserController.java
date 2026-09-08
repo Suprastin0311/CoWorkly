@@ -34,7 +34,7 @@ public class UserController {
 
     public UserController(AuthorizedUser user) {
         this.user = user;
-        this.service = new Service();
+        this.service = new Service(user.role());
     }
 
     public void start() {
