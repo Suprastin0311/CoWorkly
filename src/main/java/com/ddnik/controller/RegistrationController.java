@@ -15,7 +15,7 @@ import java.util.Optional;
 public class RegistrationController {
 
     private static final Logger logger = LoggerFactory.getLogger(RegistrationController.class);
-    private Service service;
+    private final Service service;
 
     RegistrationController() {
         service = new Service(UserRole.NoAuth);

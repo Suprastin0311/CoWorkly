@@ -30,7 +30,7 @@ public class UserController {
 
     private final Service service;
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
-    private AuthorizedUser user;
+    private final AuthorizedUser user;
 
     public UserController(AuthorizedUser user) {
         this.user = user;
