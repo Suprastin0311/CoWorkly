@@ -16,6 +16,7 @@ public class BookingTest {
     private final PriceCalculation calc = new PriceCalculation();
     private final Logger logger = LoggerFactory.getLogger(BookingTest.class);
 
+    //region Стандартные тесты
     @Test
     public void calculatePrice_ShouldReturnsExpectedPrice_OneHourWithoutMultiplier() {
         try {
@@ -99,6 +100,49 @@ public class BookingTest {
             logger.error(e.getMessage(), e);
         }
     }
+    //endregion
 
+    //region Тесты на пограничные значения
+    @Test
+    public void calculatePrice_ShouldReturnZero_HourlyRateIsZero() {
+        try {
+            BigDecimal hourlyRate = new BigDecimal("0.00");
+            BigDecimal multiplier = new BigDecimal("1.00");
+            Timestamp start = Timestamp.valueOf("2026-09-01 10:00:00");
+            Timestamp end = Timestamp.valueOf("2026-09-01 11:00:00");
 
+            assertEquals(new BigDecimal("0.00"), calc.calculatePrice(hourlyRate, multiplier, start, end));
+        } catch (PriceCalculateException e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    @Test
+    public void calculatePrice_ShouldReturnZero_MultiplierIsZero() {
+        try {
+            BigDecimal hourlyRate = new BigDecimal("100.00");
+            BigDecimal multiplier = new BigDecimal("0.00");
+            Timestamp start = Timestamp.valueOf("2026-09-01 10:00:00");
+            Timestamp end = Timestamp.valueOf("2026-09-01 11:00:00");
+
+            assertEquals(new BigDecimal("0.00"), calc.calculatePrice(hourlyRate, multiplier, start, end));
+        } catch (PriceCalculateException e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    @Test
+    public void calculatePrice_ShouldReturnZero_TimeIsZero() {
+        try {
+            BigDecimal hourlyRate = new BigDecimal("100.00");
+            BigDecimal multiplier = new BigDecimal("1.00");
+            Timestamp start = Timestamp.valueOf("2026-09-01 11:00:00");
+            Timestamp end = Timestamp.valueOf("2026-09-01 11:00:00");
+
+            assertEquals(new BigDecimal("0.00"), calc.calculatePrice(hourlyRate, multiplier, start, end));
+        } catch (PriceCalculateException e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+    //endregion
 }
