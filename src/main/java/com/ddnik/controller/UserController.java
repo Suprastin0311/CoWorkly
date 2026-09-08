@@ -41,6 +41,7 @@ public class UserController {
         ConsoleMenu menu = new ConsoleMenu("Вы вошли как Пользователь");
         menu.addItem("Посмотреть свободные рабочие пространства", this::viewFreeWorkspaces);
         menu.addItem("Забронировать рабочее пространство", this::bookWorkspace);
+        menu.addItem("Подтвердить бронь", this::confirmBooking);
         menu.addItem("Просмотреть свои брони", this::view);
         menu.addItem("Отменить бронирование", this::cancelBooking);
         menu.addItem("Выгрузить список броней в файл", () -> report(selectBookingsList()));
@@ -52,7 +53,7 @@ public class UserController {
     /**
      * Просмотреть все свободные рабочие пространства.
      */
-    private void viewFreeWorkspaces() throws SQLException {
+    private void viewFreeWorkspaces() {
         Optional<Filters> filters = getFilters();
         if (filters.isEmpty()) return;
 
@@ -67,7 +68,7 @@ public class UserController {
      * @return список доступных рабочих пространств.
      * @throws SQLException в случае ошибки с базой данных.
      */
-    private List<WorkspaceAvailableDto> getAvailableWorkspaces(Filters filters) throws SQLException {
+    private List<WorkspaceAvailableDto> getAvailableWorkspaces(Filters filters) {
         return service.getWorkspacesAvailableForBooking(
                 filters.startTime(),
                 filters.endTime(),
@@ -80,7 +81,7 @@ public class UserController {
      * @return рабочее пространство.
      * @throws SQLException в случае ошибки с базой данных.
      */
-    private Optional<WorkspaceDto> selectWorkspace(Filters filters) throws SQLException {
+    private Optional<WorkspaceDto> selectWorkspace(Filters filters) {
         return selectAvailableWorkspace(filters).map(WorkspaceAvailableDto::toWorkspaceDto);
     }
 
@@ -89,7 +90,7 @@ public class UserController {
      * @return доступное рабочее пространство.
      * @throws SQLException в случае ошибки с базой данных.
      */
-    private Optional<WorkspaceAvailableDto> selectAvailableWorkspace(Filters filters) throws SQLException {
+    private Optional<WorkspaceAvailableDto> selectAvailableWorkspace(Filters filters) {
         return new ItemsListMenu<>(
                 getAvailableWorkspaces(filters),
                 "Выберите рабочее пространство из доступных",
@@ -101,7 +102,7 @@ public class UserController {
      * @return введённые фильтры.
      * @throws SQLException в случае ошибки на уровне базы данных.
      */
-    private Optional<Filters> getFilters() throws SQLException {
+    private Optional<Filters> getFilters() {
         ConsoleReader.cls();
         Optional<WorkspaceTypesDto> type = selectWorkspaceType();
         if (type.isEmpty()) return Optional.empty();
@@ -144,7 +145,7 @@ public class UserController {
      * @return параметры бронирования.
      * @throws SQLException в случае ошибки на уровне базы данных.
      */
-    private Optional<Filters> getBookingCommandFilters() throws SQLException {
+    private Optional<Filters> getBookingCommandFilters() {
         ConsoleReader.cls();
         Optional<WorkspaceTypesDto> type = selectWorkspaceType();
         if (type.isEmpty()) return Optional.empty();
@@ -178,7 +179,7 @@ public class UserController {
     /**
      * Забронировать.
      */
-    private void bookWorkspace() throws SQLException {
+    private void bookWorkspace()  {
         Optional<Filters> filters = getBookingCommandFilters();
         if (filters.isEmpty()) return;
 
@@ -202,9 +203,29 @@ public class UserController {
     }
 
     /**
+     * Подтвердить бронирование.
+     */
+    private void confirmBooking() {
+        Optional<BookingDto> booking = selectBooking(service.getBookingsPendingPayment(user.id()));
+        if (booking.isEmpty()) {
+            Out.printlnYellow("Не удалось выбрать бронирование.");
+            ConsoleReader.waitInput();
+        }
+        else {
+            Optional<Boolean> confirmResult = service.confirmBooking(booking.get().id());
+            if (confirmResult.isPresent()) {
+                if (confirmResult.get()) Out.printlnGreen("Бронирование подтверждено успешно.");
+                else Out.printlnRed("Не удалось подтвердить бронирование.");
+                ConsoleReader.waitInput();
+            }
+            else Out.printlnRed("Не удалось выполнить операцию.");
+        }
+    }
+
+    /**
      * Отменить бронирование.
      */
-    private void cancelBooking() throws SQLException {
+    private void cancelBooking() {
         Optional<BookingDto> booking = selectBooking(selectBookingsList());
         if (booking.isEmpty()) {
             Out.printlnYellow("Не удалось выбрать бронирование.");
@@ -262,6 +283,10 @@ public class UserController {
                 BookingDto.getMenuTableHeader()).start();
     }
 
+    /**
+     * Выбрать список бронирований по фильтрам.
+     * @return список бронирований.
+     */
     private List<BookingDto> selectBookingsList() {
         AtomicReference<List<BookingDto>> result = new AtomicReference<>();
 
@@ -293,7 +318,7 @@ public class UserController {
      * Просмотреть все бронирования.
      * @return список бронирований.
      */
-    private List<BookingDto> selectAllBookings() throws SQLException {
+    private List<BookingDto> selectAllBookings() {
         return service.getBookingsByUserId(user.id());
     }
 
@@ -301,7 +326,7 @@ public class UserController {
      * Просмотреть бронирования с фильтром по статусу.
      * @return список бронирований.
      */
-    private List<BookingDto> selectBookingsByStatus() throws SQLException {
+    private List<BookingDto> selectBookingsByStatus() {
         Optional<BookingStatusesDto> status = new ItemsListMenu<>(
                 service.getBookingStatuses(),
                 "Выберите статус",
@@ -315,7 +340,7 @@ public class UserController {
      * Просмотреть бронирования с фильтром по рабочему пространству.
      * @return список бронирований.
      */
-    private List<BookingDto> selectBookingsByWorkspace() throws SQLException {
+    private List<BookingDto> selectBookingsByWorkspace() {
         Optional<WorkspaceDto> workspace = new ItemsListMenu<>(
                 service.getWorkspaces(),
                 "Выберите рабочее пространство",
@@ -329,7 +354,7 @@ public class UserController {
      * Получить бронирования с фильтром по датам
      * @return список бронирований.
      */
-    private List<BookingDto> selectBookingsByCreatedAt() throws SQLException {
+    private List<BookingDto> selectBookingsByCreatedAt() {
         Optional<Date> min = ConsoleReader.readDate("Введите минимальную дату");
         if (min.isEmpty()) return new ArrayList<>();
 
@@ -373,7 +398,7 @@ public class UserController {
      * Выбрать тип рабочего пространства из списка.
      * @return тип рабочего пространства.
      */
-    private Optional<WorkspaceTypesDto> selectWorkspaceType() throws SQLException {
+    private Optional<WorkspaceTypesDto> selectWorkspaceType() {
         ConsoleReader.cls();
         return new ItemsListMenu<>(
                 service.getWorkspaceTypes(),

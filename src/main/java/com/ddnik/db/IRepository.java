@@ -76,6 +76,10 @@ public interface IRepository {
 
     List<BookingDto> getBookingsByCreatedAt(long userId, Date minDate, Date maxDate);
 
+    List<BookingDto> getBookingsPendingPayment();
+
+    List<BookingDto> getBookingsPendingPayment(long userId);
+
     List<WorkspaceTypesDto> getWorkspaceTypes();
 
     List<BookingStatusesDto> getBookingStatuses();

@@ -626,14 +626,21 @@ public class Repository implements IRepository {
         }
     }
 
-    public List<BookingDto> getUserBookingsByCreatedAt(long userId, Date start, Date end) {
+    public List<BookingDto> getBookingsPendingPayment() {
         try (Connection conn = DataSource.getConnection();
-            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings(?, ?, ?, ?, ?)")) {
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings_pending_payment(?)")) {
+            ps.setNull(1, Types.BIGINT);
+
+            return executeQueryAndBuildBookingDtoList(ps);
+        } catch (SQLException e) {
+            throw new DatabaseException("Бронирования не найдены.", e);
+        }
+    }
+
+    public List<BookingDto> getBookingsPendingPayment(long userId) {
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_bookings_pending_payment(?)")) {
             ps.setLong(1, userId);
-            ps.setNull(2, Types.BIGINT);
-            ps.setNull(3, Types.BIGINT);
-            ps.setDate(4, start);
-            ps.setDate(5, end);
 
             return executeQueryAndBuildBookingDtoList(ps);
         } catch (SQLException e) {

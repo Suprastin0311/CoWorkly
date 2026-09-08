@@ -298,15 +298,21 @@ public interface IService {
      */
     List<BookingDto> getBookingsByCreatedAt(long userId, Date minDate, Date maxDate) throws UserRoleSecurityException;
 
+
     /**
-     * Получает список броней пользователя с фильтром по времени.
-     * @param userId код пользователя.
-     * @param start время начала брони.
-     * @param end время окончания брони.
-     * @return список броней.
+     * Получает список бронирований, ожидающий подтверждения.
+     * @return список бронирований.
      * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
      */
-    List<BookingDto> getUserBookingsByTime(long userId, Date start, Date end) throws UserRoleSecurityException;
+    List<BookingDto> getBookingsPendingPayment() throws UserRoleSecurityException;
+
+    /**
+     * Получает список бронирований, ожидающий подтверждения.
+     * @param userId код пользователя.
+     * @return список бронирований.
+     * @throws UserRoleSecurityException если у пользователя недостаточно прав доступа.
+     */
+    List<BookingDto> getBookingsPendingPayment(long userId) throws UserRoleSecurityException;
 
     /**
      * Получает справочник типов рабочего пространства.
