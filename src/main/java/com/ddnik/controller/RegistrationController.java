@@ -1,17 +1,14 @@
 package com.ddnik.controller;
 
-import com.ddnik.AuthorizedUser;
 import com.ddnik.db.Service;
 import com.ddnik.db.dto.UsersDto;
 import com.ddnik.db.entity.Users;
 import com.ddnik.enums.UserRole;
-import com.ddnik.exceptions.ConsoleUserInputException;
 import com.ddnik.exceptions.DatabaseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Date;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Optional;
 

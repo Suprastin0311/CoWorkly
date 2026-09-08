@@ -10,11 +10,7 @@ import com.ddnik.exceptions.DatabaseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.text.html.Option;
-import java.io.Console;
-import java.sql.SQLException;
 import java.util.Optional;
-import java.util.Scanner;
 
 public class AuthController {
 

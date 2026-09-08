@@ -1,6 +1,5 @@
 package com.ddnik.db;
 
-import com.ddnik.AuthorizedUser;
 import com.ddnik.db.dto.*;
 import com.ddnik.db.entity.*;
 import com.ddnik.exceptions.DatabaseException;

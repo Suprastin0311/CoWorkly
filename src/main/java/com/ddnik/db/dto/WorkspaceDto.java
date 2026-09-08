@@ -1,7 +1,5 @@
 package com.ddnik.db.dto;
 
-import com.ddnik.db.entity.Workspaces;
-
 import java.math.BigDecimal;
 import java.util.Objects;
 

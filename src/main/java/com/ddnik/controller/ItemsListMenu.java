@@ -1,10 +1,7 @@
 package com.ddnik.controller;
 
 import com.ddnik.db.dto.IDto;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.Console;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -17,8 +14,6 @@ public class ItemsListMenu<T extends IDto> {
     private final List<T> items;
     private final String message;
     private final String tableHeader;
-
-    private final Logger logger = LoggerFactory.getLogger(ItemsListMenu.class);
 
     public ItemsListMenu(List<T> items,
                          String message,
