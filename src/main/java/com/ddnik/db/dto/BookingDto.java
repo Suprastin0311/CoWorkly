@@ -1,7 +1,7 @@
 package com.ddnik.db.dto;
 
 import java.math.BigDecimal;
-import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.Objects;
 
 public record BookingDto (
@@ -13,12 +13,12 @@ public record BookingDto (
         String userFullName,
         String workspaceTypeName,
         String workspaceName,
-        Date startTime,
-        Date endTime,
+        Timestamp startTime,
+        Timestamp endTime,
         int participantsCount,
         String status,
         BigDecimal price,
-        Date createdAt
+        Timestamp createdAt
 ) implements IDto {
 
     public BookingDto {

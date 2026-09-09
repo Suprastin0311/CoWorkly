@@ -729,12 +729,12 @@ public class Repository implements IRepository {
                         rs.getString("user_full_name"),
                         rs.getString("workspace_type"),
                         rs.getString("workspace_name"),
-                        rs.getDate("start_time"),
-                        rs.getDate("end_time"),
+                        rs.getTimestamp("start_time"),
+                        rs.getTimestamp("end_time"),
                         rs.getInt("participants_count"),
                         rs.getString("status"),
                         rs.getBigDecimal("price"),
-                        rs.getDate("created_at")
+                        rs.getTimestamp("created_at")
                 ));
             }
             logger.debug("Из таблицы bookings извлечено {} записей.", result.size());
