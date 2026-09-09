@@ -1,6 +1,6 @@
 package com.ddnik.controller;
 
-import com.ddnik.AuthorizedUser;
+import com.ddnik.SecurityContextHolder;
 import com.ddnik.db.Service;
 import com.ddnik.db.dto.*;
 import com.ddnik.db.entity.*;
@@ -19,15 +19,11 @@ import java.util.concurrent.atomic.AtomicReference;
 public class AdminController {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
-    /**
-     * Данные авторизованного пользователя
-     */
-    private final AuthorizedUser admin;
+
     private final Service service;
 
-    public AdminController(AuthorizedUser admin) {
-        this.service = new Service(admin.role());
-        this.admin = admin;
+    public AdminController() {
+        this.service = new Service(SecurityContextHolder.getLoggedUser().role());
     }
 
     /**

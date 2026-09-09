@@ -1,6 +1,6 @@
 package com.ddnik.controller;
 
-import com.ddnik.AuthorizedUser;
+import com.ddnik.SecurityContextHolder;
 import com.ddnik.db.Service;
 import com.ddnik.db.dto.*;
 import com.ddnik.model.*;
@@ -30,11 +30,9 @@ public class UserController {
 
     private final Service service;
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
-    private final AuthorizedUser user;
 
-    public UserController(AuthorizedUser user) {
-        this.user = user;
-        this.service = new Service(user.role());
+    public UserController() {
+        this.service = new Service(SecurityContextHolder.getLoggedUser().role());
     }
 
     public void start() {
@@ -186,7 +184,7 @@ public class UserController {
             return;
         }
 
-        Optional<UsersDto> currentUser = service.getUserByEmail(user.email());
+        Optional<UsersDto> currentUser = service.getUserByEmail(SecurityContextHolder.getLoggedUser().email());
         if (currentUser.isEmpty()) {
             Out.printlnRed("Для бронирования рабочего пространства необходимо авторизоваться.");
             return;
@@ -203,7 +201,7 @@ public class UserController {
      * Подтвердить бронирование.
      */
     private void confirmBooking() {
-        Optional<BookingDto> booking = selectBooking(service.getBookingsPendingPayment(user.id()));
+        Optional<BookingDto> booking = selectBooking(service.getBookingsPendingPayment(SecurityContextHolder.getLoggedUser().id()));
         if (booking.isEmpty()) {
             Out.printlnYellow("Не удалось выбрать бронирование.");
             ConsoleReader.waitInput();
@@ -316,7 +314,7 @@ public class UserController {
      * @return список бронирований.
      */
     private List<BookingDto> selectAllBookings() {
-        return service.getBookingsByUserId(user.id());
+        return service.getBookingsByUserId(SecurityContextHolder.getLoggedUser().id());
     }
 
     /**
@@ -330,7 +328,7 @@ public class UserController {
                 BookingStatusesDto.getMenuTableHeader()).start();
         if (status.isEmpty()) new ArrayList<>();
 
-        return service.getBookingsByStatus(user.id(), status.get());
+        return service.getBookingsByStatus(SecurityContextHolder.getLoggedUser().id(), status.get());
     }
 
     /**
@@ -344,7 +342,7 @@ public class UserController {
                 WorkspaceDto.getMenuTableHeader()).start();
         if (workspace.isEmpty()) return new ArrayList<>();
 
-        return service.getBookingsByWorkspaceId(user.id(), workspace.get());
+        return service.getBookingsByWorkspaceId(SecurityContextHolder.getLoggedUser().id(), workspace.get());
     }
 
     /**
@@ -358,7 +356,7 @@ public class UserController {
         Optional<Date> max = ConsoleReader.readDate("Введите максимальную дату");
         if (max.isEmpty()) return new ArrayList<>();
 
-        return service.getBookingsByCreatedAt(user.id(), min.get(), max.get());
+        return service.getBookingsByCreatedAt(SecurityContextHolder.getLoggedUser().id(), min.get(), max.get());
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.ddnik.controller;
 
 import com.ddnik.AuthorizedUser;
+import com.ddnik.SecurityContextHolder;
 import com.ddnik.enums.UserRole;
 import com.ddnik.exceptions.DatabaseException;
 import org.slf4j.Logger;
@@ -52,6 +53,7 @@ public class MainController {
                     UserController uc = new UserController();
                     uc.start();
                 }
+                default -> SecurityContextHolder.clear();
             }
 
         } catch (DatabaseException e) {
