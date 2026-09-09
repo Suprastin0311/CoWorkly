@@ -30,6 +30,9 @@ public class AdminController {
         this.admin = admin;
     }
 
+    /**
+     * Запуск меню администратора.
+     */
     public void start() {
         ConsoleMenu menu = new ConsoleMenu("Вы вошли как Администратор");
         menu.addItem("Пользователи", this::users);

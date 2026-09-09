@@ -7,7 +7,20 @@ import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.Objects;
 
+/**
+ * Рассчитывает стоимость бронирования.
+ */
 public class PriceCalculation {
+
+    /**
+     * Рассчитать стоимость бронирования.
+     * @param hourlyRate часовая стоимость рабочего пространства.
+     * @param multiplier множитель стоимости.
+     * @param start дата и время начала бронирования.
+     * @param end дата и время окончания бронирования.
+     * @return стоимость бронирования.
+     * @throws PriceCalculateException в случае ошибки при выполнении расчётов.
+     */
     public BigDecimal calculatePrice(BigDecimal hourlyRate, BigDecimal multiplier, Timestamp start, Timestamp end) throws PriceCalculateException {
         // Проверка на то, что параметры не null
         try {

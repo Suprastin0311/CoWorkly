@@ -3,7 +3,7 @@ package com.ddnik.exceptions;
 import com.ddnik.enums.UserRole;
 
 /**
- * Исключение, выбрасываемое сервисом в случае, если у авторизованного пользователя недостаточно прав для выполнения операции.
+ * Выбрасывается сервисом в случае, если у авторизованного пользователя недостаточно прав для выполнения операции.
  */
 public class UserRoleSecurityException extends SecurityException {
     private final UserRole currentUserRole;

@@ -12,6 +12,9 @@ import java.sql.Date;
 import java.time.Instant;
 import java.util.Optional;
 
+/**
+ * Контроллер меню регистрации нового пользователя.
+ */
 public class RegistrationController {
 
     private static final Logger logger = LoggerFactory.getLogger(RegistrationController.class);
@@ -21,6 +24,12 @@ public class RegistrationController {
         service = new Service(UserRole.NoAuth);
     }
 
+    /**
+     * Запуск меню.
+     * @return признак авторизации:<br>
+     * <code>true</code> - регистрация прошла успешно.<br>
+     * <code>false</code> - регистрация не удалась.
+     */
     public boolean start() {
         ConsoleReader.cls();
         Out.println("Регистрация\n");

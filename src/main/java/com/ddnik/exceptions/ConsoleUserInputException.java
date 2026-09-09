@@ -3,7 +3,7 @@ package com.ddnik.exceptions;
 import com.ddnik.enums.UserRole;
 
 /**
- * Исключение, выбрасываемое при работе с консольным меню: ввод несуществующего пункта меню, ошибочный ввод и пр.
+ * Выбрасывается при работе с консольным меню: ввод несуществующего пункта меню, ошибочный ввод и пр.
  */
 public class ConsoleUserInputException extends Exception {
 

@@ -1,5 +1,8 @@
 package com.ddnik.exceptions;
 
+/**
+ * Выбрасывается в случае ошибки базы данных.
+ */
 public class DatabaseException extends RuntimeException {
     public DatabaseException(String message) {
         super(message);

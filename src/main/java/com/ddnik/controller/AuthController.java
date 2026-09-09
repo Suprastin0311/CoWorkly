@@ -6,7 +6,6 @@ import com.ddnik.SecurityContextHolder;
 import com.ddnik.db.Service;
 import com.ddnik.db.dto.UsersDto;
 import com.ddnik.enums.UserRole;
-import com.ddnik.exceptions.DatabaseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +15,11 @@ public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
-    public static AuthorizedUser auth() throws DatabaseException {
+    /**
+     * Авторизация пользователя.
+     * @return данные авторизованного пользователя.
+     */
+    public static AuthorizedUser auth() {
         Service service = new Service(UserRole.NoAuth);
         ConsoleReader.cls();
 

@@ -1,5 +1,8 @@
 package com.ddnik.exceptions;
 
+/**
+ * Выбрасывается в случае ошибки при расчёте стоимости бронирования.
+ */
 public class PriceCalculateException extends RuntimeException {
     public PriceCalculateException(String message) {
         super(message);

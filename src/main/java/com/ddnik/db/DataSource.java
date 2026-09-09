@@ -6,6 +6,9 @@ import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+/**
+ * Реализует подключение к БД через HikariCP.
+ */
 public class DataSource {
     private static HikariConfig conf = new HikariConfig("db.properties");
     private static HikariDataSource ds = new HikariDataSource(conf);

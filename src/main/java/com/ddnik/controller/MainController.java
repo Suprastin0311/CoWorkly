@@ -6,10 +6,16 @@ import com.ddnik.exceptions.DatabaseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Главный контроллер приложения.
+ */
 public class MainController {
 
     private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 
+    /**
+     * Запуск главного меню.
+     */
     public void start() {
         ConsoleReader.cls();
         ConsoleMenu menu = new ConsoleMenu("Добро пожаловать в CoWorkly!");
@@ -20,6 +26,9 @@ public class MainController {
         menu.start();
     }
 
+    /**
+     * Авторизация в системе.
+     */
     private void login() {
         try {
             AuthorizedUser user = AuthController.auth();
@@ -36,11 +45,11 @@ public class MainController {
                     Out.printlnRed("Не удалось авторизоваться.");
                 }
                 case UserRole.Admin -> {
-                    AdminController ac = new AdminController(user);
+                    AdminController ac = new AdminController();
                     ac.start();
                 }
                 case UserRole.User -> {
-                    UserController uc = new UserController(user);
+                    UserController uc = new UserController();
                     uc.start();
                 }
             }
@@ -51,6 +60,9 @@ public class MainController {
         }
     }
 
+    /**
+     * Регистрация в системе.
+     */
     private void registration() {
         RegistrationController regController = new RegistrationController();
         if (regController.start()) Out.printlnGreen("Регистрация прошла успешно!");

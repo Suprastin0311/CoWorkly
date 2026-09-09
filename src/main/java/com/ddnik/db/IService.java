@@ -11,6 +11,9 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Реализует бизнес логику между интерфейсом и репозиторием.
+ */
 public interface IService {
 
     /**
