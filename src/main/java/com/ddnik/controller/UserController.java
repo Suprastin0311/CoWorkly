@@ -184,13 +184,7 @@ public class UserController {
             return;
         }
 
-        Optional<UsersDto> currentUser = service.getUserByEmail(SecurityContextHolder.getLoggedUser().email());
-        if (currentUser.isEmpty()) {
-            Out.printlnRed("Для бронирования рабочего пространства необходимо авторизоваться.");
-            return;
-        }
-
-        Optional<Long> newBookingId = service.createBooking(currentUser.get().id(), workspace.get(), filters.get());
+        Optional<Long> newBookingId = service.createBooking(SecurityContextHolder.getLoggedUser().id(), workspace.get(), filters.get());
 
         if (newBookingId.isPresent()) Out.printlnGreen("Бронь создана успешно!");
         else Out.printlnRed("Не удалось забронировать рабочее пространство.");
