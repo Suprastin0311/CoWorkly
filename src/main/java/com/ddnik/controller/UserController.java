@@ -15,6 +15,7 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.chrono.ChronoLocalDate;
@@ -156,8 +157,9 @@ public class UserController {
 
         Optional<Date> date = inputBookingDate();
         if (date.isEmpty()) return Optional.empty();
+        boolean isToday = Date.valueOf(LocalDate.now()).equals(date.get());
 
-        Optional<Time> startTime = inputBookingStartTime();
+        Optional<Time> startTime = inputBookingStartTime(isToday);
         if (startTime.isEmpty()) return Optional.empty();
 
         Optional<Time> endTime = inputBookingEndTime(startTime.get());
@@ -412,14 +414,15 @@ public class UserController {
 
     /**
      * Ввод времени начала бронирования.
+     * @param isToday если дата бронирования - текущий день.
      * @return время начала бронирования [чч:мм].
      */
-    private Optional<Time> inputBookingStartTime() {
+    private Optional<Time> inputBookingStartTime(boolean isToday) {
         Optional<Time> startTime;
         while (true) {
             startTime = ConsoleReader.readTime("Введите время начала брони");
             if (startTime.isEmpty()) return Optional.empty();
-            if (!startTime.get().after(Time.valueOf(LocalTime.now())))
+            if (isToday && !startTime.get().after(Time.valueOf(LocalTime.now())))
                 Out.printlnYellow("Время начала должно быть позже текущего времени.");
             else return startTime;
         }
