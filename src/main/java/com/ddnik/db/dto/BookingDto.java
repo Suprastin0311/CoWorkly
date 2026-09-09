@@ -39,7 +39,7 @@ public record BookingDto (
 
     @Override
     public String toMenuTableRow() {
-        return String.format("%s | %s | %tF%<tR | %tF%<tR | %s | %d | %s | %,3.2f | %tF%<tR", workspaceTypeName, workspaceName, startTime, endTime, userEmail, participantsCount, status, price, createdAt);
+        return String.format("%s | %s | %tF %<tk:%<tM | %tF %<tk:%<tM | %s | %d | %s | %,3.2f | %tF %<tk:%<tM", workspaceTypeName, workspaceName, startTime, endTime, userEmail, participantsCount, status, price, createdAt);
     }
 
     public String[] toCSVRow() {
