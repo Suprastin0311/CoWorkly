@@ -42,12 +42,12 @@ public class ConsoleUserInputException extends Exception {
     public ConsoleUserInputException(String message, Throwable cause) {
         super(message, cause);
         this.mode = "unknown";
-        this.role = UserRole.NoAuth;
+        this.role = UserRole.Guest;
     }
 
     public ConsoleUserInputException(String message) {
         super(message);
         this.mode = "unknown";
-        this.role = UserRole.NoAuth;
+        this.role = UserRole.Guest;
     }
 }

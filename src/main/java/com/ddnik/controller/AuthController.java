@@ -20,18 +20,18 @@ public class AuthController {
      * @return данные авторизованного пользователя.
      */
     public static AuthorizedUser auth() {
-        Service service = new Service(UserRole.NoAuth);
+        Service service = new Service(UserRole.Guest);
         ConsoleReader.cls();
 
         while (true) {
             Optional<String> email = ConsoleReader.readEmail();
-            if (email.isEmpty()) return new AuthorizedUser(-1L, "", "",  UserRole.NoAuth, true);
+            if (email.isEmpty()) return new AuthorizedUser(-1L, "", "",  UserRole.Guest, true);
 
             Optional<UsersDto> user = service.getUserByEmail(email.get());
             if (user.isEmpty()) Out.printlnRed("Пользователь не найден.");
             else {
                 Optional<String> password = ConsoleReader.readString("Password");
-                if (password.isEmpty()) return new AuthorizedUser(-1L, "", "", UserRole.NoAuth, true);
+                if (password.isEmpty()) return new AuthorizedUser(-1L, "", "", UserRole.Guest, true);
 
                 if (!PasswordHasher.checkPassword(password.get(), user.get().passwordHash()))
                     Out.printlnRed("Неверный пароль.");

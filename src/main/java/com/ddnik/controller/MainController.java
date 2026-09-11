@@ -42,7 +42,7 @@ public class MainController {
             }
 
             switch (user.role()) {
-                case UserRole.NoAuth -> {
+                case UserRole.Guest -> {
                     Out.printlnRed("Не удалось авторизоваться.");
                 }
                 case UserRole.Admin -> {

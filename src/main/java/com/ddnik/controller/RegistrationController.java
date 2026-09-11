@@ -21,7 +21,7 @@ public class RegistrationController {
     private final Service service;
 
     RegistrationController() {
-        service = new Service(UserRole.NoAuth);
+        service = new Service(UserRole.Guest);
     }
 
     /**
