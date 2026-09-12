@@ -4,8 +4,11 @@ import com.ddnik.exceptions.ConsoleUserInputException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Console;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -24,6 +27,11 @@ import java.util.regex.Pattern;
  * Содержит константы и методы работы с консолью.
  */
 public class ConsoleReader {
+
+    /**
+     * Один сканнер для считывания консольного ввода.
+     */
+    private static final Scanner SCANNER = createScanner();
 
     /**
      * Константа с маской для ввода email
@@ -48,6 +56,16 @@ public class ConsoleReader {
 
 
     private static final Logger logger = LoggerFactory.getLogger(ConsoleReader.class);
+
+    public static Scanner createScanner() {
+        Console console = System.console();
+
+        if (console != null) {
+            return new Scanner(console.reader());
+        }
+
+        return new Scanner(System.in, StandardCharsets.UTF_8);
+    }
 
     /**
      * Валидация Email
@@ -302,7 +320,7 @@ public class ConsoleReader {
      */
     private static String inputString() throws ConsoleUserInputException {
         try {
-            String input = new Scanner(System.in).nextLine().trim();
+            String input = SCANNER.nextLine().trim();
             if (input.isBlank()) throw new ConsoleUserInputException("Ошибка: введена пустая строка.");
             else return input;
         } catch (NoSuchElementException e) {
