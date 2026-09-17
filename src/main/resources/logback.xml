@@ -1,10 +1,10 @@
 <configuration>
+    <property name="LOG_DIR" value="logs" />
+
     <statusListener class="ch.qos.logback.core.status.OnFileStatusListener">
-        <fileName>CoWorkly_Debug_Logback.log</fileName>
+        <fileName>${LOG_DIR}/Logback.log</fileName>
     </statusListener>
 
-    <property name="LOG_DIR" value="logs" />
-    
     <appender name="Flyway" class="ch.qos.logback.core.FileAppender">
         <file>${LOG_DIR}/Flyway.log</file>
         <encoder>
