@@ -2,9 +2,11 @@
     <statusListener class="ch.qos.logback.core.status.OnFileStatusListener">
         <fileName>CoWorkly_Debug_Logback.log</fileName>
     </statusListener>
+
+    <property name="LOG_DIR" value="logs" />
     
     <appender name="Flyway" class="ch.qos.logback.core.FileAppender">
-        <file>CoWorkly_Debug_Flyway.log</file>
+        <file>${LOG_DIR}/Flyway.log</file>
         <encoder>
             <pattern>%d{yyyy.MM.dd HH:mm:ss.SSS} [%thread] %-5level %logger{60} - %msg%n</pattern>
         </encoder>
@@ -18,8 +20,16 @@
         </encoder>
     </appender>
 
-    <appender name="Debug-HikariCP" class="ch.qos.logback.core.FileAppender">
-        <file>CoWorkly_Debug_HikariCP.log</file>
+    <appender name="Release" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG_DIR}/application.log</file>
+        <append>true</append>
+        <encoder>
+            <pattern>%d{yyyy.MM.dd HH:mm:ss.SSS} [%thread] %-5level %logger{60} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="HikariCP" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG_DIR}/HikariCP.log</file>
         <append>true</append>
         <encoder>
             <pattern>%d{yyyy.MM.dd HH:mm:ss.SSS} [%thread] %-5level %logger{60} - %msg%n</pattern>
@@ -27,16 +37,8 @@
     </appender>
 
     <appender name="Tests" class="ch.qos.logback.core.FileAppender">
-        <file>CoWorkly_Tests.log</file>
+        <file>${LOG_DIR}/tests.log</file>
         <append>false</append>
-        <encoder>
-            <pattern>%d{yyyy.MM.dd HH:mm:ss.SSS} [%thread] %-5level %logger{60} - %msg%n</pattern>
-        </encoder>
-    </appender>
-
-    <appender name="Compile" class="ch.qos.logback.core.FileAppender">
-        <file>CoWorkly.log</file>
-        <append>true</append>
         <encoder>
             <pattern>%d{yyyy.MM.dd HH:mm:ss.SSS} [%thread] %-5level %logger{60} - %msg%n</pattern>
         </encoder>
@@ -47,7 +49,7 @@
 
     <!-- Оставить только важное от HikariCP -->
     <logger name="com.zaxxer.hikari" level="INFO" additivity="false">
-        <appender-ref ref="Debug-HikariCP"/>
+        <appender-ref ref="HikariCP"/>
     </logger>
 
     <!-- Вынести логи для миграций в отдельный файл -->
@@ -62,7 +64,7 @@
 
     <!-- <logger name="com.ddnik.tests" level="WARN" -->
     <root level="INFO">
-        <appender-ref ref="Debug" />
+        <appender-ref ref="Release" />
 
 <!--        Для релиза заменить на-->
 <!--        <appender-ref ref="Compile"/>-->
