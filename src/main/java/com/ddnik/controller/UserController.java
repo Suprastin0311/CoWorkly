@@ -112,49 +112,6 @@ public class UserController {
             if (participantsCount.isEmpty()) return Optional.empty();
         }
 
-        Optional<Date> date = ConsoleReader.readDate("Введите дату бронирования");
-        if (date.isEmpty()) return Optional.empty();
-
-        Optional<Time> startTime = ConsoleReader.readTime("Введите время начала брони");
-        if (startTime.isEmpty()) return Optional.empty();
-
-        boolean repeat = true;
-        Optional<Time> endTime = startTime;
-        while (repeat) {
-            endTime = ConsoleReader.readTime("Введите время окончания брони");
-            if (endTime.isEmpty()) return Optional.empty();
-            if (endTime.get().before(startTime.get()))
-                Out.printlnYellow("Дата окончания не может быть раньше даты начала.");
-            else repeat = false;
-        }
-
-        return Optional.of(new Filters (
-                type.get(),
-                participantsCount.get(),
-                Timestamp.valueOf(LocalDateTime.of(date.get().toLocalDate(), startTime.get().toLocalTime())),
-                Timestamp.valueOf(LocalDateTime.of(date.get().toLocalDate(), endTime.get().toLocalTime()))
-        ));
-    }
-
-    /**
-     * Составить параметры бронирования.
-     * @return параметры бронирования.
-     * @throws SQLException в случае ошибки на уровне базы данных.
-     */
-    private Optional<Filters> getBookingCommandFilters() {
-        ConsoleReader.cls();
-        Optional<WorkspaceTypesDto> type = selectWorkspaceType();
-        if (type.isEmpty()) return Optional.empty();
-
-        Optional<Integer> participantsCount;
-        if (type.get().minParticipantsCount() == type.get().maxParticipantsCount())
-            participantsCount = Optional.of(type.get().maxParticipantsCount());
-        else {
-            participantsCount = ConsoleReader.readIntInRange("Укажите количество человек",
-                    type.get().minParticipantsCount(), type.get().maxParticipantsCount());
-            if (participantsCount.isEmpty()) return Optional.empty();
-        }
-
         Optional<Date> date = inputBookingDate();
         if (date.isEmpty()) return Optional.empty();
         boolean isToday = Date.valueOf(LocalDate.now()).equals(date.get());
@@ -177,7 +134,7 @@ public class UserController {
      * Забронировать.
      */
     private void bookWorkspace()  {
-        Optional<Filters> filters = getBookingCommandFilters();
+        Optional<Filters> filters = getFilters();
         if (filters.isEmpty()) return;
 
         Optional<WorkspaceDto> workspace = selectWorkspace(filters.get());
