@@ -1,0 +1,57 @@
+package com.ddnik.controller;
+
+import com.ddnik.db.dto.IDto;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
+/**
+ * Универсальное консольное меню для выбора элемента из списка Dto.
+ */
+public class ItemsListMenu<T extends IDto> {
+
+    private final List<T> items;
+    private final String message;
+    private final String tableHeader;
+
+    public ItemsListMenu(List<T> items,
+                         String message,
+                         String tableHeader) {
+        this.items = Objects.requireNonNull(items);
+        this.message = Objects.requireNonNull(message);
+        this.tableHeader = Objects.requireNonNull(tableHeader);
+    }
+
+    /**
+     * Запускает работу меню выбора элемента.
+     * @return выбранный из списка элемент.
+     */
+    public Optional<T> start() {
+        boolean isRunning = true;
+        int selectedItemIndex = 1;
+        while (isRunning) {
+            display();
+            Out.printlnYellow("0 - Назад");
+            selectedItemIndex = ConsoleReader.chooseMenuItem(0, items.size());
+
+            if (selectedItemIndex == 0) return Optional.empty();
+            else isRunning = false;
+        }
+        return Optional.of(items.get(selectedItemIndex-1));
+    }
+
+    /**
+     * Выводит таблицу элементов списка.
+     */
+    public void display() {
+        ConsoleReader.cls();
+        Out.printlnCyan(message + "\n");
+        Out.println(tableHeader);
+        int i = 1;
+        for (IDto item : items) {
+            Out.println(i + " | " + item.toMenuTableRow());
+            i++;
+        }
+    }
+}

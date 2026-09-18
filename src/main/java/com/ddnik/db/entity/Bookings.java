@@ -1,0 +1,32 @@
+package com.ddnik.db.entity;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Objects;
+
+public record Bookings(
+        Long id,
+        long userId,
+        long workspaceId,
+        Timestamp startTime,
+        Timestamp endTime,
+        int participantsCount,
+        Long statusId,
+        BigDecimal price,
+        Timestamp createdAt
+) {
+
+    public Bookings {
+        Objects.requireNonNull(startTime);
+        Objects.requireNonNull(endTime);
+        Objects.requireNonNull(price);
+    }
+
+    public Bookings (long userId, long workspaceId, Timestamp startTime, Timestamp endTime, int participantsCount, long statusId, BigDecimal price, Timestamp createdAt) {
+        this(null, userId, workspaceId, startTime, endTime, participantsCount, statusId, price, createdAt);
+    }
+
+    public Bookings (long userId, long workspaceId, Timestamp startTime, Timestamp endTime, int participantsCount, BigDecimal price) {
+        this(null, userId, workspaceId, startTime, endTime, participantsCount, null, price, null);
+    }
+}

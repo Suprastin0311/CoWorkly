@@ -1,0 +1,72 @@
+<configuration>
+    <property name="LOG_DIR" value="logs" />
+
+    <statusListener class="ch.qos.logback.core.status.OnFileStatusListener">
+        <fileName>${LOG_DIR}/Logback.log</fileName>
+    </statusListener>
+
+    <appender name="Flyway" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG_DIR}/Flyway.log</file>
+        <encoder>
+            <pattern>%d{yyyy.MM.dd HH:mm:ss.SSS} [%thread] %-5level %logger{60} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="Debug" class="ch.qos.logback.core.FileAppender">
+        <file>CoWorkly_Debug.log</file>
+        <append>true</append>
+        <encoder>
+            <pattern>%d{yyyy.MM.dd HH:mm:ss.SSS} [%thread] %-5level %logger{60} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="Release" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG_DIR}/application.log</file>
+        <append>true</append>
+        <encoder>
+            <pattern>%d{yyyy.MM.dd HH:mm:ss.SSS} [%thread] %-5level %logger{60} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="HikariCP" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG_DIR}/HikariCP.log</file>
+        <append>true</append>
+        <encoder>
+            <pattern>%d{yyyy.MM.dd HH:mm:ss.SSS} [%thread] %-5level %logger{60} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="Tests" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG_DIR}/tests.log</file>
+        <append>false</append>
+        <encoder>
+            <pattern>%d{yyyy.MM.dd HH:mm:ss.SSS} [%thread] %-5level %logger{60} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="com.ddnik" level="DEBUG" />
+<!--        <appender-ref ref="Debug" />-->
+
+    <!-- Оставить только важное от HikariCP -->
+    <logger name="com.zaxxer.hikari" level="INFO" additivity="false">
+        <appender-ref ref="HikariCP"/>
+    </logger>
+
+    <!-- Вынести логи для миграций в отдельный файл -->
+    <logger name="org.flywaydb.core" level="DEBUG" additivity="false">
+        <appender-ref ref="Flyway"/>
+    </logger>
+
+    <!-- Логирование тестов -->
+    <logger name="com.ddnik.tests.business" level="DEBUG" additivity="false">
+        <appender-ref ref="Tests"/>
+    </logger>
+
+    <!-- <logger name="com.ddnik.tests" level="WARN" -->
+    <root level="INFO">
+        <appender-ref ref="Release" />
+
+<!--        Для релиза заменить на-->
+<!--        <appender-ref ref="Compile"/>-->
+    </root>
+</configuration>

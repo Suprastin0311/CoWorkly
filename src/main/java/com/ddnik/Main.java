@@ -1,17 +1,42 @@
 package com.ddnik;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
-public class Main {
-    public static void main(String[] args) {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
+import com.ddnik.controller.ConsoleReader;
+import com.ddnik.controller.MainController;
+import com.ddnik.controller.Out;
+import com.ddnik.db.DataSource;
+import com.ddnik.db.MigrationDB;
+import org.flywaydb.core.api.FlywayException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.println("i = " + i);
+import java.sql.SQLException;
+
+public class Main {
+
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+
+    public static void main(String[] args) {
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            logger.error("Необработанное исключение в потоке '{}'", thread.getName(), throwable);
+
+            Out.printlnRedBack("Произошла непредвиденная ошибка. Работа программы будет прекращена.");
+        });
+
+        try {
+            MigrationDB.migrate(DataSource.getDs());
+        } catch (FlywayException e) {
+            logger.error(e.getLocalizedMessage(), e);
+            Out.printlnRed("Произошла ошибка в процессе актуализации базы данных, данные могут быть неактуальны.");
+        } catch (SQLException e) {
+            logger.error(e.getLocalizedMessage(), e);
+            Out.printlnRedBack("Произошла ошибка на уровне базы данных. Работа программы будет прекращена.");
+            System.exit(0);
         }
+
+        MainController main = new MainController();
+        main.start();
+        ConsoleReader.cls();
+        Out.printlnBlueBack("Вы завершили работу с программой.");
+        System.exit(0);
     }
 }

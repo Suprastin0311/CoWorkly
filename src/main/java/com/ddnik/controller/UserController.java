@@ -1,0 +1,403 @@
+package com.ddnik.controller;
+
+import com.ddnik.SecurityContextHolder;
+import com.ddnik.db.Service;
+import com.ddnik.db.dto.*;
+import com.ddnik.model.*;
+import com.opencsv.CSVWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.Date;
+import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.chrono.ChronoLocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+
+/**
+ * Управляет консольным меню пользователя.
+ */
+public class UserController {
+
+    private final Service service;
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+
+    public UserController() {
+        this.service = new Service(SecurityContextHolder.getLoggedUser().role());
+    }
+
+    public void start() {
+        ConsoleMenu menu = new ConsoleMenu("Вы вошли как Пользователь");
+        menu.addItem("Посмотреть свободные рабочие пространства", this::viewFreeWorkspaces);
+        menu.addItem("Забронировать рабочее пространство", this::bookWorkspace);
+        menu.addItem("Подтвердить бронь", this::confirmBooking);
+        menu.addItem("Просмотреть свои брони", this::view);
+        menu.addItem("Отменить бронирование", this::cancelBooking);
+        menu.addItem("Выгрузить список броней в файл", () -> report(selectBookingsList()));
+
+        logger.info("пользователь перешёл в меню.");
+        menu.start();
+    }
+
+    /**
+     * Просмотреть все свободные рабочие пространства.
+     */
+    private void viewFreeWorkspaces() {
+        Optional<Filters> filters = getFilters();
+        if (filters.isEmpty()) return;
+
+        new ItemsListMenu<>(getAvailableWorkspaces(filters.get()),
+                "Доступные рабочие пространства",
+                WorkspaceAvailableDto.getMenuTableHeader()).display();
+        ConsoleReader.waitInput();
+    }
+
+    /**
+     * Выбрать список доступных рабочих пространств.
+     * @return список доступных рабочих пространств.
+     */
+    private List<WorkspaceAvailableDto> getAvailableWorkspaces(Filters filters) {
+        return service.getWorkspacesAvailableForBooking(
+                filters.startTime(),
+                filters.endTime(),
+                filters.type().id(),
+                filters.participantsCount());
+    }
+
+    /**
+     * Выбрать рабочее пространство из списка доступных.
+     * @return рабочее пространство.
+     */
+    private Optional<WorkspaceDto> selectWorkspace(Filters filters) {
+        return selectAvailableWorkspace(filters).map(WorkspaceAvailableDto::toWorkspaceDto);
+    }
+
+    /**
+     * Выбрать доступное рабочее пространство из списка.
+     * @return доступное рабочее пространство.
+     */
+    private Optional<WorkspaceAvailableDto> selectAvailableWorkspace(Filters filters) {
+        return new ItemsListMenu<>(
+                getAvailableWorkspaces(filters),
+                "Выберите рабочее пространство из доступных",
+                WorkspaceAvailableDto.getMenuTableHeader()).start();
+    }
+
+    /**
+     * Составить фильтры для отбора доступных рабочих пространств с целью последующего бронирования.
+     * @return введённые фильтры.
+     * @throws SQLException в случае ошибки на уровне базы данных.
+     */
+    private Optional<Filters> getFilters() {
+        ConsoleReader.cls();
+        Optional<WorkspaceTypesDto> type = selectWorkspaceType();
+        if (type.isEmpty()) return Optional.empty();
+
+        Optional<Integer> participantsCount;
+        if (type.get().minParticipantsCount() == type.get().maxParticipantsCount())
+            participantsCount = Optional.of(type.get().maxParticipantsCount());
+        else {
+            participantsCount = ConsoleReader.readIntInRange("Укажите количество человек",
+                    type.get().minParticipantsCount(), type.get().maxParticipantsCount());
+            if (participantsCount.isEmpty()) return Optional.empty();
+        }
+
+        Optional<Date> date = inputBookingDate();
+        if (date.isEmpty()) return Optional.empty();
+        boolean isToday = Date.valueOf(LocalDate.now()).equals(date.get());
+
+        Optional<Time> startTime = inputBookingStartTime(isToday);
+        if (startTime.isEmpty()) return Optional.empty();
+
+        Optional<Time> endTime = inputBookingEndTime(startTime.get());
+        if (endTime.isEmpty()) return Optional.empty();
+
+        return Optional.of(new Filters (
+                type.get(),
+                participantsCount.get(),
+                Timestamp.valueOf(LocalDateTime.of(date.get().toLocalDate(), startTime.get().toLocalTime())),
+                Timestamp.valueOf(LocalDateTime.of(date.get().toLocalDate(), endTime.get().toLocalTime()))
+        ));
+    }
+
+    /**
+     * Забронировать.
+     */
+    private void bookWorkspace()  {
+        Optional<Filters> filters = getFilters();
+        if (filters.isEmpty()) return;
+
+        Optional<WorkspaceDto> workspace = selectWorkspace(filters.get());
+        if (workspace.isEmpty()) {
+            Out.printlnRed("Не удалось выбрать рабочее пространство.");
+            return;
+        }
+
+        Optional<Long> newBookingId = service.createBooking(SecurityContextHolder.getLoggedUser().id(), workspace.get(), filters.get());
+
+        if (newBookingId.isPresent()) Out.printlnGreen("Бронь создана успешно!");
+        else Out.printlnRed("Не удалось забронировать рабочее пространство.");
+        ConsoleReader.waitInput();
+    }
+
+    /**
+     * Подтвердить бронирование.
+     */
+    private void confirmBooking() {
+        Optional<BookingDto> booking = selectBooking(service.getBookingsPendingPayment(SecurityContextHolder.getLoggedUser().id()));
+        if (booking.isEmpty()) {
+            Out.printlnYellow("Не удалось выбрать бронирование.");
+            ConsoleReader.waitInput();
+        }
+        else {
+            Optional<Boolean> confirmResult = service.confirmBooking(booking.get().id());
+            if (confirmResult.isPresent()) {
+                if (confirmResult.get()) Out.printlnGreen("Бронирование подтверждено успешно.");
+                else Out.printlnRed("Не удалось подтвердить бронирование.");
+                ConsoleReader.waitInput();
+            }
+            else Out.printlnRed("Не удалось выполнить операцию.");
+        }
+    }
+
+    /**
+     * Отменить бронирование.
+     */
+    private void cancelBooking() {
+        Optional<BookingDto> booking = selectBooking(selectBookingsList());
+        if (booking.isEmpty()) {
+            Out.printlnYellow("Не удалось выбрать бронирование.");
+            ConsoleReader.waitInput();
+            return;
+        }
+
+        Optional<Boolean> result = service.setBookingCancelled(booking.get().id());
+        if (result.isPresent()) {
+            if (result.get()) Out.printlnGreen("Удалось отменить бронирование.");
+            else Out.printlnRed("Не удалось отменить бронирование.");
+        }
+        else Out.printlnRed("Не удалось выполнить операцию.");
+        ConsoleReader.waitInput();
+    }
+
+    /**
+     * Меню просмотра бронирований текущего пользователя.
+     */
+    private void view() {
+        ConsoleMenu menu = new ConsoleMenu("Просмотреть бронирования.");
+        menu.addItem("Все", () -> {
+            new ItemsListMenu<>(selectAllBookings(), "Выбранные бронирования",
+                    BookingDto.getMenuTableHeader()).display();
+            ConsoleReader.waitInput();
+        });
+        menu.addItem("По статусу", () -> {
+            new ItemsListMenu<>(selectBookingsByStatus(), "Выбранные бронирования",
+                    BookingDto.getMenuTableHeader()).display();
+            ConsoleReader.waitInput();
+        });
+        menu.addItem("По рабочему пространству", () -> {
+            new ItemsListMenu<>(selectBookingsByWorkspace(), "Выбранные бронирования",
+                    BookingDto.getMenuTableHeader()).display();
+            ConsoleReader.waitInput();
+        });
+        menu.addItem("По датам", () -> {
+            new ItemsListMenu<>(selectBookingsByCreatedAt(), "Выбранные бронирования",
+                    BookingDto.getMenuTableHeader()).display();
+            ConsoleReader.waitInput();
+        });
+
+        logger.info("Пользователь перешёл в меню просмотра бронирований.");
+        menu.start();
+    }
+
+    /**
+     * Меню выбора бронирования из списка.
+     * @param bookings список бронирований.
+     * @return выбранное бронирование.
+     */
+    private Optional<BookingDto> selectBooking(List<BookingDto> bookings) {
+        return new ItemsListMenu<>(bookings,
+                "Выберите бронирование",
+                BookingDto.getMenuTableHeader()).start();
+    }
+
+    /**
+     * Выбрать список бронирований по фильтрам.
+     * @return список бронирований.
+     */
+    private List<BookingDto> selectBookingsList() {
+        AtomicReference<List<BookingDto>> result = new AtomicReference<>();
+
+        ConsoleMenu menu = new ConsoleMenu("Выберите параметр поиска бронирования.");
+        menu.addItem("Все", () -> {
+            result.set(selectAllBookings());
+            menu.close();
+        });
+        menu.addItem("По статусу", () -> {
+            result.set(selectBookingsByWorkspace());
+            menu.close();
+        });
+        menu.addItem("По рабочему пространству", () -> {
+            result.set(selectBookingsByCreatedAt());
+            menu.close();
+        });
+        menu.addItem("По датам", () -> {
+            result.set(selectBookingsByStatus());
+            menu.close();
+        });
+
+        logger.info("Пользователь перешёл в меню выбора бронирования.");
+        menu.start();
+
+        return result.get();
+    }
+
+    /**
+     * Просмотреть все бронирования.
+     * @return список бронирований.
+     */
+    private List<BookingDto> selectAllBookings() {
+        return service.getBookingsByUserId(SecurityContextHolder.getLoggedUser().id());
+    }
+
+    /**
+     * Просмотреть бронирования с фильтром по статусу.
+     * @return список бронирований.
+     */
+    private List<BookingDto> selectBookingsByStatus() {
+        Optional<BookingStatusesDto> status = new ItemsListMenu<>(
+                service.getBookingStatuses(),
+                "Выберите статус",
+                BookingStatusesDto.getMenuTableHeader()).start();
+        if (status.isEmpty()) new ArrayList<>();
+
+        return service.getBookingsByStatus(SecurityContextHolder.getLoggedUser().id(), status.get());
+    }
+
+    /**
+     * Просмотреть бронирования с фильтром по рабочему пространству.
+     * @return список бронирований.
+     */
+    private List<BookingDto> selectBookingsByWorkspace() {
+        Optional<WorkspaceDto> workspace = new ItemsListMenu<>(
+                service.getWorkspaces(),
+                "Выберите рабочее пространство",
+                WorkspaceDto.getMenuTableHeader()).start();
+        if (workspace.isEmpty()) return new ArrayList<>();
+
+        return service.getBookingsByWorkspaceId(SecurityContextHolder.getLoggedUser().id(), workspace.get());
+    }
+
+    /**
+     * Получить бронирования с фильтром по датам
+     * @return список бронирований.
+     */
+    private List<BookingDto> selectBookingsByCreatedAt() {
+        Optional<Date> min = ConsoleReader.readDate("Введите минимальную дату");
+        if (min.isEmpty()) return new ArrayList<>();
+
+        Optional<Date> max = ConsoleReader.readDate("Введите максимальную дату");
+        if (max.isEmpty()) return new ArrayList<>();
+
+        return service.getBookingsByCreatedAt(SecurityContextHolder.getLoggedUser().id(), min.get(), max.get());
+    }
+
+    /**
+     * Выгрузить список своих броней в файл формата CSV.
+     */
+    private void report(List<BookingDto> bookings) {
+        if (bookings.isEmpty()) return;
+
+        try {
+            File csvFile = new File(String.format("bookings_report_%tF_%<tk-%<tM.csv", LocalDateTime.now()));
+            CSVWriter writer = new CSVWriter(
+                    new FileWriter(csvFile, false),
+                    CSVWriter.DEFAULT_SEPARATOR,
+                    CSVWriter.DEFAULT_QUOTE_CHARACTER,
+                    CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                    CSVWriter.DEFAULT_LINE_END);
+
+            writer.writeNext(new String[]{"Тип", "Название", "Начало", "Окончание", "Email регистратора", "Количество человек", "Статус", "Сумма", "Дата бронирования"});
+
+            for(BookingDto booking : bookings) writer.writeNext(booking.toCSVRow());
+
+            writer.close();
+
+            Out.printlnCyan("Файл создан по пути: " + csvFile.getAbsolutePath());
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+            Out.printlnRed("Ошибка создания CSV-файла.");
+        } finally {
+            ConsoleReader.waitInput();
+        }
+    }
+
+    /**
+     * Выбрать тип рабочего пространства из списка.
+     * @return тип рабочего пространства.
+     */
+    private Optional<WorkspaceTypesDto> selectWorkspaceType() {
+        ConsoleReader.cls();
+        return new ItemsListMenu<>(
+                service.getWorkspaceTypes(),
+                "Выберите тип рабочего пространства",
+                WorkspaceTypesDto.getMenuTableHeader()).start();
+    }
+
+    /**
+     * Ввод даты бронирования.
+     * @return дата бронирования [гггг.мм.дд]
+     */
+    private Optional<Date> inputBookingDate() {
+        Optional<Date> date;
+        while (true) {
+            date = ConsoleReader.readDate("Введите дату бронирования");
+            if (date.isEmpty()) return Optional.empty();
+            if (date.get().toLocalDate().isBefore(ChronoLocalDate.from(LocalDateTime.now())))
+                Out.printlnYellow("Дата бронирования не может быть раньше текущей.");
+            else return date;
+        }
+    }
+
+    /**
+     * Ввод времени начала бронирования.
+     * @param isToday если дата бронирования - текущий день.
+     * @return время начала бронирования [чч:мм].
+     */
+    private Optional<Time> inputBookingStartTime(boolean isToday) {
+        Optional<Time> startTime;
+        while (true) {
+            startTime = ConsoleReader.readTime("Введите время начала брони");
+            if (startTime.isEmpty()) return Optional.empty();
+            if (isToday && !startTime.get().after(Time.valueOf(LocalTime.now())))
+                Out.printlnYellow("Время начала должно быть позже текущего времени.");
+            else return startTime;
+        }
+    }
+
+    /**
+     * Ввод времени окончания бронирования.
+     * @param start время начала бронирования.
+     * @return время окончания бронирования [чч:мм].
+     */
+    private Optional<Time> inputBookingEndTime(Time start) {
+        Optional<Time> endTime;
+        while (true) {
+            endTime = ConsoleReader.readTime("Введите время окончания брони");
+            if (endTime.isEmpty()) return Optional.empty();
+            if (!endTime.get().after(start))
+                Out.printlnYellow("Время окончания должно быть позже времени начала.");
+            else return endTime;
+        }
+    }
+}
