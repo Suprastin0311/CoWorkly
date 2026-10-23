@@ -39,7 +39,6 @@ build/
 .DS_Store
 
 ### Custom ###
-/TZ-CoWorkly-formal.md
 *.log
 *.csv
 /db.properties
