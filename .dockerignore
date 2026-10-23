@@ -1,0 +1,10 @@
+.git
+.idea
+target
+out
+logs
+*.log
+*.csv
+*.zip
+db.properties
+.env
