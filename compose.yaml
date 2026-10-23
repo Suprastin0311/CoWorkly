@@ -1,0 +1,51 @@
+services:
+  db:
+    build:
+      context: ./docker/postgres
+    image: coworkly-postgres:0.1-core
+    environment:
+      POSTGRES_DB: CoWorklyDB
+      POSTGRES_USER: coworkly
+      POSTGRES_PASSWORD: 12348765
+    command:
+      - postgres
+      - -c
+      - shared_preload_libraries=pg_cron
+      - -c
+      - cron.database_name=CoWorklyDB
+      - -c
+      - cron.use_background_workers=on
+      - -c
+      - timezone=${APP_TIMEZONE:-Europe/Moscow}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+
+  app:
+    build:
+      context: .
+    image: coworkly-app:0.1-core
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      JAVA_TOOL_OPTIONS: "-Duser.timezone=${APP_TIMEZONE:-Europe/Moscow}"
+    stdin_open: true
+    tty: true
+    volumes:
+      - type: bind
+        source: ./docker/db.properties
+        target: /app/db.properties
+        read_only: true
+        bind:
+          create_host_path: false
+      - app_logs:/app/logs
+
+volumes:
+  postgres_data:
+  app_logs:
